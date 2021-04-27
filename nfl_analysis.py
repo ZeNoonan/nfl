@@ -74,9 +74,51 @@ st.write(turnover_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 st.write('Next trying to do the Power Rankings')
 st.write('maybe I should do matrix multiplication on a dummy first to see what shape i Need them in?')
 matrix_df=spread_workings(data_2020)
+
+def calc(x):
+    weights = np.array([0.125, 0.25,0.5,1])
+    sum_weights = np.sum(weights)
+    return np.sum(weights*x) / sum_weights        
+
+def test(matrix_df_1):
+    weights = np.array([0.125, 0.25,0.5,1])
+    sum_weights = np.sum(weights)
+    matrix_df_1['test weight spread']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)
+    return matrix_df_1
+
+
+
+matrix_df['at_home'] = 1
+matrix_df['at_away'] = -1
+matrix_df['away_spread']=-matrix_df['Spread']
+matrix_df=matrix_df.rename(columns={'Spread':'home_spread'})
+matrix_df_1=matrix_df.loc[:,['Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread']].copy()
+st.write(matrix_df_1)
+matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread'}).copy()
+matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread'}).copy()
+matrix_df_1=pd.concat([matrix_df_home,matrix_df_away],ignore_index=True)
 weights = np.array([0.125, 0.25,0.5,1]) # the order mattered!! took me a while to figure this out
 sum_weights = np.sum(weights)
-# df['Weighted_ma'] = (df['Clean_Pts'].fillna(0).rolling(window=4, center=False)\
-#     .apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)) # raw=False
+matrix_df_1=matrix_df_1.sort_values(by=['ID','Week'],ascending=True)
+# https://stackoverflow.com/questions/9621362/how-do-i-compute-a-weighted-moving-average-using-pandas
+matrix_df_1['weight_ma_spread'] = (matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)) # raw=False
+matrix_df_1['weight_ma_home'] = (matrix_df_1['home'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False))
+st.write(matrix_df_1)
+grouped = matrix_df_1.groupby('ID')
+for name, group in grouped:
+    # st.write('name',name)
+    # st.write('group',group)
+    st.write('test')
+    st.write(test(group))
+
+
+# matrix_df_1['rolling_sum'] = matrix_df_1.groupby('ID')['spread'].rolling(window=4, center=False).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)
+# st.write(matrix_df_1.groupby('ID')['spread'].rolling(window=4, center=False).apply(lambda a: a[:]))
+# temp = (matrix_df_1.groupby('ID')['spread'].apply(lambda x: x.fillna(0).rolling(3).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)))
+# st.write(temp)
+# matrix_df_1['rolling_sum'] = matrix_df_1.groupby('ID').rolling(window=4, center=False).reset_index()
+matrix_df_1.groupby('ID')['spread'].transform(lambda s: s.rolling(2, min_periods=1).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False))
+
+
 #     # using the fillna ensures no NaN as this function requires min 4 data points in a row - .fillna(method='ffill')
     # so just be careful the result is the last time player had 4 weeks in a row
