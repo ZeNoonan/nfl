@@ -86,38 +86,53 @@ def test(matrix_df_1):
     matrix_df_1['test weight spread']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)
     return matrix_df_1
 
+def test_1(matrix_df_1):
+    weights = np.array([0.125, 0.25,0.5,1])
+    sum_weights = np.sum(weights)
+    matrix_df_1['spread_weighted']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
+    matrix_df_1['home_adv_weighted']=matrix_df_1['home_pts_adv'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
+    matrix_df_1['adj_spread'] = matrix_df_1['home_adv_weighted'] + matrix_df_1['spread_weighted']
+    return matrix_df_1
 
+# Why are both of the above functions working????????????? the sum_weights is taken out in test function
 
 matrix_df['at_home'] = 1
 matrix_df['at_away'] = -1
+matrix_df['home_pts_adv'] = -3
+matrix_df['away_pts_adv'] = 3
 matrix_df['away_spread']=-matrix_df['Spread']
 matrix_df=matrix_df.rename(columns={'Spread':'home_spread'})
-matrix_df_1=matrix_df.loc[:,['Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread']].copy()
+matrix_df_1=matrix_df.loc[:,['Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv']].copy()
 st.write(matrix_df_1)
-matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread'}).copy()
-matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread'}).copy()
+matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
+matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
 matrix_df_1=pd.concat([matrix_df_home,matrix_df_away],ignore_index=True)
 weights = np.array([0.125, 0.25,0.5,1]) # the order mattered!! took me a while to figure this out
 sum_weights = np.sum(weights)
 matrix_df_1=matrix_df_1.sort_values(by=['ID','Week'],ascending=True)
 # https://stackoverflow.com/questions/9621362/how-do-i-compute-a-weighted-moving-average-using-pandas
-matrix_df_1['weight_ma_spread'] = (matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)) # raw=False
-matrix_df_1['weight_ma_home'] = (matrix_df_1['home'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False))
-st.write(matrix_df_1)
+# st.write(matrix_df_1)
 grouped = matrix_df_1.groupby('ID')
+# raw_data=[]
+raw_data_1=[]
 for name, group in grouped:
     # st.write('name',name)
     # st.write('group',group)
-    st.write('test')
-    st.write(test(group))
-
-
+    # raw_data.append(test(group))
+    raw_data_1.append(test_1(group))
+    # st.write(test(group))
+# df1 = pd.concat(raw_data, ignore_index=True)
+df2 = pd.concat(raw_data_1, ignore_index=True)
+# st.write('this is df1',df1)
+st.write('this is df2',df2)
+st.write('i checked that ID no.2 and ID no.5 equal the spreadsheet')
+st.write('do i have a problem if i have a blank gameweek, should i insert NaN just thinking of inverse matrix....it has to add up to 0')
 # matrix_df_1['rolling_sum'] = matrix_df_1.groupby('ID')['spread'].rolling(window=4, center=False).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)
 # st.write(matrix_df_1.groupby('ID')['spread'].rolling(window=4, center=False).apply(lambda a: a[:]))
 # temp = (matrix_df_1.groupby('ID')['spread'].apply(lambda x: x.fillna(0).rolling(3).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)))
 # st.write(temp)
 # matrix_df_1['rolling_sum'] = matrix_df_1.groupby('ID').rolling(window=4, center=False).reset_index()
-matrix_df_1.groupby('ID')['spread'].transform(lambda s: s.rolling(2, min_periods=1).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False))
+# matrix_df_1.groupby('ID')['spread'].transform(lambda s: s.rolling(2, min_periods=1).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False))
 
 
 #     # using the fillna ensures no NaN as this function requires min 4 data points in a row - .fillna(method='ffill')
