@@ -55,24 +55,23 @@ def turnover_2(season_cover_df):
 
 
 spread=spread_workings(data_2020)
-st.write(spread)
+st.write('spread',spread)
 
-spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',1)
-spread_2=season_cover_2(spread_1,'cover')
-spread_3=season_cover_3(spread_2,'cover_sign','cover')
-st.write('this is season to date cover')
-st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
+with st.beta_expander('Season to date Cover'):
+    spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',1)
+    spread_2=season_cover_2(spread_1,'cover')
+    spread_3=season_cover_3(spread_2,'cover_sign','cover')
+    st.write('this is season to date cover')
+    st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
+with st.beta_expander('Last Game Turnover'):
+    turnover=spread_workings(data_2020)
+    turnover_1 = season_cover_workings(turnover,'home_turnover','away_turnover','turnover',-1)
+    turnover_2=turnover_2(turnover_1)
+    turnover_3=season_cover_3(turnover_2,'turnover_sign','prev_turnover')
+    st.write('this is last game turnover')
+    st.write(turnover_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
-turnover=spread_workings(data_2020)
-turnover_1 = season_cover_workings(turnover,'home_turnover','away_turnover','turnover',-1)
-turnover_2=turnover_2(turnover_1)
-turnover_3=season_cover_3(turnover_2,'turnover_sign','prev_turnover')
-st.write('this is last game turnover')
-st.write(turnover_3.sort_values(by=['ID','Week'],ascending=['True','True']))
-
-st.write('Next trying to do the Power Rankings')
-st.write('maybe I should do matrix multiplication on a dummy first to see what shape i Need them in?')
 matrix_df=spread_workings(data_2020)
 
 def calc(x):
@@ -89,9 +88,27 @@ def test(matrix_df_1):
 def test_1(matrix_df_1):
     weights = np.array([0.125, 0.25,0.5,1])
     sum_weights = np.sum(weights)
+    # matrix_df_1['games_weighted']=matrix_df_1['home'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
     matrix_df_1['spread_weighted']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
     matrix_df_1['home_adv_weighted']=matrix_df_1['home_pts_adv'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
     matrix_df_1['adj_spread'] = matrix_df_1['home_adv_weighted'] + matrix_df_1['spread_weighted']
+    return matrix_df_1
+
+def test_2(matrix_df_1):
+    weights_1 = np.array([0.125,0,0,0 ])
+    weights_2 = np.array([0.125, 0.25,0,0])
+    weights_3 = np.array([0.125, 0.25,0.5,0])
+    weights_4 = np.array([0.125, 0.25,0.5,1])
+    sum_weights_1 = np.sum(weights_1)
+    sum_weights_2 = np.sum(weights_2)
+    sum_weights_3 = np.sum(weights_3)
+    sum_weights_4 = np.sum(weights_4)
+
+    matrix_df_1['games_weighted']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
+    # matrix_df_1['games_weighted']=matrix_df_1['home'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
+    matrix_df_1['spread_weighted']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
+    # matrix_df_1['home_adv_weighted']=matrix_df_1['home_pts_adv'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
+    # matrix_df_1['adj_spread'] = matrix_df_1['home_adv_weighted'] + matrix_df_1['spread_weighted']
     return matrix_df_1
 
 # Why are both of the above functions working????????????? the sum_weights is taken out in test function
@@ -103,37 +120,55 @@ matrix_df['away_pts_adv'] = 3
 matrix_df['away_spread']=-matrix_df['Spread']
 matrix_df=matrix_df.rename(columns={'Spread':'home_spread'})
 matrix_df_1=matrix_df.loc[:,['Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv']].copy()
-st.write(matrix_df_1)
-matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
-matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
-matrix_df_1=pd.concat([matrix_df_home,matrix_df_away],ignore_index=True)
-weights = np.array([0.125, 0.25,0.5,1]) # the order mattered!! took me a while to figure this out
-sum_weights = np.sum(weights)
-matrix_df_1=matrix_df_1.sort_values(by=['ID','Week'],ascending=True)
-# https://stackoverflow.com/questions/9621362/how-do-i-compute-a-weighted-moving-average-using-pandas
-# st.write(matrix_df_1)
-grouped = matrix_df_1.groupby('ID')
-# raw_data=[]
-raw_data_1=[]
-for name, group in grouped:
-    # st.write('name',name)
-    # st.write('group',group)
-    # raw_data.append(test(group))
-    raw_data_1.append(test_1(group))
-    # st.write(test(group))
-# df1 = pd.concat(raw_data, ignore_index=True)
-df2 = pd.concat(raw_data_1, ignore_index=True)
-# st.write('this is df1',df1)
-st.write('this is df2',df2)
-st.write('i checked that ID no.2 and ID no.5 equal the spreadsheet')
-st.write('do i have a problem if i have a blank gameweek, should i insert NaN just thinking of inverse matrix....it has to add up to 0')
-# matrix_df_1['rolling_sum'] = matrix_df_1.groupby('ID')['spread'].rolling(window=4, center=False).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)
-# st.write(matrix_df_1.groupby('ID')['spread'].rolling(window=4, center=False).apply(lambda a: a[:]))
-# temp = (matrix_df_1.groupby('ID')['spread'].apply(lambda x: x.fillna(0).rolling(3).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)))
-# st.write(temp)
-# matrix_df_1['rolling_sum'] = matrix_df_1.groupby('ID').rolling(window=4, center=False).reset_index()
-# matrix_df_1.groupby('ID')['spread'].transform(lambda s: s.rolling(2, min_periods=1).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False))
+# st.write('matrix df1',matrix_df_1)
 
 
-#     # using the fillna ensures no NaN as this function requires min 4 data points in a row - .fillna(method='ffill')
-    # so just be careful the result is the last time player had 4 weeks in a row
+with st.beta_expander('Power Ranking to be used in Matrix Multiplication'):
+    matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
+    matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
+    matrix_df_2=pd.concat([matrix_df_home,matrix_df_away],ignore_index=True)
+    weights = np.array([0.125, 0.25,0.5,1]) # the order mattered!! took me a while to figure this out
+    sum_weights = np.sum(weights)
+    matrix_df_2=matrix_df_2.sort_values(by=['ID','Week'],ascending=True)
+    # https://stackoverflow.com/questions/9621362/how-do-i-compute-a-weighted-moving-average-using-pandas
+    # st.write(matrix_df_2)
+    grouped = matrix_df_2.groupby('ID')
+    # raw_data=[]
+    raw_data_1=[]
+    for name, group in grouped:
+        # st.write('name',name)
+        # st.write('group',group)
+        # raw_data.append(test(group))
+        raw_data_1.append(test_1(group))
+        # st.write(test(group))
+    # df1 = pd.concat(raw_data, ignore_index=True)
+    df2 = pd.concat(raw_data_1, ignore_index=True)
+    # st.write('this is df1',df1)
+    st.write('This is power ranking to be used in Matrix Multiplaction',df2)
+    st.write('i checked that ID no.2 and ID no.5 equal the spreadsheet')
+    st.write('do i have a problem if i have a blank gameweek, should i insert NaN just thinking of inverse matrix....it has to add up to 0')
+    st.write('not necessarily as long as get games played to add up to zero ...have the power points calculated')
+
+with st.beta_expander('Games Played to be used in Matrix Multiplication'):
+    first_qtr=matrix_df_1.copy()
+    first_4=first_qtr[first_qtr['Week']<1].copy()
+    group_week = first_4.groupby('Week')
+    st.write('How do I get this to work just to enter 0.125 0.25 etc')
+    raw_data_2=[]
+    
+    for name, group in group_week:
+        st.write('Group!', group)
+        for i in np.array([0.125, 0.25,0.5,1]):
+            group['game_adj']=i
+            st.write('Group after game_Adj', group)
+        raw_data_2.append(group)
+
+    
+
+
+
+    df3 = pd.concat(raw_data_2, ignore_index=True)
+    st.write(df3)
+    # st.write(first_qtr[first_qtr['Week']<1])
+    # st.write(first_qtr)
+
