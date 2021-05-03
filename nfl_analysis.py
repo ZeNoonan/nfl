@@ -153,22 +153,41 @@ with st.beta_expander('Games Played to be used in Matrix Multiplication'):
     first_qtr=matrix_df_1.copy()
     first_4=first_qtr[first_qtr['Week']<1].copy()
     group_week = first_4.groupby('Week')
-    st.write('How do I get this to work just to enter 0.125 0.25 etc')
     raw_data_2=[]
     
+    test_game = iter([-0.125, -0.25,-0.5,-1])
     for name, group in group_week:
-        st.write('Group!', group)
-        for i in np.array([0.125, 0.25,0.5,1]):
-            group['game_adj']=i
-            st.write('Group after game_Adj', group)
+        group['game_adj']=next(test_game)
         raw_data_2.append(group)
-
-    
-
 
 
     df3 = pd.concat(raw_data_2, ignore_index=True)
-    st.write(df3)
-    # st.write(first_qtr[first_qtr['Week']<1])
-    # st.write(first_qtr)
+    st.write('hopefully this works',df3)
+    adj_df3=df3.loc[:,['Home ID', 'Away ID', 'game_adj']].copy()
+    test_adj_df3 = adj_df3.rename(columns={'Home ID':'Away ID', 'Away ID':'Home ID'})
+    st.write(adj_df3)
+    concat_df_test=pd.concat([adj_df3,test_adj_df3]).sort_values(by=['Home ID', 'game_adj'],ascending=[True,False])
+    st.write(concat_df_test)
+    st.write('Need to insert like a sub-total in dataframe?')
+    test_concat_df_test=concat_df_test.groupby('Home ID')['game_adj'].sum().abs().reset_index()
+    test_concat_df_test['Away ID']=test_concat_df_test['Home ID']
+    st.write(test_concat_df_test)
+    full=pd.concat([concat_df_test,test_concat_df_test]).sort_values(by=['Home ID', 'game_adj'],ascending=[True,False])
+    st.write(full)
 
+    full_stack=pd.pivot_table(full,index='Away ID', columns='Home ID',aggfunc='sum')
+    st.write(full_stack)
+    # st.write('problem somewhere look at ID no.2')
+    st.write('Check sum looks good all zero', full_stack.sum())
+    st.write(full_stack.fillna(0))
+
+    # test_stack=pd.pivot_table(concat_df_test,index='Away ID', columns='Home ID')
+    # st.write(test_stack.fillna(0))
+
+
+    # cols=list(range(0,32))
+    # # st.write(cols)
+    # empty_df=pd.DataFrame(columns=cols, index=cols)
+    # st.write(empty_df)
+    # test_df = df3.groupby(['Home ID','Away ID'])['game_adj'].first()    
+    # st.write(test_df)
