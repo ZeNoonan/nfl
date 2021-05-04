@@ -150,36 +150,50 @@ with st.beta_expander('Power Ranking to be used in Matrix Multiplication'):
     st.write('not necessarily as long as get games played to add up to zero ...have the power points calculated')
 
 with st.beta_expander('Games Played to be used in Matrix Multiplication'):
+    # st.write('TEST FILTERING')
+    # st.write(matrix_df_1[matrix_df_1['Week'].between(1,2)])
     first_qtr=matrix_df_1.copy()
-    first_4=first_qtr[first_qtr['Week']<1].copy()
-    group_week = first_4.groupby('Week')
-    raw_data_2=[]
     
-    test_game = iter([-0.125, -0.25,-0.5,-1])
-    for name, group in group_week:
-        group['game_adj']=next(test_game)
-        raw_data_2.append(group)
+    start=-3
+    finish=0
+    first_4=first_qtr[first_qtr['Week'].between(start,finish)].copy()
+    def games_matrix_workings(first_4):
+        group_week = first_4.groupby('Week')
+        raw_data_2=[]
+        game_weights = iter([-0.125, -0.25,-0.5,-1])
+        for name, group in group_week:
+            group['game_adj']=next(game_weights)
+            raw_data_2.append(group)
 
+        df3 = pd.concat(raw_data_2, ignore_index=True)
+        adj_df3=df3.loc[:,['Home ID', 'Away ID', 'game_adj']].copy()
+        test_adj_df3 = adj_df3.rename(columns={'Home ID':'Away ID', 'Away ID':'Home ID'})
+        concat_df_test=pd.concat([adj_df3,test_adj_df3]).sort_values(by=['Home ID', 'game_adj'],ascending=[True,False])
+        test_concat_df_test=concat_df_test.groupby('Home ID')['game_adj'].sum().abs().reset_index()
+        test_concat_df_test['Away ID']=test_concat_df_test['Home ID']
+        full=pd.concat([concat_df_test,test_concat_df_test]).sort_values(by=['Home ID', 'game_adj'],ascending=[True,False])
+        full_stack=pd.pivot_table(full,index='Away ID', columns='Home ID',aggfunc='sum')
+        # st.write('Check sum looks good all zero', full_stack.sum())
+        full_stack=full_stack.fillna(0)
+        full_stack.columns = full_stack.columns.droplevel(0)
+        return full_stack
 
-    df3 = pd.concat(raw_data_2, ignore_index=True)
-    st.write('hopefully this works',df3)
-    adj_df3=df3.loc[:,['Home ID', 'Away ID', 'game_adj']].copy()
-    test_adj_df3 = adj_df3.rename(columns={'Home ID':'Away ID', 'Away ID':'Home ID'})
-    st.write(adj_df3)
-    concat_df_test=pd.concat([adj_df3,test_adj_df3]).sort_values(by=['Home ID', 'game_adj'],ascending=[True,False])
-    st.write(concat_df_test)
-    st.write('Need to insert like a sub-total in dataframe?')
-    test_concat_df_test=concat_df_test.groupby('Home ID')['game_adj'].sum().abs().reset_index()
-    test_concat_df_test['Away ID']=test_concat_df_test['Home ID']
-    st.write(test_concat_df_test)
-    full=pd.concat([concat_df_test,test_concat_df_test]).sort_values(by=['Home ID', 'game_adj'],ascending=[True,False])
-    st.write(full)
-
-    full_stack=pd.pivot_table(full,index='Away ID', columns='Home ID',aggfunc='sum')
+    full_stack=games_matrix_workings(first_4)
+    st.write('Check sum if True all good', full_stack.sum().sum()==0)
+    st.write('this is 1st part games played, need to automate this for every week')
     st.write(full_stack)
-    # st.write('problem somewhere look at ID no.2')
-    st.write('Check sum looks good all zero', full_stack.sum())
-    st.write(full_stack.fillna(0))
+
+with st.beta_expander('Testing multiple runs: Games Played to be used in Matrix Multiplication'):
+    games_df=matrix_df_1.copy()
+    first=list(range(-3,18))
+    last=list(range(0,21))
+    for first,last in zip(first,last):
+        # st.write('this is first',first)
+        # st.write('this is last',last)
+        first_section=games_df[games_df['Week'].between(first,last)]
+        # st.write(first_section)
+        st.write(games_matrix_workings(first_section))
+
 
     # test_stack=pd.pivot_table(concat_df_test,index='Away ID', columns='Home ID')
     # st.write(test_stack.fillna(0))
