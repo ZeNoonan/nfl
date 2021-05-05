@@ -184,6 +184,8 @@ with st.beta_expander('Games Played to be used in Matrix Multiplication'):
     st.write(full_stack)
 
 with st.beta_expander('Testing multiple runs: Games Played to be used in Matrix Multiplication'):
+    power_df=df2.loc[:,['Week','ID','adj_spread']].copy()
+    # power_df=power_df.set_index('')
     games_df=matrix_df_1.copy()
     first=list(range(-3,18))
     last=list(range(0,21))
@@ -192,8 +194,19 @@ with st.beta_expander('Testing multiple runs: Games Played to be used in Matrix 
         # st.write('this is last',last)
         first_section=games_df[games_df['Week'].between(first,last)]
         # st.write(first_section)
-        st.write(games_matrix_workings(first_section))
-
+        full_game_matrix=games_matrix_workings(first_section)
+        # st.write(full_game_matrix)
+        adjusted_matrix=full_game_matrix.loc[0:30,0:30]
+        st.write('this is the last number',last)
+        st.write(adjusted_matrix)
+        df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
+        st.write('this is the inverse matrix',df_inv, 'number', last)
+        power_df_week=power_df[power_df['Week']==last].set_index('ID').drop('Week',axis=1).loc[:30,:]
+        st.write('power amount to be matrix multiplied',power_df_week)
+        st.write('CHECK FOR WEEK 0 seems to be messing up adj spread ranking')
+        # power_rank=np.matmul(df_inv,power_df_week)
+        # st.write('power rank',power_rank)
+        st.write('end XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
     # test_stack=pd.pivot_table(concat_df_test,index='Away ID', columns='Home ID')
     # st.write(test_stack.fillna(0))
