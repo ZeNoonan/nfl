@@ -8,7 +8,7 @@ st.set_page_config(layout="wide")
 def read_data(file):
     return pd.read_excel(file) 
 data_2019 = read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2019_Data.xlsx').copy()
-data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data.xlsx').copy()
+data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Adj_week_zero.xlsx').copy()
 
 # st.table(data.head())
 def spread_workings(data):
@@ -82,7 +82,7 @@ def calc(x):
 def test(matrix_df_1):
     weights = np.array([0.125, 0.25,0.5,1])
     sum_weights = np.sum(weights)
-    matrix_df_1['test weight spread']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)
+    matrix_df_1['test weight spread']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False,min_periods=3).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)
     return matrix_df_1
 
 def test_1(matrix_df_1):
@@ -201,13 +201,15 @@ with st.beta_expander('Testing multiple runs: Games Played to be used in Matrix 
         st.write(adjusted_matrix)
         df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
         st.write('this is the inverse matrix',df_inv, 'number', last)
-        power_df_week=power_df[power_df['Week']==last].set_index('ID').drop('Week',axis=1).loc[:30,:]
+        # power_df_week=power_df[power_df['Week']==last].set_index('ID').drop('Week',axis=1).loc[:30,:]
+        power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID').drop('Week',axis=1).loc[:30,:]
         st.write('power amount to be matrix multiplied',power_df_week)
-        st.write('CHECK FOR WEEK 0 seems to be messing up adj spread ranking')
+        # st.write('CHECK FOR WEEK 0 seems to be messing up adj spread ranking')
         # power_rank=np.matmul(df_inv,power_df_week)
         # st.write('power rank',power_rank)
         st.write('end XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
+st.write('Need to figure out bye weeks seems to be an issue with power ranking')
     # test_stack=pd.pivot_table(concat_df_test,index='Away ID', columns='Home ID')
     # st.write(test_stack.fillna(0))
 
