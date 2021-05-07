@@ -149,7 +149,18 @@ with st.beta_expander('Power Ranking to be used in Matrix Multiplication'):
     st.write('do i have a problem if i have a blank gameweek, should i insert NaN just thinking of inverse matrix....it has to add up to 0')
     st.write('not necessarily as long as get games played to add up to zero ...have the power points calculated')
     st.write('TEST')
-    power_df_test=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID').drop('Week',axis=1)
+    df3=df2.loc[:,['Week','ID','adj_spread']].sort_values(by=['ID','Week'],ascending=True).copy()
+    st.write('this is original df3', df3)
+    df4 = df3.groupby('ID')
+    for name, group in df4:
+        # df5=group.sort_values(by=['Week','ID'],ascending=True)
+        # st.write('this is group before dropping duplicates')
+        df5=group.drop_duplicates(subset=['Week'],keep='last').set_index('Week')
+        # st.write('this is df5 before concat',df5)
+        empty_df=pd.DataFrame(columns=['test'], index=list(range(-3,21))).reset_index().rename(columns={'index':'Week'}).set_index('Week')
+        # st.write('this is empty df before concat',empty_df)
+        df5=pd.concat([df5,empty_df],axis=1)
+        # st.write(df5)
 
 with st.beta_expander('Games Played to be used in Matrix Multiplication'):
     # st.write('TEST FILTERING')
@@ -212,13 +223,67 @@ with st.beta_expander('Testing multiple runs: Games Played to be used in Matrix 
         st.write('end XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
 st.write('Need to figure out bye weeks seems to be an issue with power ranking')
+st.write('Think I need to adjust the adj spread amounts by the updated games played so that it matches at least....')
     # test_stack=pd.pivot_table(concat_df_test,index='Away ID', columns='Home ID')
     # st.write(test_stack.fillna(0))
 
+with st.beta_expander('TEST Power Ranking to be used in Matrix Multiplication'):
+    matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
+    matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
+    matrix_df_2=pd.concat([matrix_df_home,matrix_df_away],ignore_index=True)
+    # weights = np.array([0.125, 0.25,0.5,1]) # the order mattered!! took me a while to figure this out
+    # sum_weights = np.sum(weights)
+    matrix_df_2=matrix_df_2.sort_values(by=['ID','Week'],ascending=True)
+    # https://stackoverflow.com/questions/9621362/how-do-i-compute-a-weighted-moving-average-using-pandas
+    st.write(matrix_df_2)
+    grouped = matrix_df_2.groupby('ID')
+    # https://stackoverflow.com/questions/16974047/efficient-way-to-find-missing-elements-in-an-integer-sequence
+    
+    for name, group in grouped:
+        c=group['Week'].to_list()
+        d=[]
+        for x in range (-3,21):
+            if x not in c:
+                # d.append(x)
+                # st.write('THIS WORKS DO NOT DELETE!',d)
+                c.append(x)
+                st.write('work?',c)
 
-    # cols=list(range(0,32))
-    # # st.write(cols)
-    # empty_df=pd.DataFrame(columns=cols, index=cols)
-    # st.write(empty_df)
-    # test_df = df3.groupby(['Home ID','Away ID'])['game_adj'].first()    
-    # st.write(test_df)
+
+
+
+
+    # index_list=list(range(-3,21))
+    # # st.write('index list', index_list)
+    # for name, group in grouped:
+    #     for x in group['Week']:
+
+    #         # st.write(next(x))
+    #         # st.write('checking that x works right',x)
+    #         week_no=[-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+            # st.write(x not in [-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20])
+            # st.write('this is week put to a list should be digits',xx)
+
+            # if x not in week_no:
+            #     # st.write('DOES THIS WORK>>>>>>')
+            #     # st.write('index list', index_list)
+            #     xx=group['Week'].to_list()
+            #     xx.append(x)
+            #     st.write('this is xx',xx)
+                # empty_df=pd.DataFrame(columns=['test'], index=xx).reset_index().rename(columns={'index':'Week'}).set_index('Week')
+                # st.write('this is empty df', empty_df)
+                # df6=pd.concat([group,empty_df],axis=1)
+                # st.write('this is df6 concat',df6)
+
+    
+    a=[1,2,3,7,5,11,20]
+    b=[]
+    # def miss(a,b):
+    # st.write('this is before loop',a)
+    for x in range (a[0],a[-1]):
+        if x not in a:
+            a.append(x)
+    # st.write('a after loop and is:',a)
+
+
+    
