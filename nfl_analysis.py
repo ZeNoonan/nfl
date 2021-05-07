@@ -148,6 +148,8 @@ with st.beta_expander('Power Ranking to be used in Matrix Multiplication'):
     st.write('i checked that ID no.2 and ID no.5 equal the spreadsheet')
     st.write('do i have a problem if i have a blank gameweek, should i insert NaN just thinking of inverse matrix....it has to add up to 0')
     st.write('not necessarily as long as get games played to add up to zero ...have the power points calculated')
+    st.write('TEST')
+    power_df_test=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID').drop('Week',axis=1)
 
 with st.beta_expander('Games Played to be used in Matrix Multiplication'):
     # st.write('TEST FILTERING')
