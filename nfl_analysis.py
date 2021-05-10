@@ -94,6 +94,7 @@ def test_1(matrix_df_1):
     matrix_df_1['adj_spread'] = matrix_df_1['home_adv_weighted'] + matrix_df_1['spread_weighted']
     return matrix_df_1
 
+
 def test_2(matrix_df_1):
     weights_1 = np.array([0.125,0,0,0 ])
     weights_2 = np.array([0.125, 0.25,0,0])
@@ -227,6 +228,16 @@ st.write('Think I need to adjust the adj spread amounts by the updated games pla
     # test_stack=pd.pivot_table(concat_df_test,index='Away ID', columns='Home ID')
     # st.write(test_stack.fillna(0))
 
+
+def test_3(matrix_df_1):
+    weights = np.array([0.125, 0.25,0.5,1])
+    sum_weights = np.sum(weights)
+    # matrix_df_1['games_weighted']=matrix_df_1['home'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
+    matrix_df_1['spread_weighted']=matrix_df_1['spread'].rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
+    matrix_df_1['home_adv_weighted']=matrix_df_1['home_pts_adv'].rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
+    matrix_df_1['adj_spread'] = matrix_df_1['home_adv_weighted'] + matrix_df_1['spread_weighted']
+    return matrix_df_1
+
 with st.beta_expander('TEST Power Ranking to be used in Matrix Multiplication'):
     matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
     matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
@@ -238,16 +249,41 @@ with st.beta_expander('TEST Power Ranking to be used in Matrix Multiplication'):
     st.write(matrix_df_2)
     grouped = matrix_df_2.groupby('ID')
     # https://stackoverflow.com/questions/16974047/efficient-way-to-find-missing-elements-in-an-integer-sequence
-    
+    # https://stackoverflow.com/questions/62471485/is-it-possible-to-insert-missing-sequence-numbers-in-python
+    # st.write('this is range',list(range (-3,21)))
+    ranking_power=[]
     for name, group in grouped:
-        c=group['Week'].to_list()
-        d=[]
-        for x in range (-3,21):
-            if x not in c:
-                # d.append(x)
-                # st.write('THIS WORKS DO NOT DELETE!',d)
-                c.append(x)
-                st.write('work?',c)
+        dfseq = pd.DataFrame.from_dict({'Week': range( -3,21 )}).merge(group, on='Week', how='outer').fillna(np.NaN)
+        dfseq['ID']=dfseq['ID'].fillna(method='ffill')
+        dfseq['home_pts_adv']=dfseq['home_pts_adv'].fillna(0)
+        dfseq['spread']=dfseq['spread'].fillna(0)
+        dfseq['home']=dfseq['home'].fillna(0)
+        st.write('seq check', dfseq)
+        update=test_3(dfseq)
+        # update['ID']=update['ID'].fillna(method='bfill')
+        st.write('not working i think',update)
+        ranking_power.append(update)
+    df_power = pd.concat(ranking_power, ignore_index=True)
+    st.write('power ranking',df_power)
+        # d=d+1
+        # st.write('number',d)
+        # st.write('this is dfseq',dfseq)
+        # st.write('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+    #     c=group['Week'].to_list()
+    #     d.append(c)
+    #     empty_df=pd.DataFrame(columns=['test'], index=c)
+    #     # d=1
+    #     # st.write('this is d',d)
+    #     # d=d+1
+    #     st.write('this is c',c)
+    #     for x in list(range (-3,21)):
+    #         if x not in c:
+    #             # c=group['Week'].to_list()
+    #             # d.append(x)
+    #             # st.write('THIS is X which is missing',x)
+    #             c.append(x)
+    #             # st.write('work?',c)
+    
 
 
 
@@ -275,7 +311,33 @@ with st.beta_expander('TEST Power Ranking to be used in Matrix Multiplication'):
                 # df6=pd.concat([group,empty_df],axis=1)
                 # st.write('this is df6 concat',df6)
 
-    
+    # seq = [1, 2, 4, 6, 7, 9, 10]
+    # dfs0 = pd.DataFrame.from_dict({'Sequence':  [1, 2, 2, 6, 7, 9, 10], 'Value': ['x']*len(seq)})
+    # st.write('dfs0',dfs0)
+    # dfseq = pd.DataFrame.from_dict({'Sequence': range( min(seq), max(seq)+1 )}).merge(dfs0, on='Sequence', how='outer').fillna('')
+    # st.write('df seq',dfseq)
+
+    # seq = [1, 2, 4, 6, 7, 9, 10,18]
+    # dfs0 = pd.DataFrame.from_dict({'Week':  [1, 2, 2, 6, 7, 9, 10,18], 'Value': ['x']*len(seq)})
+    # st.write('dfs0',dfs0)
+    # dfseq = pd.DataFrame.from_dict({'Week': range( 1,20 )}).merge(dfs0, on='Week', how='outer').fillna(np.NaN)
+    # st.write('df seq',dfseq)
+
+    # df = pd.DataFrame(data=[1, 2, 2, 6, 7, 9, 10], columns=['Sequence'])
+    # # st.write('dataframe',df)
+
+    # df1=df.set_index('Sequence').reindex(range(df.Sequence.iat[0],df.Sequence.iat[-1]+1), fill_value='').reset_index()
+    # st.write('this is after',df1)
+
+    # Sequence = [1, 2, 4, 6, 7, 9, 10]
+    # df = pd.DataFrame(np.arange(1,12), columns=['Value'])
+    # st.write('df before',df)
+    # df = df.loc[df.Sequence.isin(Sequence), 'Value'] = 'x'
+    # df = df.fillna('')
+    # st.write('df after',df)
+
+
+
     a=[1,2,3,7,5,11,20]
     b=[]
     # def miss(a,b):
@@ -285,5 +347,13 @@ with st.beta_expander('TEST Power Ranking to be used in Matrix Multiplication'):
             a.append(x)
     # st.write('a after loop and is:',a)
 
+    a=[1,2,3,7,5,11,20]
+    b=[]
+    # def miss(a,b):
+    # st.write('this is before loop',a)
+    for x in list(range (0,21)):
+        if x not in a:
+            a.append(x)
+    # st.write('a after loop and is:',a)
 
     
