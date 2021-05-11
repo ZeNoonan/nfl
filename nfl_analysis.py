@@ -113,7 +113,7 @@ def test_2(matrix_df_1):
     return matrix_df_1
 
 # Why are both of the above functions working????????????? the sum_weights is taken out in test function
-
+test_df = matrix_df.copy()
 matrix_df['at_home'] = 1
 matrix_df['at_away'] = -1
 matrix_df['home_pts_adv'] = -3
@@ -238,6 +238,7 @@ def test_3(matrix_df_1):
     matrix_df_1['adj_spread'] = matrix_df_1['home_adv_weighted'] + matrix_df_1['spread_weighted']
     return matrix_df_1
 
+
 with st.beta_expander('TEST Power Ranking to be used in Matrix Multiplication'):
     matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
     matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
@@ -284,6 +285,59 @@ with st.beta_expander('TEST Power Ranking to be used in Matrix Multiplication'):
     #             c.append(x)
     #             # st.write('work?',c)
     
+
+with st.beta_expander('Testing reworking the DataFrame'):
+    test_df['at_home'] = 1
+    test_df['at_away'] = -1
+    test_df['home_pts_adv'] = 3
+    test_df['away_pts_adv'] = -3
+    test_df['away_spread']=-test_df['Spread']
+    test_df=test_df.rename(columns={'Spread':'home_spread'})
+    test_df_1=test_df.loc[:,['Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv']].copy()
+    
+    # st.write(test_df_1.sort_values(by=['ID','Week'],ascending=True))
+    test_df_home=test_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
+    test_df_away=test_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
+    test_df_2=pd.concat([test_df_home,test_df_away],ignore_index=True)
+    test_df_2=test_df_2.sort_values(by=['ID','Week'],ascending=True)
+    test_df_2['spread_with_home_adv']=test_df_2['spread']+test_df_2['home_pts_adv']
+    st.write(test_df_2)
+
+def test_4(matrix_df_1):
+    weights = np.array([0.125, 0.25,0.5,1])
+    sum_weights = np.sum(weights)
+    matrix_df_1['adj_spread']=matrix_df_1['spread_with_home_adv'].rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
+    return matrix_df_1
+
+
+with st.beta_expander('TEST 2 Power Ranking to be used in Matrix Multiplication'):
+    # matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
+    # matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
+    # matrix_df_2=pd.concat([matrix_df_home,matrix_df_away],ignore_index=True)
+    # # weights = np.array([0.125, 0.25,0.5,1]) # the order mattered!! took me a while to figure this out
+    # # sum_weights = np.sum(weights)
+    # matrix_df_2=matrix_df_2.sort_values(by=['ID','Week'],ascending=True)
+    # # https://stackoverflow.com/questions/9621362/how-do-i-compute-a-weighted-moving-average-using-pandas
+    # st.write(matrix_df_2)
+    grouped = test_df_2.groupby('ID')
+    # https://stackoverflow.com/questions/16974047/efficient-way-to-find-missing-elements-in-an-integer-sequence
+    # https://stackoverflow.com/questions/62471485/is-it-possible-to-insert-missing-sequence-numbers-in-python
+    # st.write('this is range',list(range (-3,21)))
+    ranking_power=[]
+    for name, group in grouped:
+        dfseq = pd.DataFrame.from_dict({'Week': range( -3,21 )}).merge(group, on='Week', how='outer').fillna(np.NaN)
+        dfseq['ID']=dfseq['ID'].fillna(method='ffill')
+        dfseq['home_pts_adv']=dfseq['home_pts_adv'].fillna(0)
+        dfseq['spread']=dfseq['spread'].fillna(0)
+        dfseq['spread_with_home_adv']=dfseq['spread_with_home_adv'].fillna(0)
+        dfseq['home']=dfseq['home'].fillna(0)
+        st.write('seq check', dfseq)
+        update=test_4(dfseq)
+        # update['ID']=update['ID'].fillna(method='bfill')
+        st.write('WORK????',update)
+        ranking_power.append(update)
+    df_power = pd.concat(ranking_power, ignore_index=True)
+    st.write('power ranking',df_power)
 
 
 
