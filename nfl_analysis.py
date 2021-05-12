@@ -1,14 +1,35 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+from io import BytesIO
+import os
+import base64
 
 st.set_page_config(layout="wide")
+
+def to_excel(df):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, sheet_name='Sheet1')
+    writer.save()
+    processed_data = output.getvalue()
+    return processed_data
+
+def get_table_download_link(df):
+    """Generates a link allowing the data in a given panda dataframe to be downloaded
+    in:  dataframe
+    out: href string
+    """
+    val = to_excel(df)
+    b64 = base64.b64encode(val)  # val looks like b'...'
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="extract.xlsx">Download csv file</a>' # decode b'abc' => abc
 
 @st.cache
 def read_data(file):
     return pd.read_excel(file) 
 data_2019 = read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2019_Data.xlsx').copy()
-data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Adj_week_zero.xlsx').copy()
+# data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Adj_week_zero.xlsx').copy()
+data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data.xlsx').copy()
 
 # st.table(data.head())
 def spread_workings(data):
@@ -216,7 +237,7 @@ with st.beta_expander('Testing multiple runs: Games Played to be used in Matrix 
         df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
         st.write('this is the inverse matrix',df_inv, 'number', last)
         # power_df_week=power_df[power_df['Week']==last].set_index('ID').drop('Week',axis=1).loc[:30,:]
-        power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID').drop('Week',axis=1).loc[:30,:]
+        power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID').drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:30,:]
         st.write('power amount to be matrix multiplied',power_df_week)
         # st.write('CHECK FOR WEEK 0 seems to be messing up adj spread ranking')
         # power_rank=np.matmul(df_inv,power_df_week)
@@ -331,83 +352,87 @@ with st.beta_expander('TEST 2 Power Ranking to be used in Matrix Multiplication'
         dfseq['spread']=dfseq['spread'].fillna(0)
         dfseq['spread_with_home_adv']=dfseq['spread_with_home_adv'].fillna(0)
         dfseq['home']=dfseq['home'].fillna(0)
-        st.write('seq check', dfseq)
+        # st.write('seq check', dfseq)
         update=test_4(dfseq)
         # update['ID']=update['ID'].fillna(method='bfill')
-        st.write('WORK????',update)
+        # st.write('WORK????',update)
         ranking_power.append(update)
     df_power = pd.concat(ranking_power, ignore_index=True)
     st.write('power ranking',df_power)
 
+with st.beta_expander('Testing Matrix Multiplication'):
+    # d={}
+    inverse_matrix=[]
+    power_ranking=[]
+    list_inverse_matrix=[]
+    list_power_ranking=[]
+    # weeks = range(1, week_number+1)
+    power_df=df_power.loc[:,['Week','ID','adj_spread']].copy()
+    # power_df=power_df.set_index('')
+    games_df=matrix_df_1.copy()
+    first=list(range(-3,18))
+    last=list(range(0,21))
+    for first,last in zip(first,last):
+        # st.write('this is first',first)
+        # st.write('this is last',last)
+        first_section=games_df[games_df['Week'].between(first,last)]
+        # st.write(first_section)
+        full_game_matrix=games_matrix_workings(first_section)
+        # st.write(full_game_matrix)
+        adjusted_matrix=full_game_matrix.loc[0:30,0:30]
+        # st.write('this is the last number',last)
+        # st.write(adjusted_matrix)
+        df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
+        # st.write('this is the inverse matrix',df_inv, 'number', last)
+        power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID').drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:30,:]
+        # st.write('power amount to be matrix multiplied',power_df_week)
+        # power_rank=np.matmul(df_inv,power_df_week)
+        # st.write('power rank',power_rank)
+        result = df_inv.dot(pd.DataFrame(power_df_week))
+        # st.write('PANDAS dot power rank', result)
+        # df_inv['week']=last
+        # power_df_week['week']=last
+        
+        inverse_matrix.append(df_inv)
+        power_ranking.append(power_df_week)
+        list_inverse_matrix.append([df_inv])
+        list_power_ranking.append([power_df_week])
+        # d[df_inv]=pd.DataFrame()
+
+        # st.write('END -------------------------------------------------------------------------------')
+        # result_test = power_df_week.dot(df_inv)
+        # st.write('STACK overflow', result_test)
+    power_ranking_combined = pd.concat(power_ranking)
+    # power_ranking_combined = pd.concat(power_ranking, ignore_index=True)
+    inverse_matrix_combined= pd.concat(inverse_matrix)
+    st.write('power ranking combined', power_ranking_combined)
+    st.write('inverse matrix combined', inverse_matrix_combined)
+    st.write('list power ranking', list_power_ranking[0][0])
+    st.write('list inverse matrix', list_inverse_matrix[0][0])
+    list_result = list_inverse_matrix[0][0].dot(pd.DataFrame(list_power_ranking[0][0]))
+    st.write('Check this power ranking', list_result)
 
 
+# https://stackoverflow.com/questions/62775018/matrix-array-multiplication-whats-excel-doing-mmult-and-how-to-mimic-it-in#62775508
+# df = pd.read_csv('https://pastebin.com/raw/Q00ZWLCC', delimiter='\t')
+# # st.write('TEST STACK', df)
+# vector = df.iloc[0, 1:]
+# # st.write('this is vector',vector)
+# matrix = df.iloc[2:14, 1:]
+# # st.write('this is matrix', matrix)
+# result = matrix.dot(vector)
+# st.write(result)
 
+with st.beta_expander('This worked manually using excel and using pandas'):
+    matrix_test = pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/matrix_test.xlsx',sheet_name='Sheet1', header=None)
+    st.write('matrix nfl', matrix_test)
+    vector_test = pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/matrix_test.xlsx',sheet_name='Sheet2',header=None)
+    st.write('vector nfl', vector_test)
+    result_test = matrix_test.dot(vector_test)
+    st.write('result nfl', result_test)
+    # st.markdown(get_table_download_link(result_test), unsafe_allow_html=True)
 
-    # index_list=list(range(-3,21))
-    # # st.write('index list', index_list)
-    # for name, group in grouped:
-    #     for x in group['Week']:
-
-    #         # st.write(next(x))
-    #         # st.write('checking that x works right',x)
-    #         week_no=[-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-            # st.write(x not in [-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20])
-            # st.write('this is week put to a list should be digits',xx)
-
-            # if x not in week_no:
-            #     # st.write('DOES THIS WORK>>>>>>')
-            #     # st.write('index list', index_list)
-            #     xx=group['Week'].to_list()
-            #     xx.append(x)
-            #     st.write('this is xx',xx)
-                # empty_df=pd.DataFrame(columns=['test'], index=xx).reset_index().rename(columns={'index':'Week'}).set_index('Week')
-                # st.write('this is empty df', empty_df)
-                # df6=pd.concat([group,empty_df],axis=1)
-                # st.write('this is df6 concat',df6)
-
-    # seq = [1, 2, 4, 6, 7, 9, 10]
-    # dfs0 = pd.DataFrame.from_dict({'Sequence':  [1, 2, 2, 6, 7, 9, 10], 'Value': ['x']*len(seq)})
-    # st.write('dfs0',dfs0)
-    # dfseq = pd.DataFrame.from_dict({'Sequence': range( min(seq), max(seq)+1 )}).merge(dfs0, on='Sequence', how='outer').fillna('')
-    # st.write('df seq',dfseq)
-
-    # seq = [1, 2, 4, 6, 7, 9, 10,18]
-    # dfs0 = pd.DataFrame.from_dict({'Week':  [1, 2, 2, 6, 7, 9, 10,18], 'Value': ['x']*len(seq)})
-    # st.write('dfs0',dfs0)
-    # dfseq = pd.DataFrame.from_dict({'Week': range( 1,20 )}).merge(dfs0, on='Week', how='outer').fillna(np.NaN)
-    # st.write('df seq',dfseq)
-
-    # df = pd.DataFrame(data=[1, 2, 2, 6, 7, 9, 10], columns=['Sequence'])
-    # # st.write('dataframe',df)
-
-    # df1=df.set_index('Sequence').reindex(range(df.Sequence.iat[0],df.Sequence.iat[-1]+1), fill_value='').reset_index()
-    # st.write('this is after',df1)
-
-    # Sequence = [1, 2, 4, 6, 7, 9, 10]
-    # df = pd.DataFrame(np.arange(1,12), columns=['Value'])
-    # st.write('df before',df)
-    # df = df.loc[df.Sequence.isin(Sequence), 'Value'] = 'x'
-    # df = df.fillna('')
-    # st.write('df after',df)
-
-
-
-    a=[1,2,3,7,5,11,20]
-    b=[]
-    # def miss(a,b):
-    # st.write('this is before loop',a)
-    for x in range (a[0],a[-1]):
-        if x not in a:
-            a.append(x)
-    # st.write('a after loop and is:',a)
-
-    a=[1,2,3,7,5,11,20]
-    b=[]
-    # def miss(a,b):
-    # st.write('this is before loop',a)
-    for x in list(range (0,21)):
-        if x not in a:
-            a.append(x)
-    # st.write('a after loop and is:',a)
-
-    
+# v = vector.to_numpy()
+# m = matrix.to_numpy()
+# result_as_a_row_1_by_12 = np.dot(v, m)
+# st.write(result_as_a_row_1_by_12)
