@@ -353,7 +353,9 @@ with st.beta_expander('TEST 2 Power Ranking to be used in Matrix Multiplication'
         dfseq['spread_with_home_adv']=dfseq['spread_with_home_adv'].fillna(0)
         dfseq['home']=dfseq['home'].fillna(0)
         # st.write('seq check', dfseq)
-        update=test_4(dfseq)
+        df_seq_1 = dfseq.groupby(['Week','ID'])['spread_with_home_adv'].sum().reset_index()
+        # st.write('does this groupby work???',df_seq_1)
+        update=test_4(df_seq_1)
         # update['ID']=update['ID'].fillna(method='bfill')
         # st.write('WORK????',update)
         ranking_power.append(update)
@@ -389,7 +391,7 @@ with st.beta_expander('Testing Matrix Multiplication'):
         # power_rank=np.matmul(df_inv,power_df_week)
         # st.write('power rank',power_rank)
         result = df_inv.dot(pd.DataFrame(power_df_week))
-        # st.write('PANDAS dot power rank', result)
+        st.write('PANDAS dot power rank', result)
         # df_inv['week']=last
         # power_df_week['week']=last
         
@@ -405,13 +407,15 @@ with st.beta_expander('Testing Matrix Multiplication'):
     power_ranking_combined = pd.concat(power_ranking)
     # power_ranking_combined = pd.concat(power_ranking, ignore_index=True)
     inverse_matrix_combined= pd.concat(inverse_matrix)
-    st.write('power ranking combined', power_ranking_combined)
-    st.write('inverse matrix combined', inverse_matrix_combined)
-    st.write('list power ranking', list_power_ranking[0][0])
-    st.write('list inverse matrix', list_inverse_matrix[0][0])
-    list_result = list_inverse_matrix[0][0].dot(pd.DataFrame(list_power_ranking[0][0]))
-    st.write('Check this power ranking', list_result)
-
+    # st.write('power ranking combined', power_ranking_combined)
+    # st.write('inverse matrix combined', inverse_matrix_combined)
+    # st.write('list power ranking', list_power_ranking[0][0])
+    # st.write('list inverse matrix', list_inverse_matrix[0][0])
+    # list_result = list_inverse_matrix[0][0].dot(pd.DataFrame(list_power_ranking[0][0]))
+    # st.write('Check this power ranking', list_result)
+    # st.write('describe power ranking',list_power_ranking[0][0].info())
+    # st.write('describe matrix',list_inverse_matrix[0][0].describe())
+    
 
 # https://stackoverflow.com/questions/62775018/matrix-array-multiplication-whats-excel-doing-mmult-and-how-to-mimic-it-in#62775508
 # df = pd.read_csv('https://pastebin.com/raw/Q00ZWLCC', delimiter='\t')
@@ -425,9 +429,17 @@ with st.beta_expander('Testing Matrix Multiplication'):
 
 with st.beta_expander('This worked manually using excel and using pandas'):
     matrix_test = pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/matrix_test.xlsx',sheet_name='Sheet1', header=None)
+    # st.write('subtract', matrix_test.subtract(list_inverse_matrix[0][0]).sum().sum())
+    # st.write('matrix nfl describe', matrix_test.describe())
     st.write('matrix nfl', matrix_test)
     vector_test = pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/matrix_test.xlsx',sheet_name='Sheet2',header=None)
     st.write('vector nfl', vector_test)
+    st.write('power ranking is this ok', list_power_ranking[0][0])
+    test_combine_power = pd.concat([vector_test,list_power_ranking[0][0]],axis=1)
+    test_combine_power.columns=['Vector','Calc']
+    test_combine_power['diff']=test_combine_power['Vector']-test_combine_power['Calc']
+    st.write('combined power ranking', test_combine_power)
+    st.write('subtract', vector_test.subtract(list_power_ranking[0][0]).sum())
     result_test = matrix_test.dot(vector_test)
     st.write('result nfl', result_test)
     # st.markdown(get_table_download_link(result_test), unsafe_allow_html=True)
