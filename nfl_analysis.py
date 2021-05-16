@@ -391,23 +391,34 @@ with st.beta_expander('Testing Matrix Multiplication'):
         # power_rank=np.matmul(df_inv,power_df_week)
         # st.write('power rank',power_rank)
         result = df_inv.dot(pd.DataFrame(power_df_week))
-        st.write('PANDAS dot power rank', result)
+        result.columns=['power']
+        avg=(result['power'].sum())/32
+        # st.write('avg',avg)
+        result['avg_pwr_rank']=(result['power'].sum())/32
+        result['final_power']=result['avg_pwr_rank']-result['power']
+        df_pwr=pd.DataFrame(columns=['final_power'],data=[avg])
+        result=pd.concat([result,df_pwr],ignore_index=True)
+        result['week']=last+1
+        # st.write('append',df_pwr)
+        # result = result.append({'final_power': result['avg_pwr_rank']}, ignore_index=True)
+        # st.write('Final Power Ranking', result)
         # df_inv['week']=last
         # power_df_week['week']=last
         
-        inverse_matrix.append(df_inv)
-        power_ranking.append(power_df_week)
-        list_inverse_matrix.append([df_inv])
-        list_power_ranking.append([power_df_week])
+        # inverse_matrix.append(df_inv)
+        power_ranking.append(result)
+        # list_inverse_matrix.append([df_inv])
+        # list_power_ranking.append([power_df_week])
         # d[df_inv]=pd.DataFrame()
 
         # st.write('END -------------------------------------------------------------------------------')
         # result_test = power_df_week.dot(df_inv)
         # st.write('STACK overflow', result_test)
-    power_ranking_combined = pd.concat(power_ranking)
+    # power=
+    power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
     # power_ranking_combined = pd.concat(power_ranking, ignore_index=True)
-    inverse_matrix_combined= pd.concat(inverse_matrix)
-    # st.write('power ranking combined', power_ranking_combined)
+    # inverse_matrix_combined= pd.concat(inverse_matrix)
+    st.write('power ranking combined', power_ranking_combined)
     # st.write('inverse matrix combined', inverse_matrix_combined)
     # st.write('list power ranking', list_power_ranking[0][0])
     # st.write('list inverse matrix', list_inverse_matrix[0][0])
@@ -427,21 +438,21 @@ with st.beta_expander('Testing Matrix Multiplication'):
 # result = matrix.dot(vector)
 # st.write(result)
 
-with st.beta_expander('This worked manually using excel and using pandas'):
-    matrix_test = pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/matrix_test.xlsx',sheet_name='Sheet1', header=None)
-    # st.write('subtract', matrix_test.subtract(list_inverse_matrix[0][0]).sum().sum())
-    # st.write('matrix nfl describe', matrix_test.describe())
-    st.write('matrix nfl', matrix_test)
-    vector_test = pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/matrix_test.xlsx',sheet_name='Sheet2',header=None)
-    st.write('vector nfl', vector_test)
-    st.write('power ranking is this ok', list_power_ranking[0][0])
-    test_combine_power = pd.concat([vector_test,list_power_ranking[0][0]],axis=1)
-    test_combine_power.columns=['Vector','Calc']
-    test_combine_power['diff']=test_combine_power['Vector']-test_combine_power['Calc']
-    st.write('combined power ranking', test_combine_power)
-    st.write('subtract', vector_test.subtract(list_power_ranking[0][0]).sum())
-    result_test = matrix_test.dot(vector_test)
-    st.write('result nfl', result_test)
+# with st.beta_expander('This worked manually using excel and using pandas'):
+    # matrix_test = pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/matrix_test.xlsx',sheet_name='Sheet1', header=None)
+    # # st.write('subtract', matrix_test.subtract(list_inverse_matrix[0][0]).sum().sum())
+    # # st.write('matrix nfl describe', matrix_test.describe())
+    # st.write('matrix nfl', matrix_test)
+    # vector_test = pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/matrix_test.xlsx',sheet_name='Sheet2',header=None)
+    # st.write('vector nfl', vector_test)
+    # st.write('power ranking is this ok', list_power_ranking[0][0])
+    # test_combine_power = pd.concat([vector_test,list_power_ranking[0][0]],axis=1)
+    # test_combine_power.columns=['Vector','Calc']
+    # test_combine_power['diff']=test_combine_power['Vector']-test_combine_power['Calc']
+    # st.write('combined power ranking', test_combine_power)
+    # st.write('subtract', vector_test.subtract(list_power_ranking[0][0]).sum())
+    # result_test = matrix_test.dot(vector_test)
+    # st.write('result nfl', result_test)
     # st.markdown(get_table_download_link(result_test), unsafe_allow_html=True)
 
 # v = vector.to_numpy()
