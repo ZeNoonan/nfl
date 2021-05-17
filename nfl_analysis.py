@@ -7,22 +7,6 @@ import base64
 
 st.set_page_config(layout="wide")
 
-def to_excel(df):
-    output = BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    df.to_excel(writer, sheet_name='Sheet1')
-    writer.save()
-    processed_data = output.getvalue()
-    return processed_data
-
-def get_table_download_link(df):
-    """Generates a link allowing the data in a given panda dataframe to be downloaded
-    in:  dataframe
-    out: href string
-    """
-    val = to_excel(df)
-    b64 = base64.b64encode(val)  # val looks like b'...'
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="extract.xlsx">Download csv file</a>' # decode b'abc' => abc
 
 @st.cache
 def read_data(file):
@@ -30,6 +14,7 @@ def read_data(file):
 data_2019 = read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2019_Data.xlsx').copy()
 # data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Adj_week_zero.xlsx').copy()
 data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data.xlsx').copy()
+test_data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Test.xlsx').copy()
 
 # st.table(data.head())
 def spread_workings(data):
@@ -42,9 +27,6 @@ def spread_workings(data):
     data['away_turnover'] = -data['home_turnover']
     return data
 
-
-# st.write(spread)
-
 def season_cover_workings(data,home,away,name,week_start):
     season_cover_df=(data.set_index('Week').loc[week_start:,:]).reset_index()
     home_cover_df = (season_cover_df.loc[:,['Week','Home ID',home]]).rename(columns={'Home ID':'ID',home:name})
@@ -53,8 +35,6 @@ def season_cover_workings(data,home,away,name,week_start):
     # season_cover_df = pd.melt(season_cover_df,id_vars=['Week', 'home_cover'],value_vars=['Home ID', 'Away ID']).set_index('Week').rename(columns={'value':'ID'}).\
     # drop('variable',axis=1).reset_index().sort_values(by=['Week','ID'],ascending=True)
     return season_cover.sort_values(by=['Week','ID'],ascending=['True','True'])
-
-
 
 def season_cover_2(season_cover_df,column_name):    
     # https://stackoverflow.com/questions/54993050/pandas-groupby-shift-and-cumulative-sum
@@ -84,6 +64,9 @@ with st.beta_expander('Season to date Cover'):
     spread_3=season_cover_3(spread_2,'cover_sign','cover')
     st.write('this is season to date cover')
     st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
+    # st.write('Test workings')
+    # st.write(test_data_2020)
+
 
 with st.beta_expander('Last Game Turnover'):
     turnover=spread_workings(data_2020)
@@ -94,46 +77,6 @@ with st.beta_expander('Last Game Turnover'):
     st.write(turnover_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
 matrix_df=spread_workings(data_2020)
-
-def calc(x):
-    weights = np.array([0.125, 0.25,0.5,1])
-    sum_weights = np.sum(weights)
-    return np.sum(weights*x) / sum_weights        
-
-def test(matrix_df_1):
-    weights = np.array([0.125, 0.25,0.5,1])
-    sum_weights = np.sum(weights)
-    matrix_df_1['test weight spread']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False,min_periods=3).apply(lambda x: np.sum(weights*x) / sum_weights, raw=False)
-    return matrix_df_1
-
-def test_1(matrix_df_1):
-    weights = np.array([0.125, 0.25,0.5,1])
-    sum_weights = np.sum(weights)
-    # matrix_df_1['games_weighted']=matrix_df_1['home'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
-    matrix_df_1['spread_weighted']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
-    matrix_df_1['home_adv_weighted']=matrix_df_1['home_pts_adv'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
-    matrix_df_1['adj_spread'] = matrix_df_1['home_adv_weighted'] + matrix_df_1['spread_weighted']
-    return matrix_df_1
-
-
-def test_2(matrix_df_1):
-    weights_1 = np.array([0.125,0,0,0 ])
-    weights_2 = np.array([0.125, 0.25,0,0])
-    weights_3 = np.array([0.125, 0.25,0.5,0])
-    weights_4 = np.array([0.125, 0.25,0.5,1])
-    sum_weights_1 = np.sum(weights_1)
-    sum_weights_2 = np.sum(weights_2)
-    sum_weights_3 = np.sum(weights_3)
-    sum_weights_4 = np.sum(weights_4)
-
-    matrix_df_1['games_weighted']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
-    # matrix_df_1['games_weighted']=matrix_df_1['home'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
-    matrix_df_1['spread_weighted']=matrix_df_1['spread'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
-    # matrix_df_1['home_adv_weighted']=matrix_df_1['home_pts_adv'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
-    # matrix_df_1['adj_spread'] = matrix_df_1['home_adv_weighted'] + matrix_df_1['spread_weighted']
-    return matrix_df_1
-
-# Why are both of the above functions working????????????? the sum_weights is taken out in test function
 test_df = matrix_df.copy()
 matrix_df['at_home'] = 1
 matrix_df['at_away'] = -1
@@ -142,53 +85,9 @@ matrix_df['away_pts_adv'] = 3
 matrix_df['away_spread']=-matrix_df['Spread']
 matrix_df=matrix_df.rename(columns={'Spread':'home_spread'})
 matrix_df_1=matrix_df.loc[:,['Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv']].copy()
-# st.write('matrix df1',matrix_df_1)
-
-
-with st.beta_expander('Power Ranking to be used in Matrix Multiplication'):
-    matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
-    matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
-    matrix_df_2=pd.concat([matrix_df_home,matrix_df_away],ignore_index=True)
-    weights = np.array([0.125, 0.25,0.5,1]) # the order mattered!! took me a while to figure this out
-    sum_weights = np.sum(weights)
-    matrix_df_2=matrix_df_2.sort_values(by=['ID','Week'],ascending=True)
-    # https://stackoverflow.com/questions/9621362/how-do-i-compute-a-weighted-moving-average-using-pandas
-    # st.write(matrix_df_2)
-    grouped = matrix_df_2.groupby('ID')
-    # raw_data=[]
-    raw_data_1=[]
-    for name, group in grouped:
-        # st.write('name',name)
-        # st.write('group',group)
-        # raw_data.append(test(group))
-        raw_data_1.append(test_1(group))
-        # st.write(test(group))
-    # df1 = pd.concat(raw_data, ignore_index=True)
-    df2 = pd.concat(raw_data_1, ignore_index=True)
-    # st.write('this is df1',df1)
-    st.write('This is power ranking to be used in Matrix Multiplaction',df2)
-    st.write('i checked that ID no.2 and ID no.5 equal the spreadsheet')
-    st.write('do i have a problem if i have a blank gameweek, should i insert NaN just thinking of inverse matrix....it has to add up to 0')
-    st.write('not necessarily as long as get games played to add up to zero ...have the power points calculated')
-    st.write('TEST')
-    df3=df2.loc[:,['Week','ID','adj_spread']].sort_values(by=['ID','Week'],ascending=True).copy()
-    st.write('this is original df3', df3)
-    df4 = df3.groupby('ID')
-    for name, group in df4:
-        # df5=group.sort_values(by=['Week','ID'],ascending=True)
-        # st.write('this is group before dropping duplicates')
-        df5=group.drop_duplicates(subset=['Week'],keep='last').set_index('Week')
-        # st.write('this is df5 before concat',df5)
-        empty_df=pd.DataFrame(columns=['test'], index=list(range(-3,21))).reset_index().rename(columns={'index':'Week'}).set_index('Week')
-        # st.write('this is empty df before concat',empty_df)
-        df5=pd.concat([df5,empty_df],axis=1)
-        # st.write(df5)
 
 with st.beta_expander('Games Played to be used in Matrix Multiplication'):
-    # st.write('TEST FILTERING')
-    # st.write(matrix_df_1[matrix_df_1['Week'].between(1,2)])
     first_qtr=matrix_df_1.copy()
-    
     start=-3
     finish=0
     first_4=first_qtr[first_qtr['Week'].between(start,finish)].copy()
@@ -218,96 +117,8 @@ with st.beta_expander('Games Played to be used in Matrix Multiplication'):
     st.write('this is 1st part games played, need to automate this for every week')
     st.write(full_stack)
 
-with st.beta_expander('Testing multiple runs: Games Played to be used in Matrix Multiplication'):
-    power_df=df2.loc[:,['Week','ID','adj_spread']].copy()
-    # power_df=power_df.set_index('')
-    games_df=matrix_df_1.copy()
-    first=list(range(-3,18))
-    last=list(range(0,21))
-    for first,last in zip(first,last):
-        # st.write('this is first',first)
-        # st.write('this is last',last)
-        first_section=games_df[games_df['Week'].between(first,last)]
-        # st.write(first_section)
-        full_game_matrix=games_matrix_workings(first_section)
-        # st.write(full_game_matrix)
-        adjusted_matrix=full_game_matrix.loc[0:30,0:30]
-        st.write('this is the last number',last)
-        st.write(adjusted_matrix)
-        df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
-        st.write('this is the inverse matrix',df_inv, 'number', last)
-        # power_df_week=power_df[power_df['Week']==last].set_index('ID').drop('Week',axis=1).loc[:30,:]
-        power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID').drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:30,:]
-        st.write('power amount to be matrix multiplied',power_df_week)
-        # st.write('CHECK FOR WEEK 0 seems to be messing up adj spread ranking')
-        # power_rank=np.matmul(df_inv,power_df_week)
-        # st.write('power rank',power_rank)
-        st.write('end XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 
-st.write('Need to figure out bye weeks seems to be an issue with power ranking')
-st.write('Think I need to adjust the adj spread amounts by the updated games played so that it matches at least....')
-    # test_stack=pd.pivot_table(concat_df_test,index='Away ID', columns='Home ID')
-    # st.write(test_stack.fillna(0))
-
-
-def test_3(matrix_df_1):
-    weights = np.array([0.125, 0.25,0.5,1])
-    sum_weights = np.sum(weights)
-    # matrix_df_1['games_weighted']=matrix_df_1['home'].fillna(0).rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
-    matrix_df_1['spread_weighted']=matrix_df_1['spread'].rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
-    matrix_df_1['home_adv_weighted']=matrix_df_1['home_pts_adv'].rolling(window=4, center=False).apply(lambda x: np.sum(weights*x), raw=False)
-    matrix_df_1['adj_spread'] = matrix_df_1['home_adv_weighted'] + matrix_df_1['spread_weighted']
-    return matrix_df_1
-
-
-with st.beta_expander('TEST Power Ranking to be used in Matrix Multiplication'):
-    matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
-    matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
-    matrix_df_2=pd.concat([matrix_df_home,matrix_df_away],ignore_index=True)
-    # weights = np.array([0.125, 0.25,0.5,1]) # the order mattered!! took me a while to figure this out
-    # sum_weights = np.sum(weights)
-    matrix_df_2=matrix_df_2.sort_values(by=['ID','Week'],ascending=True)
-    # https://stackoverflow.com/questions/9621362/how-do-i-compute-a-weighted-moving-average-using-pandas
-    st.write(matrix_df_2)
-    grouped = matrix_df_2.groupby('ID')
-    # https://stackoverflow.com/questions/16974047/efficient-way-to-find-missing-elements-in-an-integer-sequence
-    # https://stackoverflow.com/questions/62471485/is-it-possible-to-insert-missing-sequence-numbers-in-python
-    # st.write('this is range',list(range (-3,21)))
-    ranking_power=[]
-    for name, group in grouped:
-        dfseq = pd.DataFrame.from_dict({'Week': range( -3,21 )}).merge(group, on='Week', how='outer').fillna(np.NaN)
-        dfseq['ID']=dfseq['ID'].fillna(method='ffill')
-        dfseq['home_pts_adv']=dfseq['home_pts_adv'].fillna(0)
-        dfseq['spread']=dfseq['spread'].fillna(0)
-        dfseq['home']=dfseq['home'].fillna(0)
-        st.write('seq check', dfseq)
-        update=test_3(dfseq)
-        # update['ID']=update['ID'].fillna(method='bfill')
-        st.write('not working i think',update)
-        ranking_power.append(update)
-    df_power = pd.concat(ranking_power, ignore_index=True)
-    st.write('power ranking',df_power)
-        # d=d+1
-        # st.write('number',d)
-        # st.write('this is dfseq',dfseq)
-        # st.write('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    #     c=group['Week'].to_list()
-    #     d.append(c)
-    #     empty_df=pd.DataFrame(columns=['test'], index=c)
-    #     # d=1
-    #     # st.write('this is d',d)
-    #     # d=d+1
-    #     st.write('this is c',c)
-    #     for x in list(range (-3,21)):
-    #         if x not in c:
-    #             # c=group['Week'].to_list()
-    #             # d.append(x)
-    #             # st.write('THIS is X which is missing',x)
-    #             c.append(x)
-    #             # st.write('work?',c)
-    
-
-with st.beta_expander('Testing reworking the DataFrame'):
+with st.beta_expander('CORRECT Testing reworking the DataFrame'):
     test_df['at_home'] = 1
     test_df['at_away'] = -1
     test_df['home_pts_adv'] = 3
@@ -331,19 +142,11 @@ def test_4(matrix_df_1):
     return matrix_df_1
 
 
-with st.beta_expander('TEST 2 Power Ranking to be used in Matrix Multiplication'):
-    # matrix_df_home=matrix_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
-    # matrix_df_away=matrix_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
-    # matrix_df_2=pd.concat([matrix_df_home,matrix_df_away],ignore_index=True)
-    # # weights = np.array([0.125, 0.25,0.5,1]) # the order mattered!! took me a while to figure this out
-    # # sum_weights = np.sum(weights)
-    # matrix_df_2=matrix_df_2.sort_values(by=['ID','Week'],ascending=True)
+with st.beta_expander('CORRECT Power Ranking to be used in Matrix Multiplication'):
     # # https://stackoverflow.com/questions/9621362/how-do-i-compute-a-weighted-moving-average-using-pandas
-    # st.write(matrix_df_2)
     grouped = test_df_2.groupby('ID')
     # https://stackoverflow.com/questions/16974047/efficient-way-to-find-missing-elements-in-an-integer-sequence
     # https://stackoverflow.com/questions/62471485/is-it-possible-to-insert-missing-sequence-numbers-in-python
-    # st.write('this is range',list(range (-3,21)))
     ranking_power=[]
     for name, group in grouped:
         dfseq = pd.DataFrame.from_dict({'Week': range( -3,21 )}).merge(group, on='Week', how='outer').fillna(np.NaN)
@@ -352,25 +155,19 @@ with st.beta_expander('TEST 2 Power Ranking to be used in Matrix Multiplication'
         dfseq['spread']=dfseq['spread'].fillna(0)
         dfseq['spread_with_home_adv']=dfseq['spread_with_home_adv'].fillna(0)
         dfseq['home']=dfseq['home'].fillna(0)
-        # st.write('seq check', dfseq)
         df_seq_1 = dfseq.groupby(['Week','ID'])['spread_with_home_adv'].sum().reset_index()
-        # st.write('does this groupby work???',df_seq_1)
         update=test_4(df_seq_1)
-        # update['ID']=update['ID'].fillna(method='bfill')
-        # st.write('WORK????',update)
         ranking_power.append(update)
     df_power = pd.concat(ranking_power, ignore_index=True)
     st.write('power ranking',df_power)
 
-with st.beta_expander('Testing Matrix Multiplication'):
-    # d={}
+with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
+    # https://stackoverflow.com/questions/62775018/matrix-array-multiplication-whats-excel-doing-mmult-and-how-to-mimic-it-in#62775508
     inverse_matrix=[]
     power_ranking=[]
     list_inverse_matrix=[]
     list_power_ranking=[]
-    # weeks = range(1, week_number+1)
     power_df=df_power.loc[:,['Week','ID','adj_spread']].copy()
-    # power_df=power_df.set_index('')
     games_df=matrix_df_1.copy()
     first=list(range(-3,18))
     last=list(range(0,21))
@@ -387,75 +184,36 @@ with st.beta_expander('Testing Matrix Multiplication'):
         df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
         # st.write('this is the inverse matrix',df_inv, 'number', last)
         power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID').drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:30,:]
-        # st.write('power amount to be matrix multiplied',power_df_week)
-        # power_rank=np.matmul(df_inv,power_df_week)
-        # st.write('power rank',power_rank)
         result = df_inv.dot(pd.DataFrame(power_df_week))
         result.columns=['power']
         avg=(result['power'].sum())/32
-        # st.write('avg',avg)
         result['avg_pwr_rank']=(result['power'].sum())/32
         result['final_power']=result['avg_pwr_rank']-result['power']
         df_pwr=pd.DataFrame(columns=['final_power'],data=[avg])
         result=pd.concat([result,df_pwr],ignore_index=True)
         result['week']=last+1
-        # st.write('append',df_pwr)
-        # result = result.append({'final_power': result['avg_pwr_rank']}, ignore_index=True)
-        # st.write('Final Power Ranking', result)
-        # df_inv['week']=last
-        # power_df_week['week']=last
-        
-        # inverse_matrix.append(df_inv)
         power_ranking.append(result)
-        # list_inverse_matrix.append([df_inv])
-        # list_power_ranking.append([power_df_week])
-        # d[df_inv]=pd.DataFrame()
-
-        # st.write('END -------------------------------------------------------------------------------')
-        # result_test = power_df_week.dot(df_inv)
-        # st.write('STACK overflow', result_test)
-    # power=
     power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
-    # power_ranking_combined = pd.concat(power_ranking, ignore_index=True)
-    # inverse_matrix_combined= pd.concat(inverse_matrix)
     st.write('power ranking combined', power_ranking_combined)
-    # st.write('inverse matrix combined', inverse_matrix_combined)
-    # st.write('list power ranking', list_power_ranking[0][0])
-    # st.write('list inverse matrix', list_inverse_matrix[0][0])
-    # list_result = list_inverse_matrix[0][0].dot(pd.DataFrame(list_power_ranking[0][0]))
-    # st.write('Check this power ranking', list_result)
-    # st.write('describe power ranking',list_power_ranking[0][0].info())
-    # st.write('describe matrix',list_inverse_matrix[0][0].describe())
     
+with st.beta_expander('Adding Power Ranking to Matches'):
+    matches_df = spread.copy()
+    home_power_rank_merge=power_ranking_combined.loc[:,['ID','week','final_power']].copy().rename(columns={'week':'Week','ID':'Home ID'})
+    away_power_rank_merge=power_ranking_combined.loc[:,['ID','week','final_power']].copy().rename(columns={'week':'Week','ID':'Away ID'})
+    updated_df=pd.merge(matches_df,home_power_rank_merge,on=['Home ID','Week']).rename(columns={'final_power':'home_power'})
+    updated_df=pd.merge(updated_df,away_power_rank_merge,on=['Away ID','Week']).rename(columns={'final_power':'away_power'})
+    updated_df['calculated_spread']=updated_df['away_power']-updated_df['home_power']
+    updated_df['spread_working']=updated_df['home_power']-updated_df['away_power']+updated_df['Spread']
+    updated_df['power_pick'] = np.where(updated_df['spread_working'] > 0, 1,
+    np.where(updated_df['spread_working'] < 0,-1,0))
+    st.write(updated_df)
 
-# https://stackoverflow.com/questions/62775018/matrix-array-multiplication-whats-excel-doing-mmult-and-how-to-mimic-it-in#62775508
-# df = pd.read_csv('https://pastebin.com/raw/Q00ZWLCC', delimiter='\t')
-# # st.write('TEST STACK', df)
-# vector = df.iloc[0, 1:]
-# # st.write('this is vector',vector)
-# matrix = df.iloc[2:14, 1:]
-# # st.write('this is matrix', matrix)
-# result = matrix.dot(vector)
-# st.write(result)
-
-# with st.beta_expander('This worked manually using excel and using pandas'):
-    # matrix_test = pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/matrix_test.xlsx',sheet_name='Sheet1', header=None)
-    # # st.write('subtract', matrix_test.subtract(list_inverse_matrix[0][0]).sum().sum())
-    # # st.write('matrix nfl describe', matrix_test.describe())
-    # st.write('matrix nfl', matrix_test)
-    # vector_test = pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/matrix_test.xlsx',sheet_name='Sheet2',header=None)
-    # st.write('vector nfl', vector_test)
-    # st.write('power ranking is this ok', list_power_ranking[0][0])
-    # test_combine_power = pd.concat([vector_test,list_power_ranking[0][0]],axis=1)
-    # test_combine_power.columns=['Vector','Calc']
-    # test_combine_power['diff']=test_combine_power['Vector']-test_combine_power['Calc']
-    # st.write('combined power ranking', test_combine_power)
-    # st.write('subtract', vector_test.subtract(list_power_ranking[0][0]).sum())
-    # result_test = matrix_test.dot(vector_test)
-    # st.write('result nfl', result_test)
-    # st.markdown(get_table_download_link(result_test), unsafe_allow_html=True)
-
-# v = vector.to_numpy()
-# m = matrix.to_numpy()
-# result_as_a_row_1_by_12 = np.dot(v, m)
-# st.write(result_as_a_row_1_by_12)
+with st.beta_expander('Adding Season to Date Cover to Matches'):
+    st.write('this is season to date cover', spread_3)
+    stdc_home=spread_3.rename(columns={'ID':'Home ID'})
+    stdc_away=spread_3.rename(columns={'ID':'Away ID'})
+    updated_df=pd.merge(updated_df,stdc_home,on=['Week','Home ID'],how='left').rename(columns={'cover':'home_cover','cover_sign':'home_cover_sign'})
+    updated_df=pd.merge(updated_df,stdc_away,on=['Week','Away ID'],how='left').rename(columns={'cover':'away_cover','cover_sign':'away_cover_sign'})
+    st.write('check that STDC coming in correctly', updated_df)
+    st.write('Check that home STDC sign is working correctly')    
+    
