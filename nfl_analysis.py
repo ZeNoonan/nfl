@@ -211,9 +211,12 @@ with st.beta_expander('Adding Power Ranking to Matches'):
 with st.beta_expander('Adding Season to Date Cover to Matches'):
     st.write('this is season to date cover', spread_3)
     stdc_home=spread_3.rename(columns={'ID':'Home ID'})
+    stdc_home['cover_sign']=-stdc_home['cover_sign']
     stdc_away=spread_3.rename(columns={'ID':'Away ID'})
     updated_df=pd.merge(updated_df,stdc_home,on=['Week','Home ID'],how='left').rename(columns={'cover':'home_cover','cover_sign':'home_cover_sign'})
     updated_df=pd.merge(updated_df,stdc_away,on=['Week','Away ID'],how='left').rename(columns={'cover':'away_cover','cover_sign':'away_cover_sign'})
     st.write('check that STDC coming in correctly', updated_df)
-    st.write('Check that home STDC sign is working correctly')    
+    st.write('Check Total')
+    st.write('home',updated_df['home_cover_sign'].sum())
+    st.write('away',updated_df['away_cover_sign'].sum())   
     
