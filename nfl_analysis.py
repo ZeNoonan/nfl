@@ -29,17 +29,17 @@ def spread_workings(data):
 
 def season_cover_workings(data,home,away,name,week_start):
     season_cover_df=(data.set_index('Week').loc[week_start:,:]).reset_index()
-    home_cover_df = (season_cover_df.loc[:,['Week','Home ID',home]]).rename(columns={'Home ID':'ID',home:name})
-    away_cover_df = (season_cover_df.loc[:,['Week','Away ID',away]]).rename(columns={'Away ID':'ID',away:name})
+    home_cover_df = (season_cover_df.loc[:,['Week','Date','Home ID',home]]).rename(columns={'Home ID':'ID',home:name})
+    away_cover_df = (season_cover_df.loc[:,['Week','Date','Away ID',away]]).rename(columns={'Away ID':'ID',away:name})
     season_cover=pd.concat([home_cover_df,away_cover_df],ignore_index=True)
     # season_cover_df = pd.melt(season_cover_df,id_vars=['Week', 'home_cover'],value_vars=['Home ID', 'Away ID']).set_index('Week').rename(columns={'value':'ID'}).\
     # drop('variable',axis=1).reset_index().sort_values(by=['Week','ID'],ascending=True)
-    return season_cover.sort_values(by=['Week','ID'],ascending=['True','True'])
+    return season_cover.sort_values(by=['Week','Date','ID'],ascending=['True','True','True'])
 
 def season_cover_2(season_cover_df,column_name):    
     # https://stackoverflow.com/questions/54993050/pandas-groupby-shift-and-cumulative-sum
     season_cover_df[column_name] = season_cover_df.groupby (['ID'])[column_name].transform(lambda x: x.cumsum().shift())
-    season_cover_df=season_cover_df.reset_index().sort_values(by=['Week','ID'],ascending=True).drop('index',axis=1)
+    season_cover_df=season_cover_df.reset_index().sort_values(by=['Week','Date','ID'],ascending=True).drop('index',axis=1)
     # Be careful with this if you want full season, season to date cover, for week 17, it is season to date up to week 16
     # if you want full season, you have to go up to week 18 to get the full 17 weeks, just if you want to do analysis on season covers
     return season_cover_df
@@ -220,3 +220,29 @@ with st.beta_expander('Adding Season to Date Cover to Matches'):
     st.write('home',updated_df['home_cover_sign'].sum())
     st.write('away',updated_df['away_cover_sign'].sum())   
     
+with st.beta_expander('Adding Turnover to Matches'):
+    st.write('this is turnovers', turnover_3)
+    turnover_matches = turnover_3.loc[:,['Week','ID','prev_turnover', 'turnover_sign']].copy()
+    turnover_home=turnover_matches.rename(columns={'ID':'Home ID'})
+    
+    turnover_away=turnover_matches.rename(columns={'ID':'Away ID'})
+    turnover_away['turnover_sign']=-turnover_away['turnover_sign']
+    updated_df=pd.merge(updated_df,turnover_home,on=['Week','Home ID'],how='left').rename(columns={'prev_turnover':'home_prev_turnover','turnover_sign':'home_turnover_sign'})
+    updated_df=pd.merge(updated_df,turnover_away,on=['Week','Away ID'],how='left').rename(columns={'prev_turnover':'away_prev_turnover','turnover_sign':'away_turnover_sign'})
+    # TEST Workings
+    # st.write('check that Turnover coming in correctly', updated_df[updated_df['Week']==18])
+    # st.write('Check Total')
+    # st.write('home',updated_df['home_turnover_sign'].sum())
+    # st.write('away',updated_df['away_turnover_sign'].sum())
+    # turnover_excel=test_data_2020.loc[:,['Week','Home ID','Home Team', 'Away ID', 'Away Team','excel_home_prev_turnover','excel_away_prev_turnover','excel_home_turnover_sign','excel_away_turnover_sign']].copy()
+    # test_turnover=pd.merge(updated_df,turnover_excel)
+    # test_turnover['test_1']=test_turnover['home_prev_turnover']-test_turnover['excel_home_prev_turnover']
+    # test_turnover['test_2']=test_turnover['away_prev_turnover']-test_turnover['excel_away_prev_turnover']
+    # st.write(test_turnover[test_turnover['test_1']!=0])
+    # st.write(test_turnover[test_turnover['test_2']!=0])
+    # st.write(test_turnover)
+
+with st.beta_expander('Betting Slip Matches'):
+    betting_matches=updated_df.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
+    'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick']]
+
