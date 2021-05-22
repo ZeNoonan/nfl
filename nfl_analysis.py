@@ -20,8 +20,9 @@ test_data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Te
 def spread_workings(data):
     data['home_win']=data['Home Points'] - data['Away Points']
     data['home_win'] = np.where((data['Home Points'] > data['Away Points']), 1, np.where((data['Home Points'] < data['Away Points']),-1,0))
-    data['home_cover']=np.where(((data['Home Points'] + data['Spread']) > data['Away Points']), 1,
-    np.where(((data['Home Points']+ data['Spread']) < data['Away Points']),-1,0))
+    data['home_cover']=(np.where(((data['Home Points'] + data['Spread']) > data['Away Points']), 1,
+    np.where(((data['Home Points']+ data['Spread']) < data['Away Points']),-1,0)))
+    data['home_cover']=data['home_cover'].astype(int)
     data['away_cover'] = -data['home_cover']
     data=data.rename(columns={'Net Turnover':'home_turnover'})
     data['away_turnover'] = -data['home_turnover']
@@ -245,4 +246,18 @@ with st.beta_expander('Adding Turnover to Matches'):
 with st.beta_expander('Betting Slip Matches'):
     betting_matches=updated_df.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
     'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick']]
-
+    betting_matches['total_factor']=betting_matches['home_turnover_sign']+betting_matches['away_turnover_sign']+betting_matches['home_cover_sign']+\
+    betting_matches['away_cover_sign']+betting_matches['power_pick']
+    betting_matches['bet_on'] = np.where(betting_matches['total_factor']>2,betting_matches['Home Team'],np.where(betting_matches['total_factor']<-2,betting_matches['Away Team'],''))
+    betting_matches['bet_sign'] = (np.where(betting_matches['total_factor']>2,1,np.where(betting_matches['total_factor']<-2,-1,0)))
+    betting_matches['bet_sign'] = betting_matches['bet_sign'].astype(int)
+    betting_matches['home_cover'] = betting_matches['home_cover'].astype(int)
+    st.write('this is bet sign',betting_matches['bet_sign'].dtypes)
+    st.write('this is home cover',betting_matches['home_cover'].dtypes)
+    # betting_matches['result']=betting_matches['home_cover'] * betting_matches['bet_sign']
+    st.write('testing factor')
+    st.write(betting_matches['total_factor'].sum())
+    # cols_to_move=[]
+    # cols = cols_to_move + [col for col in data_4 if col not in cols_to_move]
+    # data_5=data_4[cols]
+    st.write(betting_matches)
