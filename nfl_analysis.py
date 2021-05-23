@@ -15,6 +15,8 @@ data_2019 = read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2019_Data.xlsx'
 # data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Adj_week_zero.xlsx').copy()
 data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data.xlsx').copy()
 test_data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Test.xlsx').copy()
+odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds.xlsx').copy()
+team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx').copy()
 
 # st.table(data.head())
 def spread_workings(data):
@@ -214,6 +216,8 @@ with st.beta_expander('Adding Season to Date Cover to Matches'):
     stdc_home=spread_3.rename(columns={'ID':'Home ID'})
     stdc_home['cover_sign']=-stdc_home['cover_sign']
     stdc_away=spread_3.rename(columns={'ID':'Away ID'})
+    updated_df=updated_df.drop(['away_cover'],axis=1)
+    updated_df=updated_df.rename(columns={'home_cover':'home_cover_result'})
     updated_df=pd.merge(updated_df,stdc_home,on=['Week','Home ID'],how='left').rename(columns={'cover':'home_cover','cover_sign':'home_cover_sign'})
     updated_df=pd.merge(updated_df,stdc_away,on=['Week','Away ID'],how='left').rename(columns={'cover':'away_cover','cover_sign':'away_cover_sign'})
     st.write('check that STDC coming in correctly', updated_df)
@@ -245,19 +249,44 @@ with st.beta_expander('Adding Turnover to Matches'):
 
 with st.beta_expander('Betting Slip Matches'):
     betting_matches=updated_df.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
-    'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick']]
+    'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick','home_cover_result']]
+    st.write('check for duplicate home cover', betting_matches)
     betting_matches['total_factor']=betting_matches['home_turnover_sign']+betting_matches['away_turnover_sign']+betting_matches['home_cover_sign']+\
     betting_matches['away_cover_sign']+betting_matches['power_pick']
     betting_matches['bet_on'] = np.where(betting_matches['total_factor']>2,betting_matches['Home Team'],np.where(betting_matches['total_factor']<-2,betting_matches['Away Team'],''))
     betting_matches['bet_sign'] = (np.where(betting_matches['total_factor']>2,1,np.where(betting_matches['total_factor']<-2,-1,0)))
-    betting_matches['bet_sign'] = betting_matches['bet_sign'].astype(int)
-    betting_matches['home_cover'] = betting_matches['home_cover'].astype(int)
+    betting_matches['bet_sign'] = betting_matches['bet_sign'].astype(float)
+    betting_matches['home_cover'] = betting_matches['home_cover'].astype(float)
     st.write('this is bet sign',betting_matches['bet_sign'].dtypes)
     st.write('this is home cover',betting_matches['home_cover'].dtypes)
-    # betting_matches['result']=betting_matches['home_cover'] * betting_matches['bet_sign']
-    st.write('testing factor')
-    st.write(betting_matches['total_factor'].sum())
+    betting_matches['result']=betting_matches['home_cover_result'] * betting_matches['bet_sign']
+    st.write('testing sum of betting result',betting_matches['result'].sum())
+
+    # this is for graphing anlaysis on spreadsheet
+    betting_matches['bet_sign_all'] = (np.where(betting_matches['total_factor']>0,1,np.where(betting_matches['total_factor']<-0,-1,0)))
+    betting_matches['result_all']=betting_matches['home_cover_result'] * betting_matches['bet_sign_all']
+    st.write('testing sum of betting all result',betting_matches['result_all'].sum())
+    # st.write('testing factor')
+    # st.write(betting_matches['total_factor'].sum())
     # cols_to_move=[]
     # cols = cols_to_move + [col for col in data_4 if col not in cols_to_move]
     # data_5=data_4[cols]
     st.write(betting_matches)
+
+with st.beta_expander('Historical odds'):
+    # st.write(odds_data)
+    odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close']].copy()
+    team_names_id=team_names_id.rename(columns={'Team':'Home Team'})
+    odds_data=pd.merge(odds_data,team_names_id,on='Home Team').rename(columns={'ID':'Home ID'}).sort_values(by='Date',ascending=False)
+    team_names_id=team_names_id.rename(columns={'Home Team':'Away Team'})
+    odds_data=pd.merge(odds_data,team_names_id,on='Away Team').rename(columns={'ID':'Away ID'}).sort_values(by='Date',ascending=False)
+    st.write(odds_data)
+    st.write(odds_data[odds_data['Away ID'].isna()])
+
+with st.beta_expander('Pro Football Ref'):
+    # https://www.pro-football-reference.com/years/2020/games.htm
+    # test = pd.read_html('https://www.pro-football-reference.com/years/2020/games.htm')[0]
+    # st.write('checking test html',test)
+    # test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.pkl')
+    nfl_2020=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.pkl')
+    st.write(nfl_2020)
