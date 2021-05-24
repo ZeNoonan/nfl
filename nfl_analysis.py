@@ -284,9 +284,26 @@ with st.beta_expander('Historical odds'):
     st.write(odds_data[odds_data['Away ID'].isna()])
 
 with st.beta_expander('Pro Football Ref'):
-    # https://www.pro-football-reference.com/years/2020/games.htm
-    # test = pd.read_html('https://www.pro-football-reference.com/years/2020/games.htm')[0]
-    # st.write('checking test html',test)
-    # test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.pkl')
-    nfl_2020=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.pkl')
-    st.write(nfl_2020)
+    # def fbref_scraper():
+    #     test = pd.read_html('https://www.pro-football-reference.com/years/2019/games.htm')[0]
+    #     test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/nfl_2019.pkl')
+    #     return test  
+        
+    # test=fbref_scraper()
+    nfl_2020=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/nfl_2019.pkl')
+    st.write('This is before cleaning',nfl_2020)
+    nfl_2020=nfl_2020.rename(columns={'Unnamed: 5':'at_venue'})
+    nfl_2020['Home Team']=np.where(nfl_2020['at_venue']=='@',nfl_2020['Loser/tie'],nfl_2020['Winner/tie'])
+    nfl_2020['at_venue']=nfl_2020['at_venue'].replace({np.nan:'stay'})
+    nfl_2020['Away Team']=np.where(nfl_2020['at_venue']=='@',nfl_2020['Winner/tie'],nfl_2020['Loser/tie'])
+    st.write('this is after Away Team', nfl_2020)
+    nfl_2020['Home Points']=np.where(nfl_2020['at_venue']=='@',nfl_2020['Pts.1'],nfl_2020['Pts'])
+    nfl_2020['Away Points']=np.where(nfl_2020['at_venue']=='@',nfl_2020['Pts'],nfl_2020['Pts.1'])
+    nfl_2020['Home Turnover']=np.where(nfl_2020['at_venue']=='@',nfl_2020['TOL'],nfl_2020['TOW'])
+    nfl_2020['Away Turnover']=np.where(nfl_2020['at_venue']=='@',nfl_2020['TOW'],nfl_2020['TOL'])
+    nfl_2020=nfl_2020[nfl_2020['Week'].str.contains('Week')==False].copy()
+    nfl_2020['Week'] = nfl_2020['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
+    fb_ref_2020=nfl_2020.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','Home Turnover','Away Turnover']]
+    st.write(fb_ref_2020)
+    # st.write(nfl_2020)
+    # nfl_2020=pd.merge(nfl_2020,team_names_id,on='Away Team').rename(columns={'ID':'Away ID'}).sort_values(by='Date',ascending=False)
