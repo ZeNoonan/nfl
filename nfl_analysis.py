@@ -308,11 +308,25 @@ with st.beta_expander('Pro Football Ref'):
     nfl_2020['Away Points']=pd.to_numeric(nfl_2020['Away Points'])
     nfl_2020['Date']=pd.to_datetime(nfl_2020['Date'])
     nfl_2020['Week'] = nfl_2020['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
+    nfl_2020['Week']=pd.to_numeric(nfl_2020['Week'])
     fb_ref_2020=nfl_2020.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','Home Turnover','Away Turnover']]
     fb_ref_2020['Turnover'] = fb_ref_2020['Home Turnover'] - fb_ref_2020['Away Turnover']
     st.write(fb_ref_2020.dtypes)
-    st.write(fb_ref_2020)
+    st.write('before the merge',fb_ref_2020.head())
     st.write('Check and see if this is working right')
-    test = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
-    st.write(test)
-    # nfl_2020=pd.merge(nfl_2020,team_names_id,on='Away Team').rename(columns={'ID':'Away ID'}).sort_values(by='Date',ascending=False)
+    season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
+    st.write('After MERGE sorted by week and date default',season_pro.head(3))
+    st.write(season_pro.dtypes)
+    st.write('Next is to set up 2020 to see how it performed, set up functions so that previous years can be run')
+    # sorted_season=season_pro.sort_values(by=['Week','Home ID', 'Away ID'], ascending=[True,True,True])
+    # sorted_season=sorted_season.rename(columns={'Home Team': 'Home_Team','Away Team': 'Away_Team','Away Points': 'Away_Pts',
+    # 'Home Points': 'Home_Pts','Away Points': 'Away_Pts',})
+    # st.write(sorted_season)
+    # db=updated_df.loc[:,['Week','Date','Home Team', 'Away Team','Home ID','Away ID','Spread','Home Points','Away Points','home_turnover']].sort_values(by=['Week','Home ID'],ascending=[True,True]).copy()
+    # st.write('this is workings',db.head(3))
+    # test_workings=pd.merge(sorted_season,db,on=['Week','Home ID', 'Away ID'],how = 'outer')
+    # test_workings['check_home_pts'] = test_workings['Home_Pts']-test_workings['Home Points']
+    # test_workings['check_away_pts'] = test_workings['Away_Pts']-test_workings['Away Points']
+    # test_workings['check_turnover'] = test_workings['Turnover'] - test_workings['home_turnover']
+    # test_workings['check_spread']=test_workings['Spread'] - test_workings['Home Line Close']
+    # st.write('combined ready for testing', test_workings)
