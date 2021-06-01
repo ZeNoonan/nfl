@@ -260,6 +260,13 @@ with st.beta_expander('Adding Power Ranking to Matches'):
     st.write(updated_df)
 
 with st.beta_expander('Adding Season to Date Cover to Matches'):
+    df = pd.DataFrame([[1, 3], [2, 4]], columns=['A', 'B'])
+    st.write('df1',df)
+    df2 = pd.DataFrame([[1, 5], [1, 6]], columns=['A', 'C'])
+    st.write('df2',df2)
+    df3=df.merge(df2,on=['A'], how='left')
+    st.write('merged on left',df3)  # merges on columns A
+
     st.write('this is season to date cover', spread_3)
     stdc_home=spread_3.rename(columns={'ID':'Home ID'})
     stdc_home['cover_sign']=-stdc_home['cover_sign']
@@ -267,7 +274,7 @@ with st.beta_expander('Adding Season to Date Cover to Matches'):
     updated_df=updated_df.drop(['away_cover'],axis=1)
     st.write('check updated df #1',updated_df)
     updated_df=updated_df.rename(columns={'home_cover':'home_cover_result'})
-    updated_df=pd.merge(updated_df,stdc_home,on=['Week','Home ID'],how='left').rename(columns={'cover':'home_cover','cover_sign':'home_cover_sign'})
+    updated_df=updated_df.merge(stdc_home,on=['Week','Home ID'],how='left').rename(columns={'cover':'home_cover','cover_sign':'home_cover_sign'})
     st.write('check updated df #2', updated_df)
     updated_df=pd.merge(updated_df,stdc_away,on=['Week','Away ID'],how='left').rename(columns={'cover':'away_cover','cover_sign':'away_cover_sign'})
     st.write('check that STDC coming in correctly', updated_df)
