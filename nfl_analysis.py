@@ -18,11 +18,14 @@ test_data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Te
 odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds.xlsx').copy()
 team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx').copy()
 
-# url='https://www.pro-football-reference.com/years/2019/games.htm'
+url='https://www.pro-football-reference.com/years/2017/games.htm'
 def fbref_scraper(url):
-        test = pd.read_html('https://www.pro-football-reference.com/years/2019/games.htm')[0]
-        test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
+        test = pd.read_html(url)[0]
+        test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2017.pkl')
         return test 
+
+fbref_scraper(url)
+nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2017.pkl')
 
 with st.beta_expander('Historical odds function'):
     # st.write(odds_data)
@@ -30,7 +33,8 @@ with st.beta_expander('Historical odds function'):
     team_names_id=team_names_id.rename(columns={'Team':'Home Team'})
     odds_data=pd.merge(odds_data,team_names_id,on='Home Team').rename(columns={'ID':'Home ID'}).sort_values(by='Date',ascending=False)
     team_names_id=team_names_id.rename(columns={'Home Team':'Away Team'})
-    odds_data=pd.merge(odds_data,team_names_id,on='Away Team').rename(columns={'ID':'Away ID','Home Score':'Home Points','Away Score':'Away Points'}).sort_values(by='Date',ascending=False)
+    odds_data=pd.merge(odds_data,team_names_id,on='Away Team').rename(columns={'ID':'Away ID','Home Score':'Home Points',
+    'Away Score':'Away Points','Home Line Close':'Spread'}).sort_values(by='Date',ascending=False)
     # st.write(odds_data.dtypes)
     st.write(odds_data)
     st.write('To Check that all ok')
@@ -38,7 +42,7 @@ with st.beta_expander('Historical odds function'):
 
 
 with st.beta_expander('Pro Football Function'):
-    nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
+    
     # st.write('This is before cleaning',nfl_data)
     def clean_pro_football_pickle(nfl_data):
         nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
@@ -47,25 +51,27 @@ with st.beta_expander('Pro Football Function'):
         nfl_data['Away Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Winner/tie'],nfl_data['Loser/tie'])
         nfl_data['Home Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts.1'],nfl_data['Pts'])
         nfl_data['Away Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts'],nfl_data['Pts.1'])
-        nfl_data['Home Turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOL'],nfl_data['TOW']))
-        nfl_data['Away Turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOW'],nfl_data['TOL']))
+        nfl_data['home_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOL'],nfl_data['TOW']))
+        nfl_data['away_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOW'],nfl_data['TOL']))
         nfl_data=nfl_data[nfl_data['Week'].str.contains('Week')==False].copy()
-        nfl_data['Home Turnover']=pd.to_numeric(nfl_data['Home Turnover'])
-        nfl_data['Away Turnover']=pd.to_numeric(nfl_data['Away Turnover'])
+        nfl_data['home_turnover']=pd.to_numeric(nfl_data['home_turnover'])
+        nfl_data['away_turnover']=pd.to_numeric(nfl_data['away_turnover'])
         nfl_data['Home Points']=pd.to_numeric(nfl_data['Home Points'])
         nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
         nfl_data['Date']=pd.to_datetime(nfl_data['Date'])
         nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
         nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
-        fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','Home Turnover','Away Turnover']]
-        fb_ref_2020['Turnover'] = fb_ref_2020['Home Turnover'] - fb_ref_2020['Away Turnover']
+        fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','home_turnover','away_turnover']]
+        fb_ref_2020['Turnover'] = fb_ref_2020['home_turnover'] - fb_ref_2020['away_turnover']
         # st.write(fb_ref_2020.dtypes)
         # st.write('before the merge',fb_ref_2020.head())
         # st.write('Check and see if this is working right')
         season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
         return season_pro
     # st.write(season_pro.head(3))
-# st.table(data.head())
+with st.echo():    
+    data=clean_pro_football_pickle(nfl_data)
+st.write(data.head())
 
 def spread_workings(data):
     data['home_win']=data['Home Points'] - data['Away Points']
@@ -106,7 +112,7 @@ def turnover_2(season_cover_df):
     # return season_cover_df
 
 
-spread=spread_workings(data_2020)
+spread=spread_workings(data)
 # st.write('spread',spread)
 
 with st.beta_expander('Season to date Cover'):
@@ -120,14 +126,14 @@ with st.beta_expander('Season to date Cover'):
 
 
 with st.beta_expander('Last Game Turnover'):
-    turnover=spread_workings(data_2020)
+    turnover=spread_workings(data)
     turnover_1 = season_cover_workings(turnover,'home_turnover','away_turnover','turnover',-1)
     turnover_2=turnover_2(turnover_1)
     turnover_3=season_cover_3(turnover_2,'turnover_sign','prev_turnover')
     st.write('this is last game turnover')
     st.write(turnover_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
-matrix_df=spread_workings(data_2020)
+matrix_df=spread_workings(data)
 test_df = matrix_df.copy()
 matrix_df['at_home'] = 1
 matrix_df['at_away'] = -1
