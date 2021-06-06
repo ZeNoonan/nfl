@@ -6,7 +6,7 @@ import os
 import base64
 
 st.set_page_config(layout="wide")
-
+st.header('Need to bring in previous 4 weeks in prior season')
 
 @st.cache
 def read_data(file):
@@ -18,14 +18,16 @@ test_data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Te
 odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds.xlsx').copy()
 team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx').copy()
 
-url='https://www.pro-football-reference.com/years/2017/games.htm'
-def fbref_scraper(url):
-        test = pd.read_html(url)[0]
-        test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2017.pkl')
-        return test 
+# url='https://www.pro-football-reference.com/years/2015/games.htm'
+# def fbref_scraper(url):
+#         test = pd.read_html(url)[0]
+#         test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2015.pkl')
+#         return test 
 
-fbref_scraper(url)
+# fbref_scraper(url)
 nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2017.pkl')
+prior_nfl_data = nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2016.pkl')
+st.write('this is prior year data',prior_nfl_data)
 
 with st.beta_expander('Historical odds function'):
     # st.write(odds_data)
@@ -64,14 +66,18 @@ with st.beta_expander('Pro Football Function'):
         fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','home_turnover','away_turnover']]
         fb_ref_2020['Turnover'] = fb_ref_2020['home_turnover'] - fb_ref_2020['away_turnover']
         # st.write(fb_ref_2020.dtypes)
-        # st.write('before the merge',fb_ref_2020.head())
+        # st.write('before the merge',fb_ref_2020)
         # st.write('Check and see if this is working right')
+        # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Points','Away Points'], how='left')
+        # IT'S IMPORTANT THAT THE ODDS MERGES CORRECTLY WITH FBREF Data for the games with neutral venues as need to get spread right!
         season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
+        # st.write('season pro #1 after merge with updated merged on',season_pro)
         return season_pro
     # st.write(season_pro.head(3))
 with st.echo():    
     data=clean_pro_football_pickle(nfl_data)
-st.write(data.head())
+    prior_data = clean_pro_football_pickle(prior_nfl_data)
+st.write('this is prior year potentially concat with current data',prior_data)
 
 def spread_workings(data):
     data['home_win']=data['Home Points'] - data['Away Points']
@@ -117,12 +123,11 @@ spread=spread_workings(data)
 
 with st.beta_expander('Season to date Cover'):
     spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',1)
-    spread_2=season_cover_2(spread_1,'cover')
-    spread_3=season_cover_3(spread_2,'cover_sign','cover')
-    st.write('this is season to date cover')
-    st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
-    # st.write('Test workings')
-    # st.write(test_data_2020)
+    st.write ('this is spread 1 #1',spread_1)
+    # spread_2=season_cover_2(spread_1,'cover')
+    # spread_3=season_cover_3(spread_2,'cover_sign','cover')
+    # st.write('this is season to date cover')
+    # st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
 
 with st.beta_expander('Last Game Turnover'):
@@ -142,12 +147,15 @@ matrix_df['away_pts_adv'] = 3
 matrix_df['away_spread']=-matrix_df['Spread']
 matrix_df=matrix_df.rename(columns={'Spread':'home_spread'})
 matrix_df_1=matrix_df.loc[:,['Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv']].copy()
+st.write('checking #1 matrix_df_1',matrix_df_1)
+# test_4=matrix_df_1[matrix_df_1['Week'].between(-3,finish)].copy()
 
 with st.beta_expander('Games Played to be used in Matrix Multiplication'):
     first_qtr=matrix_df_1.copy()
     start=-3
     finish=0
     first_4=first_qtr[first_qtr['Week'].between(start,finish)].copy()
+    # st.write('checking first 4 #2',first_4)
     def games_matrix_workings(first_4):
         group_week = first_4.groupby('Week')
         raw_data_2=[]
@@ -394,7 +402,7 @@ with st.beta_expander('Pro Football Ref'):
     # st.write('before the merge',fb_ref_2020.head())
     # st.write('Check and see if this is working right')
     season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
-    st.write(season_pro.head(3))
+    # st.write(season_pro.head(3))
     # st.write(season_pro.dtypes)
     st.write('Next is to set up 2020 to see how it performed, set up functions so that previous years can be run')
     # sorted_season=season_pro.sort_values(by=['Week','Home ID', 'Away ID'], ascending=[True,True,True])
