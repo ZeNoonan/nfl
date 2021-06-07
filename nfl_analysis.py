@@ -6,7 +6,7 @@ import os
 import base64
 
 st.set_page_config(layout="wide")
-st.header('Need to bring in previous 4 weeks in prior season')
+# st.header('Need to bring in previous 4 weeks in prior season')
 
 @st.cache
 def read_data(file):
@@ -27,7 +27,7 @@ team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx'
 # fbref_scraper(url)
 nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2017.pkl')
 prior_nfl_data = nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2016.pkl')
-st.write('this is prior year data',prior_nfl_data)
+# st.write('this is prior year data',prior_nfl_data)
 
 with st.beta_expander('Historical odds function'):
     # st.write(odds_data)
@@ -38,6 +38,7 @@ with st.beta_expander('Historical odds function'):
     odds_data=pd.merge(odds_data,team_names_id,on='Away Team').rename(columns={'ID':'Away ID','Home Score':'Home Points',
     'Away Score':'Away Points','Home Line Close':'Spread'}).sort_values(by='Date',ascending=False)
     # st.write(odds_data.dtypes)
+
     st.write(odds_data)
     st.write('To Check that all ok')
     st.write(odds_data[odds_data['Away ID'].isna()])
@@ -74,10 +75,26 @@ with st.beta_expander('Pro Football Function'):
         # st.write('season pro #1 after merge with updated merged on',season_pro)
         return season_pro
     # st.write(season_pro.head(3))
+
+def clean_prior_year(x):
+    x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:0,16:-1,15:-2,14:-3})
+    x=x[x['Week'].between(-3,0)].copy()
+    x=x.reset_index().drop('index',axis=1)
+    st.write('Check for erros',x[x['Away ID'].isna()])
+    return x
+
+def concat_current_prior(x,y):
+    current_plus_prior = pd.concat([x,y],axis=0,ignore_index=True)
+    return current_plus_prior
+    
+
 with st.echo():    
-    data=clean_pro_football_pickle(nfl_data)
+    current=clean_pro_football_pickle(nfl_data)
     prior_data = clean_pro_football_pickle(prior_nfl_data)
-st.write('this is prior year potentially concat with current data',prior_data)
+
+st.write('this is prior year CLEANED potentially concat with current data',clean_prior_year(prior_data))
+data = concat_current_prior(current,prior_data)
+st.write('this is after concat check axis and index', data)
 
 def spread_workings(data):
     data['home_win']=data['Home Points'] - data['Away Points']
@@ -91,7 +108,8 @@ def spread_workings(data):
     return data
 
 def season_cover_workings(data,home,away,name,week_start):
-    season_cover_df=(data.set_index('Week').loc[week_start:,:]).reset_index()
+    season_cover_df=data[data['Week']>week_start].copy()
+    # season_cover_df=(data.set_index('Week').loc[week_start:,:]).reset_index()
     home_cover_df = (season_cover_df.loc[:,['Week','Date','Home ID',home]]).rename(columns={'Home ID':'ID',home:name})
     away_cover_df = (season_cover_df.loc[:,['Week','Date','Away ID',away]]).rename(columns={'Away ID':'ID',away:name})
     season_cover=pd.concat([home_cover_df,away_cover_df],ignore_index=True)
