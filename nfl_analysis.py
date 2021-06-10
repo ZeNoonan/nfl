@@ -141,11 +141,11 @@ spread=spread_workings(data)
 
 with st.beta_expander('Season to date Cover'):
     spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',1)
-    st.write ('this is spread 1 #1',spread_1)
-    # spread_2=season_cover_2(spread_1,'cover')
-    # spread_3=season_cover_3(spread_2,'cover_sign','cover')
+    # st.write ('this is spread 1 #1',spread_1)
+    spread_2=season_cover_2(spread_1,'cover')
+    spread_3=season_cover_3(spread_2,'cover_sign','cover')
     # st.write('this is season to date cover')
-    # st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
+    st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
 
 with st.beta_expander('Last Game Turnover'):
@@ -164,8 +164,10 @@ matrix_df['home_pts_adv'] = -3
 matrix_df['away_pts_adv'] = 3
 matrix_df['away_spread']=-matrix_df['Spread']
 matrix_df=matrix_df.rename(columns={'Spread':'home_spread'})
-matrix_df_1=matrix_df.loc[:,['Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv']].copy()
-st.write('checking #1 matrix_df_1',matrix_df_1)
+# st.write('Matrix Df check for date time', matrix_df.head())
+matrix_df=matrix_df.reset_index().rename(columns={'index':'unique_match_id'})
+matrix_df_1=matrix_df.loc[:,['unique_match_id','Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv','Date','Time','Home Points','Away Points']].copy()
+st.write('checking #1 matrix_df_1',matrix_df_1.head())
 # test_4=matrix_df_1[matrix_df_1['Week'].between(-3,finish)].copy()
 
 with st.beta_expander('Games Played to be used in Matrix Multiplication'):
