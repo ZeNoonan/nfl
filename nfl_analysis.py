@@ -157,7 +157,9 @@ with st.beta_expander('Last Game Turnover'):
     st.write(turnover_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
 matrix_df=spread_workings(data)
+matrix_df=matrix_df.reset_index().rename(columns={'index':'unique_match_id'})
 test_df = matrix_df.copy()
+# st.write('check for unique match id', test_df)
 matrix_df['at_home'] = 1
 matrix_df['at_away'] = -1
 matrix_df['home_pts_adv'] = -3
@@ -165,7 +167,7 @@ matrix_df['away_pts_adv'] = 3
 matrix_df['away_spread']=-matrix_df['Spread']
 matrix_df=matrix_df.rename(columns={'Spread':'home_spread'})
 # st.write('Matrix Df check for date time', matrix_df.head())
-matrix_df=matrix_df.reset_index().rename(columns={'index':'unique_match_id'})
+# matrix_df=matrix_df.reset_index().rename(columns={'index':'unique_match_id'})
 matrix_df_1=matrix_df.loc[:,['unique_match_id','Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv','Date','Time','Home Points','Away Points']].copy()
 st.write('checking #1 matrix_df_1',matrix_df_1.head())
 # test_4=matrix_df_1[matrix_df_1['Week'].between(-3,finish)].copy()
@@ -191,7 +193,9 @@ with st.beta_expander('Games Played to be used in Matrix Multiplication'):
         test_concat_df_test=concat_df_test.groupby('Home ID')['game_adj'].sum().abs().reset_index()
         test_concat_df_test['Away ID']=test_concat_df_test['Home ID']
         full=pd.concat([concat_df_test,test_concat_df_test]).sort_values(by=['Home ID', 'game_adj'],ascending=[True,False])
+        # st.write('full',full)
         full_stack=pd.pivot_table(full,index='Away ID', columns='Home ID',aggfunc='sum')
+        # st.write('full stack pivot THIS IS WHERE ISSUE IS', full_stack)
         # st.write('Check sum looks good all zero', full_stack.sum())
         full_stack=full_stack.fillna(0)
         full_stack.columns = full_stack.columns.droplevel(0)
@@ -200,9 +204,16 @@ with st.beta_expander('Games Played to be used in Matrix Multiplication'):
     full_stack=games_matrix_workings(first_4)
     st.write('Check sum if True all good', full_stack.sum().sum()==0)
     st.write('this is 1st part games played, need to automate this for every week')
-    st.write(full_stack)
+    st.write('this is the GamesMatrixWorkings Function',full_stack)
+
+# st.header('OVER HERE')
+# test_first_section=matrix_df_1[matrix_df_1['Week'].between(-3,0)]
+# st.write('check this out', test_first_section)
+# test_full_game_matrix=games_matrix_workings(test_first_section)
+# st.write('error here which is being caused by the games matrix workings function',test_full_game_matrix)
 
 
+# st.write('checking the test df for unique match id', test_df)
 with st.beta_expander('CORRECT Testing reworking the DataFrame'):
     test_df['at_home'] = 1
     test_df['at_away'] = -1
@@ -210,11 +221,12 @@ with st.beta_expander('CORRECT Testing reworking the DataFrame'):
     test_df['away_pts_adv'] = -3
     test_df['away_spread']=-test_df['Spread']
     test_df=test_df.rename(columns={'Spread':'home_spread'})
-    test_df_1=test_df.loc[:,['Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv']].copy()
+    # st.write('checking for unique match id',test_df)
+    test_df_1=test_df.loc[:,['unique_match_id','Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv']].copy()
     
     # st.write(test_df_1.sort_values(by=['ID','Week'],ascending=True))
-    test_df_home=test_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
-    test_df_away=test_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
+    test_df_home=test_df_1.loc[:,['unique_match_id','Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
+    test_df_away=test_df_1.loc[:,['unique_match_id','Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
     test_df_2=pd.concat([test_df_home,test_df_away],ignore_index=True)
     test_df_2=test_df_2.sort_values(by=['ID','Week'],ascending=True)
     test_df_2['spread_with_home_adv']=test_df_2['spread']+test_df_2['home_pts_adv']
@@ -240,14 +252,18 @@ with st.beta_expander('CORRECT Power Ranking to be used in Matrix Multiplication
         dfseq['spread']=dfseq['spread'].fillna(0)
         dfseq['spread_with_home_adv']=dfseq['spread_with_home_adv'].fillna(0)
         dfseq['home']=dfseq['home'].fillna(0)
-        df_seq_1 = dfseq.groupby(['Week','ID'])['spread_with_home_adv'].sum().reset_index()
+        df_seq_1 = dfseq.groupby(['unique_match_id','Week','ID'])['spread_with_home_adv'].sum().reset_index()
         update=test_4(df_seq_1)
         ranking_power.append(update)
     df_power = pd.concat(ranking_power, ignore_index=True)
     st.write('power ranking',df_power)
 
+
+
+
 with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
     # https://stackoverflow.com/questions/62775018/matrix-array-multiplication-whats-excel-doing-mmult-and-how-to-mimic-it-in#62775508
+    # st.write('check')
     inverse_matrix=[]
     power_ranking=[]
     list_inverse_matrix=[]
@@ -257,19 +273,24 @@ with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
     first=list(range(-3,18))
     last=list(range(0,21))
     for first,last in zip(first,last):
+        st.header('start xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        st.write('week no.', last)
         # st.write('this is first',first)
         # st.write('this is last',last)
         first_section=games_df[games_df['Week'].between(first,last)]
         # st.write(first_section)
         full_game_matrix=games_matrix_workings(first_section)
-        # st.write(full_game_matrix)
+        st.write('this if full game matrix',full_game_matrix,'this is current week',last)
         adjusted_matrix=full_game_matrix.loc[0:30,0:30]
         # st.write('this is the last number',last)
         # st.write(adjusted_matrix)
         df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
-        # st.write('this is the inverse matrix',df_inv, 'number', last)
+        st.write('this is the inverse matrix',df_inv, 'last number ie current week', last)
         power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID').drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:30,:]
+        st.write('this is the power_df_week',power_df_week)
         result = df_inv.dot(pd.DataFrame(power_df_week))
+        st.header('result???')
+        st.write(result)
         result.columns=['power']
         avg=(result['power'].sum())/32
         result['avg_pwr_rank']=(result['power'].sum())/32
@@ -278,8 +299,10 @@ with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
         result=pd.concat([result,df_pwr],ignore_index=True)
         result['week']=last+1
         power_ranking.append(result)
-    power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
-    st.write('power ranking combined', power_ranking_combined)
+        st.write('week no.', last)
+        st.header('end xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    # power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
+    # st.write('power ranking combined', power_ranking_combined)
     
 with st.beta_expander('Adding Power Ranking to Matches'):
     matches_df = spread.copy()
