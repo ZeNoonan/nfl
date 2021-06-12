@@ -3,7 +3,7 @@ import numpy as np
 import streamlit as st
 from io import BytesIO
 import os
-import base64
+import base64   
 
 st.set_page_config(layout="wide")
 # st.header('Need to bring in previous 4 weeks in prior season')
@@ -25,8 +25,9 @@ team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx'
 #         return test 
 
 # fbref_scraper(url)
-nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2017.pkl')
-prior_nfl_data = nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2016.pkl')
+with st.echo():
+    nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
+    prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2018.pkl')
 # st.write('this is prior year data',prior_nfl_data)
 
 with st.beta_expander('Historical odds function'):
@@ -67,7 +68,8 @@ with st.beta_expander('Pro Football Function'):
         fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','home_turnover','away_turnover']]
         fb_ref_2020['Turnover'] = fb_ref_2020['home_turnover'] - fb_ref_2020['away_turnover']
         # st.write(fb_ref_2020.dtypes)
-        # st.write('before the merge',fb_ref_2020)
+        # st.write('before the merge Pro-Football Ref',fb_ref_2020)
+        # st.write('before the merge Odds Data',odds_data)
         # st.write('Check and see if this is working right')
         # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Points','Away Points'], how='left')
         # IT'S IMPORTANT THAT THE ODDS MERGES CORRECTLY WITH FBREF Data for the games with neutral venues as need to get spread right!
@@ -80,7 +82,7 @@ def clean_prior_year(x):
     x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:0,16:-1,15:-2,14:-3})
     x=x[x['Week'].between(-3,0)].copy()
     x=x.reset_index().drop('index',axis=1)
-    st.write('Check for erros',x[x['Away ID'].isna()])
+    st.write('Check for errors',x[x['Away ID'].isna()])
     return x
 
 def concat_current_prior(x,y):
@@ -90,11 +92,11 @@ def concat_current_prior(x,y):
 
 with st.echo():    
     current=clean_pro_football_pickle(nfl_data)
-    prior_data = clean_pro_football_pickle(prior_nfl_data)
+    prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
 
-st.write('this is prior year CLEANED potentially concat with current data',clean_prior_year(prior_data))
 data = concat_current_prior(current,prior_data)
-st.write('this is after concat check axis and index', data)
+# st.write( data[(data['Home Team']=='Arizona Cardinals') | (data['Away Team']=='Arizona Cardinals')].sort_values(by=['Week','Date','Time']) )
+# st.write( data[(data['Home Team']=='Atlanta Falcons') | (data['Away Team']=='Atlanta Falcons')].sort_values(by=['Week','Date','Time']) )
 
 def spread_workings(data):
     data['home_win']=data['Home Points'] - data['Away Points']
@@ -107,15 +109,7 @@ def spread_workings(data):
     data['away_turnover'] = -data['home_turnover']
     return data
 
-def season_cover_workings(data,home,away,name,week_start):
-    season_cover_df=data[data['Week']>week_start].copy()
-    # season_cover_df=(data.set_index('Week').loc[week_start:,:]).reset_index()
-    home_cover_df = (season_cover_df.loc[:,['Week','Date','Home ID',home]]).rename(columns={'Home ID':'ID',home:name})
-    away_cover_df = (season_cover_df.loc[:,['Week','Date','Away ID',away]]).rename(columns={'Away ID':'ID',away:name})
-    season_cover=pd.concat([home_cover_df,away_cover_df],ignore_index=True)
-    # season_cover_df = pd.melt(season_cover_df,id_vars=['Week', 'home_cover'],value_vars=['Home ID', 'Away ID']).set_index('Week').rename(columns={'value':'ID'}).\
-    # drop('variable',axis=1).reset_index().sort_values(by=['Week','ID'],ascending=True)
-    return season_cover.sort_values(by=['Week','Date','ID'],ascending=['True','True','True'])
+
 
 def season_cover_2(season_cover_df,column_name):    
     # https://stackoverflow.com/questions/54993050/pandas-groupby-shift-and-cumulative-sum
@@ -129,32 +123,69 @@ def season_cover_3(data,column_sign,name):
     data[column_sign] = np.where((data[name] > 0), 1, np.where((data[name] < 0),-1,0))
     return data
 
-def turnover_2(season_cover_df):    
-    # https://stackoverflow.com/questions/53335567/use-pandas-shift-within-a-group
-    season_cover_df['prev_turnover']=season_cover_df.groupby('ID')['turnover'].shift()
-    return season_cover_df.sort_values(by=['ID','Week'],ascending=True)
-    # return season_cover_df
-
 
 spread=spread_workings(data)
 # st.write('spread',spread)
 
+def season_cover_workings(data,home,away,name,week_start):
+    season_cover_df=data[data['Week']>week_start].copy()
+    # season_cover_df=(data.set_index('Week').loc[week_start:,:]).reset_index()
+    home_cover_df = (season_cover_df.loc[:,['Week','Date','Home ID',home]]).rename(columns={'Home ID':'ID',home:name})
+    # st.write('checking home turnover section', home_cover_df[home_cover_df['ID']==0])
+    away_cover_df = (season_cover_df.loc[:,['Week','Date','Away ID',away]]).rename(columns={'Away ID':'ID',away:name})
+    # st.write('checking away turnover section', away_cover_df[away_cover_df['ID']==0])
+    season_cover=pd.concat([home_cover_df,away_cover_df],ignore_index=True)
+    # season_cover_df = pd.melt(season_cover_df,id_vars=['Week', 'home_cover'],value_vars=['Home ID', 'Away ID']).set_index('Week').rename(columns={'value':'ID'}).\
+    # drop('variable',axis=1).reset_index().sort_values(by=['Week','ID'],ascending=True)
+    return season_cover.sort_values(by=['Week','Date','ID'],ascending=['True','True','True'])
+
+def turnover_2(season_cover_df):    
+    # https://stackoverflow.com/questions/53335567/use-pandas-shift-within-a-group
+    season_cover_df['prev_turnover']=season_cover_df.groupby('ID')['turned_over_sign'].shift()
+    return season_cover_df.sort_values(by=['ID','Week'],ascending=True)
+    # return season_cover_df
+
+def turnover_cover_3(data,column_sign,name):
+    data[column_sign] = np.where((data[name] > 0), 1, np.where((data[name] < 0),-1,0))
+    return data
+
+
+def turnover_workings(data,week_start):
+    turnover_df=data[data['Week']>week_start].copy()
+    turnover_df['home_turned_over_sign'] = np.where((turnover_df['Turnover'] > 0), 1, np.where((turnover_df['Turnover'] < 0),-1,0))
+    turnover_df['away_turned_over_sign'] = - turnover_df['home_turned_over_sign']
+    # season_cover_df=(data.set_index('Week').loc[week_start:,:]).reset_index()
+    home_turnover_df = (turnover_df.loc[:,['Week','Date','Home ID','home_turned_over_sign']]).rename(columns={'Home ID':'ID','home_turned_over_sign':'turned_over_sign'})
+    st.write('checking home turnover section', home_turnover_df[home_turnover_df['ID']==0])
+    away_turnover_df = (turnover_df.loc[:,['Week','Date','Away ID','away_turned_over_sign']]).rename(columns={'Away ID':'ID','away_turned_over_sign':'turned_over_sign'})
+    st.write('checking away turnover section', away_turnover_df[away_turnover_df['ID']==0])
+    season_cover=pd.concat([home_turnover_df,away_turnover_df],ignore_index=True)
+    # season_cover_df = pd.melt(season_cover_df,id_vars=['Week', 'home_cover'],value_vars=['Home ID', 'Away ID']).set_index('Week').rename(columns={'value':'ID'}).\
+    # drop('variable',axis=1).reset_index().sort_values(by=['Week','ID'],ascending=True)
+    return season_cover.sort_values(by=['Week','Date','ID'],ascending=['True','True','True'])
+
+with st.beta_expander('Last Game Turnover'):
+    turnover=spread_workings(data)
+    # st.write('lets have a look at the data',data[(data['Home Team']=='Arizona Cardinals') | (data['Away Team']=='Arizona Cardinals')].sort_values(by=['Week','Date','Time']))
+    turnover_1 = turnover_workings(turnover,-1)
+    # st.write('turnover 1', turnover_1[turnover_1['ID']==0])
+    
+    turnover_2=turnover_2(turnover_1)
+    # st.write('turnover 2 NEXT CHECK', turnover_2[turnover_2['ID']==0])
+    turnover_3=season_cover_3(turnover_2,'turnover_sign','prev_turnover')
+    # st.write('this is last game turnover')
+    st.write(turnover_3.sort_values(by=['ID','Week'],ascending=['True','True']))
+
+
 with st.beta_expander('Season to date Cover'):
-    spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',1)
+    # st.write('this is spread #0', spread)
+    spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',0)
     # st.write ('this is spread 1 #1',spread_1)
     spread_2=season_cover_2(spread_1,'cover')
     spread_3=season_cover_3(spread_2,'cover_sign','cover')
     # st.write('this is season to date cover')
     st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
-
-with st.beta_expander('Last Game Turnover'):
-    turnover=spread_workings(data)
-    turnover_1 = season_cover_workings(turnover,'home_turnover','away_turnover','turnover',-1)
-    turnover_2=turnover_2(turnover_1)
-    turnover_3=season_cover_3(turnover_2,'turnover_sign','prev_turnover')
-    st.write('this is last game turnover')
-    st.write(turnover_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
 matrix_df=spread_workings(data)
 matrix_df=matrix_df.reset_index().rename(columns={'index':'unique_match_id'})
@@ -166,10 +197,10 @@ matrix_df['home_pts_adv'] = -3
 matrix_df['away_pts_adv'] = 3
 matrix_df['away_spread']=-matrix_df['Spread']
 matrix_df=matrix_df.rename(columns={'Spread':'home_spread'})
-# st.write('Matrix Df check for date time', matrix_df.head())
+# st.write('LOOKS OKMatrix Df check for date time', matrix_df.head())
 # matrix_df=matrix_df.reset_index().rename(columns={'index':'unique_match_id'})
 matrix_df_1=matrix_df.loc[:,['unique_match_id','Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv','Date','Time','Home Points','Away Points']].copy()
-st.write('checking #1 matrix_df_1',matrix_df_1.head())
+# st.write('checking #1 matrix_df_1',matrix_df_1.head())
 # test_4=matrix_df_1[matrix_df_1['Week'].between(-3,finish)].copy()
 
 with st.beta_expander('Games Played to be used in Matrix Multiplication'):
@@ -200,11 +231,11 @@ with st.beta_expander('Games Played to be used in Matrix Multiplication'):
         full_stack=full_stack.fillna(0)
         full_stack.columns = full_stack.columns.droplevel(0)
         return full_stack
-
+    st.write('Check that First_4 is working', first_4)
     full_stack=games_matrix_workings(first_4)
     st.write('Check sum if True all good', full_stack.sum().sum()==0)
     st.write('this is 1st part games played, need to automate this for every week')
-    st.write('this is the GamesMatrixWorkings Function',full_stack)
+    # st.write('this is the GamesMatrixWorkings Function',full_stack)
 
 # st.header('OVER HERE')
 # test_first_section=matrix_df_1[matrix_df_1['Week'].between(-3,0)]
@@ -225,8 +256,8 @@ with st.beta_expander('CORRECT Testing reworking the DataFrame'):
     test_df_1=test_df.loc[:,['unique_match_id','Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv']].copy()
     
     # st.write(test_df_1.sort_values(by=['ID','Week'],ascending=True))
-    test_df_home=test_df_1.loc[:,['unique_match_id','Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
-    test_df_away=test_df_1.loc[:,['unique_match_id','Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
+    test_df_home=test_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
+    test_df_away=test_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
     test_df_2=pd.concat([test_df_home,test_df_away],ignore_index=True)
     test_df_2=test_df_2.sort_values(by=['ID','Week'],ascending=True)
     test_df_2['spread_with_home_adv']=test_df_2['spread']+test_df_2['home_pts_adv']
@@ -252,11 +283,11 @@ with st.beta_expander('CORRECT Power Ranking to be used in Matrix Multiplication
         dfseq['spread']=dfseq['spread'].fillna(0)
         dfseq['spread_with_home_adv']=dfseq['spread_with_home_adv'].fillna(0)
         dfseq['home']=dfseq['home'].fillna(0)
-        df_seq_1 = dfseq.groupby(['unique_match_id','Week','ID'])['spread_with_home_adv'].sum().reset_index()
+        df_seq_1 = dfseq.groupby(['Week','ID'])['spread_with_home_adv'].sum().reset_index()
         update=test_4(df_seq_1)
         ranking_power.append(update)
     df_power = pd.concat(ranking_power, ignore_index=True)
-    st.write('power ranking',df_power)
+    st.write('power ranking',df_power.sort_values(by=['ID','Week'],ascending=[True,True]))
 
 
 
@@ -273,24 +304,29 @@ with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
     first=list(range(-3,18))
     last=list(range(0,21))
     for first,last in zip(first,last):
-        st.header('start xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-        st.write('week no.', last)
+        # st.header('start xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        # st.write('week no.', last)
         # st.write('this is first',first)
         # st.write('this is last',last)
         first_section=games_df[games_df['Week'].between(first,last)]
         # st.write(first_section)
         full_game_matrix=games_matrix_workings(first_section)
-        st.write('this if full game matrix',full_game_matrix,'this is current week',last)
+        # st.write('this if full game matrix',full_game_matrix,'this is current week',last)
         adjusted_matrix=full_game_matrix.loc[0:30,0:30]
         # st.write('this is the last number',last)
         # st.write(adjusted_matrix)
         df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
-        st.write('this is the inverse matrix',df_inv, 'last number ie current week', last)
-        power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID').drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:30,:]
-        st.write('this is the power_df_week',power_df_week)
+        # st.write('this is the inverse matrix',df_inv, 'last number ie current week', last)
+        
+        power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID')\
+        .drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:30,:]
+        
+        # st.write('this is the power_df_week',power_df_week)
+        # st.write(pd.DataFrame(power_df_week).dtypes)
+        # st.write('this is PD Dataframe power df week',pd.DataFrame(power_df_week) )
         result = df_inv.dot(pd.DataFrame(power_df_week))
-        st.header('result???')
-        st.write(result)
+        # st.header('result???')
+        # st.write(result)
         result.columns=['power']
         avg=(result['power'].sum())/32
         result['avg_pwr_rank']=(result['power'].sum())/32
@@ -299,13 +335,15 @@ with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
         result=pd.concat([result,df_pwr],ignore_index=True)
         result['week']=last+1
         power_ranking.append(result)
-        st.write('week no.', last)
-        st.header('end xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    # power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
-    # st.write('power ranking combined', power_ranking_combined)
+        # st.write('week no.', last)
+        # st.header('end xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
+    st.write('power ranking combined', power_ranking_combined)
     
 with st.beta_expander('Adding Power Ranking to Matches'):
     matches_df = spread.copy()
+    st.write('This is matches_df', matches_df.head())
+    st.write('This is power ranking combined', power_ranking_combined.head())
     home_power_rank_merge=power_ranking_combined.loc[:,['ID','week','final_power']].copy().rename(columns={'week':'Week','ID':'Home ID'})
     away_power_rank_merge=power_ranking_combined.loc[:,['ID','week','final_power']].copy().rename(columns={'week':'Week','ID':'Away ID'})
     updated_df=pd.merge(matches_df,home_power_rank_merge,on=['Home ID','Week']).rename(columns={'final_power':'home_power'})
@@ -329,6 +367,7 @@ with st.beta_expander('Adding Season to Date Cover to Matches'):
     stdc_home['cover_sign']=-stdc_home['cover_sign']
     stdc_away=spread_3.rename(columns={'ID':'Away ID'})
     updated_df=updated_df.drop(['away_cover'],axis=1)
+    # st.header('Check')
     # st.write('check updated df #1',updated_df)
     updated_df=updated_df.rename(columns={'home_cover':'home_cover_result'})
     updated_df=updated_df.merge(stdc_home,on=['Date','Week','Home ID'],how='left').rename(columns={'cover':'home_cover','cover_sign':'home_cover_sign'})
@@ -366,7 +405,7 @@ with st.beta_expander('Adding Turnover to Matches'):
 with st.beta_expander('Betting Slip Matches'):
     betting_matches=updated_df.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
     'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick','home_cover_result']]
-    st.write('check for duplicate home cover', betting_matches)
+    # st.write('check for duplicate home cover', betting_matches)
     betting_matches['total_factor']=betting_matches['home_turnover_sign']+betting_matches['away_turnover_sign']+betting_matches['home_cover_sign']+\
     betting_matches['away_cover_sign']+betting_matches['power_pick']
     betting_matches['bet_on'] = np.where(betting_matches['total_factor']>2,betting_matches['Home Team'],np.where(betting_matches['total_factor']<-2,betting_matches['Away Team'],''))
@@ -388,6 +427,8 @@ with st.beta_expander('Betting Slip Matches'):
     # cols = cols_to_move + [col for col in data_4 if col not in cols_to_move]
     # data_5=data_4[cols]
     st.write(betting_matches)
+    st.write( betting_matches[(betting_matches['Home Team']=='Arizona Cardinals') | (betting_matches['Away Team']=='Arizona Cardinals')].set_index('Week') )
+
 
 with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     matches_in_regular_season= (32 * 16) / 2
@@ -398,8 +439,9 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     totals = analysis.groupby('total_factor').agg(winning=('result_all','count'))
     totals_1=analysis.groupby([analysis['total_factor'].abs(),'result_all']).agg(winning=('result_all','count')).reset_index()
     totals_1['result_all']=totals_1['result_all'].replace({0:'tie',1:'win',-1:'lose'})
-    st.write(totals)
-    st.write(totals_1)
+    st.write('shows the number of games at each factor level')
+    st.write(totals.rename(columns={'winning':'number_of_games'}))
+    st.write('sum of each factor level should correspond to table above',totals_1)
     st.write('sum of winning column should be 267 I think',totals_1['winning'].sum())
     st.write('count of week column should be 267',analysis['Week'].count())
 
