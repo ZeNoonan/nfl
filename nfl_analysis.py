@@ -26,8 +26,8 @@ team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx'
 
 # fbref_scraper(url)
 with st.echo():
-    nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
-    prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2018.pkl')
+    nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
+    prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
 # st.write('this is prior year data',prior_nfl_data)
 
 with st.beta_expander('Historical odds function'):
@@ -95,8 +95,10 @@ with st.echo():
     prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
 
 data = concat_current_prior(current,prior_data)
+# st.write('Just check the Data', data.sort_values(by=['Week','Date','Time']))
 # st.write( data[(data['Home Team']=='Arizona Cardinals') | (data['Away Team']=='Arizona Cardinals')].sort_values(by=['Week','Date','Time']) )
 # st.write( data[(data['Home Team']=='Atlanta Falcons') | (data['Away Team']=='Atlanta Falcons')].sort_values(by=['Week','Date','Time']) )
+# st.write( data[(data['Home ID']==21) | (data['Away ID']==21)].sort_values(by=['Week','Date','Time']) )
 
 def spread_workings(data):
     data['home_win']=data['Home Points'] - data['Away Points']
@@ -111,13 +113,6 @@ def spread_workings(data):
 
 
 
-def season_cover_2(season_cover_df,column_name):    
-    # https://stackoverflow.com/questions/54993050/pandas-groupby-shift-and-cumulative-sum
-    season_cover_df[column_name] = season_cover_df.groupby (['ID'])[column_name].transform(lambda x: x.cumsum().shift())
-    season_cover_df=season_cover_df.reset_index().sort_values(by=['Week','Date','ID'],ascending=True).drop('index',axis=1)
-    # Be careful with this if you want full season, season to date cover, for week 17, it is season to date up to week 16
-    # if you want full season, you have to go up to week 18 to get the full 17 weeks, just if you want to do analysis on season covers
-    return season_cover_df
 
 def season_cover_3(data,column_sign,name):
     data[column_sign] = np.where((data[name] > 0), 1, np.where((data[name] < 0),-1,0))
@@ -176,12 +171,32 @@ with st.beta_expander('Last Game Turnover'):
     # st.write('this is last game turnover')
     st.write(turnover_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
+def season_cover_2(season_cover_df,column_name):    
+    # https://stackoverflow.com/questions/54993050/pandas-groupby-shift-and-cumulative-sum
+    # season_cover_df[column_name] = season_cover_df.groupby (['ID'])[column_name].transform(lambda x: x.cumsum().shift())
+    # THE ABOVE DIDN'T WORK IN 2020 PRO FOOTBALL BUT DID WORK IN 2019 DO NOT DELETE FOR INFO PURPOSES
+    season_cover_df[column_name] = season_cover_df.groupby (['ID'])[column_name].apply(lambda x: x.cumsum().shift())
+    season_cover_df=season_cover_df.reset_index().sort_values(by=['Week','Date','ID'],ascending=True).drop('index',axis=1)
+    # Be careful with this if you want full season, season to date cover, for week 17, it is season to date up to week 16
+    # if you want full season, you have to go up to week 18 to get the full 17 weeks, just if you want to do analysis on season covers
+    return season_cover_df
 
 with st.beta_expander('Season to date Cover'):
     # st.write('this is spread #0', spread)
     spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',0)
-    # st.write ('this is spread 1 #1',spread_1)
+
+    # st.write ('this is spread showing the actual cover in the week',spread_1[spread_1['ID']==31])
+    # test_1 = spread_1.reset_index().drop('index',axis=1)
+    # st.write(spread_1)
+    # test_1['season cover test'] = test_1.groupby ('ID')['cover'].apply(lambda x: x.cumsum().shift())
+    # st.write( test_1.groupby ('ID')['cover'].transform(lambda x: x.cumsum().shift()) )
+    # st.write(test_1[test_1['ID']==0])
+    # st.write(test_1[test_1['ID']==31])
+    # st.write(test_1[test_1['ID']==17])
+
     spread_2=season_cover_2(spread_1,'cover')
+    # st.write('this cumsum cover to date and shifted')
+    # st.write(spread_2[spread_2['ID']==31])
     spread_3=season_cover_3(spread_2,'cover_sign','cover')
     # st.write('this is season to date cover')
     st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
@@ -317,15 +332,17 @@ with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
         # st.write(adjusted_matrix)
         df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
         # st.write('this is the inverse matrix',df_inv, 'last number ie current week', last)
-        
+        # st.write('this is shape of inverse matrix', df_inv.shape)
+
         power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID')\
         .drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:30,:]
         
         # st.write('this is the power_df_week',power_df_week)
+        # st.write('this is the shape', power_df_week.shape)
         # st.write(pd.DataFrame(power_df_week).dtypes)
         # st.write('this is PD Dataframe power df week',pd.DataFrame(power_df_week) )
         result = df_inv.dot(pd.DataFrame(power_df_week))
-        # st.header('result???')
+        # st.header('this is result of matrix multplication')
         # st.write(result)
         result.columns=['power']
         avg=(result['power'].sum())/32
@@ -412,8 +429,8 @@ with st.beta_expander('Betting Slip Matches'):
     betting_matches['bet_sign'] = (np.where(betting_matches['total_factor']>2,1,np.where(betting_matches['total_factor']<-2,-1,0)))
     betting_matches['bet_sign'] = betting_matches['bet_sign'].astype(float)
     betting_matches['home_cover'] = betting_matches['home_cover'].astype(float)
-    st.write('this is bet sign',betting_matches['bet_sign'].dtypes)
-    st.write('this is home cover',betting_matches['home_cover'].dtypes)
+    # st.write('this is bet sign',betting_matches['bet_sign'].dtypes)
+    # st.write('this is home cover',betting_matches['home_cover'].dtypes)
     betting_matches['result']=betting_matches['home_cover_result'] * betting_matches['bet_sign']
     st.write('testing sum of betting result',betting_matches['result'].sum())
 
@@ -445,16 +462,41 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     st.write('sum of winning column should be 267 I think',totals_1['winning'].sum())
     st.write('count of week column should be 267',analysis['Week'].count())
 
-# with st.beta_expander('Historical odds'):
-#     # st.write(odds_data)
-#     odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close']].copy()
-#     team_names_id=team_names_id.rename(columns={'Team':'Home Team'})
-#     odds_data=pd.merge(odds_data,team_names_id,on='Home Team').rename(columns={'ID':'Home ID'}).sort_values(by='Date',ascending=False)
-#     team_names_id=team_names_id.rename(columns={'Home Team':'Away Team'})
-#     odds_data=pd.merge(odds_data,team_names_id,on='Away Team').rename(columns={'ID':'Away ID','Home Score':'Home Points','Away Score':'Away Points'}).sort_values(by='Date',ascending=False)
-#     st.write(odds_data.dtypes)
-#     st.write(odds_data)
-#     st.write(odds_data[odds_data['Away ID'].isna()])
+with st.beta_expander('Analysis of Factors'):
+    analysis_factors = betting_matches.copy()
+    def analysis_factor_function(analysis_factors):
+        analysis_factors['home_turnover_success?'] = analysis_factors['home_turnover_sign'] * analysis_factors['home_cover_result']
+        analysis_factors['away_turnover_success?'] = analysis_factors['away_turnover_sign'] * analysis_factors['home_cover_result']
+        analysis_factors['home_cover_season_success?'] = analysis_factors['home_cover_sign'] * analysis_factors['home_cover_result']  
+        analysis_factors['away_cover_season_success?'] = analysis_factors['away_cover_sign'] * analysis_factors['home_cover_result']
+        analysis_factors['power_ranking_success?'] = analysis_factors['power_pick'] * analysis_factors['home_cover_result']
+        df_table = analysis_factors['home_turnover_success?'].value_counts()
+        away_turnover=analysis_factors['away_turnover_success?'].value_counts()
+        home_cover=analysis_factors['home_cover_season_success?'].value_counts()
+        away_cover=analysis_factors['away_cover_season_success?'].value_counts()
+        power=analysis_factors['power_ranking_success?'].value_counts()
+        df_table_1=pd.concat([df_table,away_turnover,home_cover,away_cover,power],axis=1)
+        # df_table_1=pd.concat([df_table,away_turnover,home_cover,away_cover,power],axis=1).reset_index().drop('index',axis=1)
+        # st.write('df table', df_table_1)
+        # test=df_table_1.reset_index()
+        # st.write(test)
+        df_table_1['total_turnover'] = df_table_1['home_turnover_success?'].add (df_table_1['away_turnover_success?'])
+        # st.write(test)
+        df_table_1['total_season_cover'] = df_table_1['home_cover_season_success?'] + df_table_1['away_cover_season_success?']
+        # st.write('df table 2', df_table_1)
+        df_table_1.loc['Total']=df_table_1.sum()
+        # st.write('latest', df_table_1)
+        df_table_1.loc['No. of Bets Made'] = df_table_1.loc[[1,-1]].sum() 
+        df_table_1.loc['% Winning'] = df_table_1.loc[1] / df_table_1.loc['No. of Bets Made']
+        return df_table_1
+    total_factor_table = analysis_factor_function(analysis_factors)     
+    st.write('This is the total number of matches broken down by Factor result')
+    st.write(total_factor_table)
+    factor_bets = (analysis_factors[analysis_factors['bet_sign']!=0]).copy()
+    bets_made_factor_table = analysis_factor_function(factor_bets)
+    st.write('This is the matches BET ON broken down by Factor result')
+    st.write(bets_made_factor_table)
+
 
 with st.beta_expander('Pro Football Ref'):
     # def fbref_scraper():
