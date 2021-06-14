@@ -497,45 +497,51 @@ with st.beta_expander('Analysis of Factors'):
     st.write('This is the matches BET ON broken down by Factor result')
     st.write(bets_made_factor_table)
 
+with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
+    df_factor = betting_matches.copy()
+    two_factor_df = df_factor[df_factor['total_factor'].abs()==2]
+    st.write(two_factor_df)
 
-with st.beta_expander('Pro Football Ref'):
+with st.beta_expander('Pro Football Ref Scraper'):
+    pass
     # def fbref_scraper():
     #     test = pd.read_html('https://www.pro-football-reference.com/years/2019/games.htm')[0]
     #     test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
     #     return test  
         
     # test=fbref_scraper()
-    nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
-    # st.write('This is before cleaning',nfl_data)
-    nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
-    nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
-    nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
-    nfl_data['Away Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Winner/tie'],nfl_data['Loser/tie'])
-    nfl_data['Home Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts.1'],nfl_data['Pts'])
-    nfl_data['Away Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts'],nfl_data['Pts.1'])
-    nfl_data['Home Turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOL'],nfl_data['TOW']))
-    nfl_data['Away Turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOW'],nfl_data['TOL']))
-    nfl_data=nfl_data[nfl_data['Week'].str.contains('Week')==False].copy()
-    nfl_data['Home Turnover']=pd.to_numeric(nfl_data['Home Turnover'])
-    nfl_data['Away Turnover']=pd.to_numeric(nfl_data['Away Turnover'])
-    nfl_data['Home Points']=pd.to_numeric(nfl_data['Home Points'])
-    nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
-    nfl_data['Date']=pd.to_datetime(nfl_data['Date'])
-    nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
-    nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
-    fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','Home Turnover','Away Turnover']]
-    fb_ref_2020['Turnover'] = fb_ref_2020['Home Turnover'] - fb_ref_2020['Away Turnover']
-    # st.write(fb_ref_2020.dtypes)
-    # st.write('before the merge',fb_ref_2020.head())
-    # st.write('Check and see if this is working right')
-    season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
-    # st.write(season_pro.head(3))
-    # st.write(season_pro.dtypes)
-    st.write('Next is to set up 2020 to see how it performed, set up functions so that previous years can be run')
-    # sorted_season=season_pro.sort_values(by=['Week','Home ID', 'Away ID'], ascending=[True,True,True])
-    # sorted_season=sorted_season.rename(columns={'Home Team': 'Home_Team','Away Team': 'Away_Team','Away Points': 'Away_Pts',
-    # 'Home Points': 'Home_Pts','Away Points': 'Away_Pts',})
-    # st.write(sorted_season)
+    
+    # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
+    # # st.write('This is before cleaning',nfl_data)
+    # nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
+    # nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
+    # nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
+    # nfl_data['Away Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Winner/tie'],nfl_data['Loser/tie'])
+    # nfl_data['Home Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts.1'],nfl_data['Pts'])
+    # nfl_data['Away Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts'],nfl_data['Pts.1'])
+    # nfl_data['Home Turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOL'],nfl_data['TOW']))
+    # nfl_data['Away Turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOW'],nfl_data['TOL']))
+    # nfl_data=nfl_data[nfl_data['Week'].str.contains('Week')==False].copy()
+    # nfl_data['Home Turnover']=pd.to_numeric(nfl_data['Home Turnover'])
+    # nfl_data['Away Turnover']=pd.to_numeric(nfl_data['Away Turnover'])
+    # nfl_data['Home Points']=pd.to_numeric(nfl_data['Home Points'])
+    # nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
+    # nfl_data['Date']=pd.to_datetime(nfl_data['Date'])
+    # nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
+    # nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
+    # fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','Home Turnover','Away Turnover']]
+    # fb_ref_2020['Turnover'] = fb_ref_2020['Home Turnover'] - fb_ref_2020['Away Turnover']
+    # # st.write(fb_ref_2020.dtypes)
+    # # st.write('before the merge',fb_ref_2020.head())
+    # # st.write('Check and see if this is working right')
+    # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
+    # # st.write(season_pro.head(3))
+    # # st.write(season_pro.dtypes)
+    # st.write('Next is to set up 2020 to see how it performed, set up functions so that previous years can be run')
+    # # sorted_season=season_pro.sort_values(by=['Week','Home ID', 'Away ID'], ascending=[True,True,True])
+    # # sorted_season=sorted_season.rename(columns={'Home Team': 'Home_Team','Away Team': 'Away_Team','Away Points': 'Away_Pts',
+    # # 'Home Points': 'Home_Pts','Away Points': 'Away_Pts',})
+    # # st.write(sorted_season)
     # db=updated_df.loc[:,['Week','Date','Home Team', 'Away Team','Home ID','Away ID','Spread','Home Points','Away Points','home_turnover']].sort_values(by=['Week','Home ID'],ascending=[True,True]).copy()
     # st.write('this is workings',db.head(3))
     # test_workings=pd.merge(sorted_season,db,on=['Week','Home ID', 'Away ID'],how = 'outer')
