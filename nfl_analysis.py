@@ -501,19 +501,31 @@ with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
     df_factor = betting_matches.copy()
     two_factor_df = df_factor[df_factor['total_factor'].abs()==2]
     st.write(two_factor_df)
-    factor_2_positive_home_turnover_filter = (two_factor_df['total_factor']==2)&(two_factor_df['home_turnover_sign']==-1)
-    factor_2_positive_away_turnover_filter = (two_factor_df['total_factor']==2)&(two_factor_df['away_turnover_sign']==-1)
-    factor_2_positive_home_cover_filter = (two_factor_df['total_factor']==2)&(two_factor_df['home_cover_sign']==-1)
-    factor_2_positive_away_cover_filter = (two_factor_df['total_factor']==2)&(two_factor_df['away_cover_sign']==-1)
-    factor_2_positive_power_filter = (two_factor_df['total_factor']==2)&(two_factor_df['power_pick']==-1)
+    factor_2_3_home_turnover_filter = (df_factor['total_factor']==2)&(df_factor['home_turnover_sign']==-1) | \
+    (df_factor['total_factor']==-2)&(df_factor['home_turnover_sign']==1) | (df_factor['total_factor']==3)&(df_factor['home_turnover_sign']==1) | \
+    (df_factor['total_factor']==-3)&(df_factor['home_turnover_sign']==-1)
 
-    factor_2_negative_home_turnover_filter = (two_factor_df['total_factor']==-2)&(two_factor_df['home_turnover_sign']==1)
-    factor_2_negative_away_turnover_filter = (two_factor_df['total_factor']==-2)&(two_factor_df['away_turnover_sign']==1)
-    factor_2_negative_home_cover_filter = (two_factor_df['total_factor']==-2)&(two_factor_df['home_cover_sign']==1)
-    factor_2_negative_away_cover_filter = (two_factor_df['total_factor']==-2)&(two_factor_df['away_cover_sign']==1)
-    factor_2_negative_power_filter = (two_factor_df['total_factor']==-2)&(two_factor_df['power_pick']==1)
+    factor_2_3_away_turnover_filter = (df_factor['total_factor']==2)&(df_factor['away_turnover_sign']==-1) | \
+    (df_factor['total_factor']==-2)&(df_factor['away_turnover_sign']==1) | (df_factor['total_factor']==3)&(df_factor['away_turnover_sign']==1) | \
+    (df_factor['total_factor']==-3)&(df_factor['away_turnover_sign']==-1)
 
-    df_factor['TEST_TEST'] = df_factor['home_turnover_sign'].where(factor_2_positive_home_turnover_filter)
+    factor_2_3_home_cover_filter = (df_factor['total_factor']==2)&(df_factor['home_cover_sign']==-1) | \
+    (df_factor['total_factor']==-2)&(df_factor['home_cover_sign']==1) | (df_factor['total_factor']==3)&(df_factor['home_cover_sign']==1) | \
+    (df_factor['total_factor']==-3)&(df_factor['home_cover_sign']==-1)
+
+    factor_2_3_away_cover_filter = (df_factor['total_factor']==2)&(df_factor['away_cover_sign']==-1) | \
+    (df_factor['total_factor']==-2)&(df_factor['away_cover_sign']==1) | (df_factor['total_factor']==3)&(df_factor['away_cover_sign']==1) | \
+    (df_factor['total_factor']==-3)&(df_factor['away_cover_sign']==-1)
+
+    factor_2_3_power_filter = (df_factor['total_factor']==2)&(df_factor['power_pick']==-1) | \
+    (df_factor['total_factor']==-2)&(df_factor['power_pick']==1) | (df_factor['total_factor']==3)&(df_factor['power_pick']==1) | \
+    (df_factor['total_factor']==-3)&(df_factor['power_pick']==-1)
+
+    df_factor['home_turnover_diagnostic'] = (df_factor['home_turnover_sign'].where(factor_2_3_home_turnover_filter)) * df_factor['home_cover_result']
+    df_factor['away_turnover_diagnostic'] = (df_factor['away_turnover_sign'].where(factor_2_3_away_turnover_filter)) * df_factor['home_cover_result']
+    df_factor['home_cover_diagnostic'] = (df_factor['home_cover_sign'].where(factor_2_3_home_cover_filter)) * df_factor['home_cover_result']
+    df_factor['away_cover_diagnostic'] = (df_factor['away_cover_sign'].where(factor_2_3_away_cover_filter)) * df_factor['home_cover_result']
+    df_factor['power_diagnostic'] = (df_factor['power_pick'].where(factor_2_3_power_filter)) * df_factor['home_cover_result']
     st.write(df_factor)
 
 
