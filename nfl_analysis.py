@@ -3,7 +3,8 @@ import numpy as np
 import streamlit as st
 from io import BytesIO
 import os
-import base64   
+import base64 
+import altair as alt  
 
 st.set_page_config(layout="wide")
 # st.header('Need to bring in previous 4 weeks in prior season')
@@ -26,8 +27,8 @@ team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx'
 
 # fbref_scraper(url)
 with st.echo():
-    nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
-    prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
+    nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
+    prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2018.pkl')
 # st.write('this is prior year data',prior_nfl_data)
 
 with st.beta_expander('Historical odds function'):
@@ -491,16 +492,20 @@ with st.beta_expander('Analysis of Factors'):
         return df_table_1
     total_factor_table = analysis_factor_function(analysis_factors)     
     st.write('This is the total number of matches broken down by Factor result')
+    cols_to_move=['total_turnover','total_season_cover','power_ranking_success?']
+    total_factor_table = total_factor_table[ cols_to_move + [ col for col in total_factor_table if col not in cols_to_move ] ]
     st.write(total_factor_table)
     factor_bets = (analysis_factors[analysis_factors['bet_sign']!=0]).copy()
     bets_made_factor_table = analysis_factor_function(factor_bets)
+    # cols_to_move=['total_turnover','total_season_cover','power_ranking_success?']
+    bets_made_factor_table = bets_made_factor_table[ cols_to_move + [ col for col in bets_made_factor_table if col not in cols_to_move ] ]
     st.write('This is the matches BET ON broken down by Factor result')
     st.write(bets_made_factor_table)
 
 with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
     df_factor = betting_matches.copy()
     two_factor_df = df_factor[df_factor['total_factor'].abs()==2]
-    st.write(two_factor_df)
+    # st.write(two_factor_df)
     factor_2_3_home_turnover_filter = (df_factor['total_factor']==2)&(df_factor['home_turnover_sign']==-1) | \
     (df_factor['total_factor']==-2)&(df_factor['home_turnover_sign']==1) | (df_factor['total_factor']==3)&(df_factor['home_turnover_sign']==1) | \
     (df_factor['total_factor']==-3)&(df_factor['home_turnover_sign']==-1)
@@ -526,7 +531,44 @@ with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
     df_factor['home_cover_diagnostic'] = (df_factor['home_cover_sign'].where(factor_2_3_home_cover_filter)) * df_factor['home_cover_result']
     df_factor['away_cover_diagnostic'] = (df_factor['away_cover_sign'].where(factor_2_3_away_cover_filter)) * df_factor['home_cover_result']
     df_factor['power_diagnostic'] = (df_factor['power_pick'].where(factor_2_3_power_filter)) * df_factor['home_cover_result']
-    st.write(df_factor)
+    # st.write(df_factor)
+
+    df_factor_table = df_factor['home_turnover_diagnostic'].value_counts()
+    away_turnover=df_factor['away_turnover_diagnostic'].value_counts()
+    home_cover=df_factor['home_cover_diagnostic'].value_counts()
+    away_cover=df_factor['away_cover_diagnostic'].value_counts()
+    power=df_factor['power_diagnostic'].value_counts()
+    df_factor_table_1=pd.concat([df_factor_table,away_turnover,home_cover,away_cover,power],axis=1)
+    df_factor_table_1['total_turnover'] = df_factor_table_1['home_turnover_diagnostic'].add (df_factor_table_1['away_turnover_diagnostic'])
+    # st.write(test)
+    df_factor_table_1['total_season_cover'] = df_factor_table_1['home_cover_diagnostic'] + df_factor_table_1['away_cover_diagnostic']
+    # st.write('df table 2', df_factor_table_1)
+    df_factor_table_1.loc['Total']=df_factor_table_1.sum()
+    # st.write('latest', df_factor_table_1)
+    df_factor_table_1.loc['No. of Bets Made'] = df_factor_table_1.loc[[1,-1]].sum() 
+    df_factor_table_1.loc['% Winning'] = df_factor_table_1.loc[1] / df_factor_table_1.loc['No. of Bets Made']
+    cols_to_move=['total_turnover','total_season_cover','power_diagnostic']
+    df_factor_table_1 = df_factor_table_1[ cols_to_move + [ col for col in df_factor_table_1 if col not in cols_to_move ] ]
+    st.write(df_factor_table_1)
+
+with st.beta_expander('Power Ranking by Week'):
+    power_week=power_ranking_combined.copy()
+    # st.write('power', power_week)
+
+    # pivot_df=power_week.loc[:,['ID','final_power','week']].copy()
+    team_names_id=team_names_id.rename(columns={'Away Team':'Team'})
+    pivot_df=pd.merge(power_week,team_names_id, on='ID')
+    pivot_df=pivot_df.loc[:,['Team','final_power','week']].copy()
+    # st.write(pivot_df)
+    power_pivot=pd.pivot_table(pivot_df,index='Team', columns='week')
+    # power_pivot['average'] = power_pivot.mean(axis=1)
+    power_pivot.columns = power_pivot.columns.droplevel(0)
+    power_pivot['average'] = power_pivot.mean(axis=1)
+    # st.write(power_pivot)
+    st.write(power_pivot.sort_values(by='average',ascending=False))
+    # https://stackoverflow.com/questions/67045668/altair-text-over-a-heatmap-in-a-script
+
+
 
 
 with st.beta_expander('Pro Football Ref Scraper'):
@@ -538,42 +580,3 @@ with st.beta_expander('Pro Football Ref Scraper'):
         
     # test=fbref_scraper()
     
-    # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
-    # # st.write('This is before cleaning',nfl_data)
-    # nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
-    # nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
-    # nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
-    # nfl_data['Away Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Winner/tie'],nfl_data['Loser/tie'])
-    # nfl_data['Home Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts.1'],nfl_data['Pts'])
-    # nfl_data['Away Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts'],nfl_data['Pts.1'])
-    # nfl_data['Home Turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOL'],nfl_data['TOW']))
-    # nfl_data['Away Turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOW'],nfl_data['TOL']))
-    # nfl_data=nfl_data[nfl_data['Week'].str.contains('Week')==False].copy()
-    # nfl_data['Home Turnover']=pd.to_numeric(nfl_data['Home Turnover'])
-    # nfl_data['Away Turnover']=pd.to_numeric(nfl_data['Away Turnover'])
-    # nfl_data['Home Points']=pd.to_numeric(nfl_data['Home Points'])
-    # nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
-    # nfl_data['Date']=pd.to_datetime(nfl_data['Date'])
-    # nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
-    # nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
-    # fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','Home Turnover','Away Turnover']]
-    # fb_ref_2020['Turnover'] = fb_ref_2020['Home Turnover'] - fb_ref_2020['Away Turnover']
-    # # st.write(fb_ref_2020.dtypes)
-    # # st.write('before the merge',fb_ref_2020.head())
-    # # st.write('Check and see if this is working right')
-    # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
-    # # st.write(season_pro.head(3))
-    # # st.write(season_pro.dtypes)
-    # st.write('Next is to set up 2020 to see how it performed, set up functions so that previous years can be run')
-    # # sorted_season=season_pro.sort_values(by=['Week','Home ID', 'Away ID'], ascending=[True,True,True])
-    # # sorted_season=sorted_season.rename(columns={'Home Team': 'Home_Team','Away Team': 'Away_Team','Away Points': 'Away_Pts',
-    # # 'Home Points': 'Home_Pts','Away Points': 'Away_Pts',})
-    # # st.write(sorted_season)
-    # db=updated_df.loc[:,['Week','Date','Home Team', 'Away Team','Home ID','Away ID','Spread','Home Points','Away Points','home_turnover']].sort_values(by=['Week','Home ID'],ascending=[True,True]).copy()
-    # st.write('this is workings',db.head(3))
-    # test_workings=pd.merge(sorted_season,db,on=['Week','Home ID', 'Away ID'],how = 'outer')
-    # test_workings['check_home_pts'] = test_workings['Home_Pts']-test_workings['Home Points']
-    # test_workings['check_away_pts'] = test_workings['Away_Pts']-test_workings['Away Points']
-    # test_workings['check_turnover'] = test_workings['Turnover'] - test_workings['home_turnover']
-    # test_workings['check_spread']=test_workings['Spread'] - test_workings['Home Line Close']
-    # st.write('combined ready for testing', test_workings)
