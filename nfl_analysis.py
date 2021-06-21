@@ -565,28 +565,19 @@ with st.beta_expander('Power Ranking by Week'):
     pivot_df_test=pivot_df_test[pivot_df_test['week']<19]
     pivot_df_test['average']=pivot_df.groupby('Team')['final_power'].transform(np.mean)
     st.write('graphing?',pivot_df_test)
-    # power_pivot['average'] = power_pivot.mean(axis=1)
     power_pivot.columns = power_pivot.columns.droplevel(0)
     power_pivot['average'] = power_pivot.mean(axis=1)
     st.write(power_pivot)
-    # st.write(power_pivot.sort_values(by='average',ascending=False))
     # https://stackoverflow.com/questions/67045668/altair-text-over-a-heatmap-in-a-script
     pivot_df=pivot_df.sort_values(by='final_power',ascending=False)
     chart_power= alt.Chart(pivot_df_test).mark_rect().encode(alt.X('week:O',axis=alt.Axis(title='week',labelAngle=0)),
-    alt.Y('Team',sort=alt.SortField(field='average', order='descending')),color='final_power:Q')
-    st.altair_chart(chart_power,use_container_width=True)
-
+    alt.Y('Team',sort=alt.SortField(field='average', order='descending')),color=alt.Color('final_power:Q',scale=alt.Scale(scheme='redyellowgreen')))
+    # https://altair-viz.github.io/gallery/layered_heatmap_text.html
+    # https://vega.github.io/vega/docs/schemes/
+    text=chart_power.mark_text().encode(text=alt.Text('final_power:N',format=",.0f"),color=alt.value('black'))
+    st.altair_chart(chart_power + text,use_container_width=True)
     # https://github.com/altair-viz/altair/issues/820#issuecomment-386856394
 
-    # x, y = np.meshgrid(range(-5, 5), range(-5, 5))
-    # z = x ** 2 + y ** 2
-    # # Convert this grid to columnar data expected by Altair
-    # source = pd.DataFrame({'x': x.ravel(),'y': y.ravel(),'z': z.ravel()})
-    # st.write(source)
-    # heatmap = alt.Chart(source).mark_rect().encode(x='x:O',y='y:O',color='z:Q')
-    # chart_test=heatmap + heatmap.mark_text().transform_calculate(label = '"" + datum.x + datum.y').encode(text='label:N',color=alt.value('black'))
-    # st.altair_chart(heatmap)
-    # st.altair_chart(chart_test,use_container_width=True)
 
 with st.beta_expander('Pro Football Ref Scraper'):
     pass
