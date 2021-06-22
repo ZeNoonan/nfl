@@ -27,8 +27,8 @@ team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx'
 
 # fbref_scraper(url)
 with st.echo():
-    nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
-    prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2018.pkl')
+    nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
+    prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
 # st.write('this is prior year data',prior_nfl_data)
 
 with st.beta_expander('Historical odds function'):
@@ -380,7 +380,7 @@ with st.beta_expander('Adding Season to Date Cover to Matches'):
     # df3=df2.merge(df,on=['date','week','team'], how='left')
     # st.write('merged on left',df3)  # merges on columns A
 
-    st.write('this is season to date cover', spread_3)
+    # st.write('this is season to date cover', spread_3)
     stdc_home=spread_3.rename(columns={'ID':'Home ID'})
     stdc_home['cover_sign']=-stdc_home['cover_sign']
     stdc_away=spread_3.rename(columns={'ID':'Away ID'})
@@ -391,11 +391,33 @@ with st.beta_expander('Adding Season to Date Cover to Matches'):
     updated_df=updated_df.merge(stdc_home,on=['Date','Week','Home ID'],how='left').rename(columns={'cover':'home_cover','cover_sign':'home_cover_sign'})
     # st.write('check updated df #2', updated_df)
     updated_df=pd.merge(updated_df,stdc_away,on=['Date','Week','Away ID'],how='left').rename(columns={'cover':'away_cover','cover_sign':'away_cover_sign'})
-    st.write('check that STDC coming in correctly', updated_df)
-    st.write('Check Total')
-    st.write('home',updated_df['home_cover_sign'].sum())
-    st.write('away',updated_df['away_cover_sign'].sum())
-    st.write('check updated df week 20', updated_df)   
+    # st.write('check that STDC coming in correctly', updated_df)
+    # st.write('Check Total')
+    # st.write('home',updated_df['home_cover_sign'].sum())
+    # st.write('away',updated_df['away_cover_sign'].sum())
+    # st.write('Updated for STDC', updated_df)
+    # st.write('Get STDC by Week do something similar for Power Rank')
+    # last_occurence = spread_3.groupby(['ID'],as_index=False).last()
+    # st.write(last_occurence)
+    stdc_df=pd.merge(spread_3,team_names_id,on='ID').rename(columns={'Away Team':'Team'})
+    stdc_df=stdc_df.loc[:,['Week','Team','cover']].copy()
+    # stdc_df['last_week']=
+    # stdc_df['Week']=stdc_df['Week'].replace({17:'week_17'})
+    
+    stdc_df['average']=stdc_df.groupby('Team')['cover'].transform(np.mean)
+    # st.write(stdc_df.sort_values(by=['Team','Week']))
+    
+    stdc_pivot=pd.pivot_table(stdc_df,index='Team', columns='Week')
+    stdc_pivot.columns = stdc_pivot.columns.droplevel(0)
+    # st.write(stdc_pivot)
+
+    chart_cover= alt.Chart(stdc_df).mark_rect().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
+    alt.Y('Team',sort=alt.SortField(field='average', order='descending')),color=alt.Color('cover:Q',scale=alt.Scale(scheme='redyellowgreen')))
+    # https://altair-viz.github.io/gallery/layered_heatmap_text.html
+    # https://vega.github.io/vega/docs/schemes/
+    text_cover=chart_cover.mark_text().encode(text=alt.Text('cover:N'),color=alt.value('black'))
+    st.altair_chart(chart_cover + text_cover,use_container_width=True)
+
     
 with st.beta_expander('Adding Turnover to Matches'):
     st.write('this is turnovers', turnover_3)
@@ -559,15 +581,15 @@ with st.beta_expander('Power Ranking by Week'):
     team_names_id=team_names_id.rename(columns={'Away Team':'Team'})
     pivot_df=pd.merge(power_week,team_names_id, on='ID')
     pivot_df=pivot_df.loc[:,['Team','final_power','week']].copy()
-    st.write('graphing?',pivot_df)
+    # st.write('graphing?',pivot_df)
     power_pivot=pd.pivot_table(pivot_df,index='Team', columns='week')
     pivot_df_test = pivot_df.copy()
     pivot_df_test=pivot_df_test[pivot_df_test['week']<19]
     pivot_df_test['average']=pivot_df.groupby('Team')['final_power'].transform(np.mean)
-    st.write('graphing?',pivot_df_test)
+    # st.write('graphing?',pivot_df_test)
     power_pivot.columns = power_pivot.columns.droplevel(0)
     power_pivot['average'] = power_pivot.mean(axis=1)
-    st.write(power_pivot)
+    # st.write(power_pivot)
     # https://stackoverflow.com/questions/67045668/altair-text-over-a-heatmap-in-a-script
     pivot_df=pivot_df.sort_values(by='final_power',ascending=False)
     chart_power= alt.Chart(pivot_df_test).mark_rect().encode(alt.X('week:O',axis=alt.Axis(title='week',labelAngle=0)),
