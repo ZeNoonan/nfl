@@ -600,6 +600,27 @@ with st.beta_expander('Power Ranking by Week'):
     st.altair_chart(chart_power + text,use_container_width=True)
     # https://github.com/altair-viz/altair/issues/820#issuecomment-386856394
 
+with st.beta_expander('Underdog Analyis'):
+    underdog_df = betting_matches.copy()
+    # underdog_df['home_underdog_away_favourite']=np.where(underdog_df['Spread']>0,1,np.NaN)
+    # underdog_df['away_underdog_home_favourite']=np.where(underdog_df['Spread']<0,1,np.NaN)
+    
+    filter_bets_underdog=(underdog_df['Spread']>0.1) &(underdog_df['bet_sign']!=0)
+    filter_bets_favourite=(underdog_df['Spread']<0.1) &(underdog_df['bet_sign']!=0)
+    underdog_df['home_underdog_bet_result']=underdog_df['result'].where(filter_bets_underdog)
+    underdog_df['home_favourite_bet_result']=underdog_df['result'].where(filter_bets_favourite)
+    underdog_df['home_underdog_all_result']=underdog_df['home_cover_result'].where(underdog_df['Spread']>0.1)
+    underdog_df['home_favourite_all_result']=underdog_df['home_cover_result'].where(underdog_df['Spread']<0.1)
+    underdog_table = underdog_df['home_underdog_bet_result'].value_counts()
+    home_fav_bet = underdog_df['home_favourite_bet_result'].value_counts()
+    home_underdog_all = underdog_df['home_underdog_all_result'].value_counts()
+    home_fav_all = underdog_df['home_favourite_all_result'].value_counts()
+    underdog_results = pd.concat([underdog_table,home_fav_bet,home_underdog_all,home_fav_all],axis=1)
+    underdog_results=underdog_results.sort_index(ascending=False)
+    underdog_results.loc['Total']=underdog_results.sum()
+    st.write(underdog_results)
+
+
 
 with st.beta_expander('Pro Football Ref Scraper'):
     pass
