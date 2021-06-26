@@ -7,7 +7,8 @@ import base64
 import altair as alt  
 
 st.set_page_config(layout="wide")
-# st.header('Need to bring in previous 4 weeks in prior season')
+st.header('just wondering about week 17 should move that out of playoff games see what happens  ✨')
+st.subheader('and also have a button for changing year')
 
 @st.cache
 def read_data(file):
@@ -472,9 +473,10 @@ with st.beta_expander('Betting Slip Matches'):
 
 with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     matches_in_regular_season= (32 * 16) / 2
-    matches_in_playoffs = 11
+    st.write('In 2020 there were 13 matches in playoffs looks like this was new so 269 total matches in 2020 season compared with 267 in previous seasons')
+    matches_in_playoffs = 13
     total_matches =matches_in_regular_season + matches_in_playoffs
-    st.write('total_matches',total_matches)
+    st.write('total_matches per my calculation',total_matches)
     analysis=betting_matches.copy()
     totals = analysis.groupby('total_factor').agg(winning=('result_all','count'))
     totals_1=analysis.groupby([analysis['total_factor'].abs(),'result_all']).agg(winning=('result_all','count')).reset_index()
@@ -602,23 +604,50 @@ with st.beta_expander('Power Ranking by Week'):
 
 with st.beta_expander('Underdog Analyis'):
     underdog_df = betting_matches.copy()
-    # underdog_df['home_underdog_away_favourite']=np.where(underdog_df['Spread']>0,1,np.NaN)
-    # underdog_df['away_underdog_home_favourite']=np.where(underdog_df['Spread']<0,1,np.NaN)
-    
     filter_bets_underdog=(underdog_df['Spread']>0.1) &(underdog_df['bet_sign']!=0)
     filter_bets_favourite=(underdog_df['Spread']<0.1) &(underdog_df['bet_sign']!=0)
     underdog_df['home_underdog_bet_result']=underdog_df['result'].where(filter_bets_underdog)
     underdog_df['home_favourite_bet_result']=underdog_df['result'].where(filter_bets_favourite)
+    underdog_df['away_underdog_bet_result']=underdog_df['result'].where(filter_bets_favourite)*-1
+    underdog_df['away_favourite_bet_result']=underdog_df['result'].where(filter_bets_underdog)*-1
     underdog_df['home_underdog_all_result']=underdog_df['home_cover_result'].where(underdog_df['Spread']>0.1)
     underdog_df['home_favourite_all_result']=underdog_df['home_cover_result'].where(underdog_df['Spread']<0.1)
+    underdog_df['away_favourite_all_result']=(underdog_df['home_cover_result'].where(underdog_df['Spread']>0.1))*-1
+    underdog_df['away_underdog_all_result']=(underdog_df['home_cover_result'].where(underdog_df['Spread']<0.1))*-1
     underdog_table = underdog_df['home_underdog_bet_result'].value_counts()
+    away_underdog_bet = underdog_df['away_underdog_bet_result'].value_counts()
     home_fav_bet = underdog_df['home_favourite_bet_result'].value_counts()
-    home_underdog_all = underdog_df['home_underdog_all_result'].value_counts()
-    home_fav_all = underdog_df['home_favourite_all_result'].value_counts()
-    underdog_results = pd.concat([underdog_table,home_fav_bet,home_underdog_all,home_fav_all],axis=1)
+    away_fav_bet = underdog_df['away_favourite_bet_result'].value_counts()
+    underdog_results = pd.concat([underdog_table,away_underdog_bet,home_fav_bet,away_fav_bet],axis=1)
     underdog_results=underdog_results.sort_index(ascending=False)
+    underdog_results['underdog']=underdog_results['home_underdog_bet_result']+underdog_results['away_underdog_bet_result']
+    underdog_results['favourite']=underdog_results['home_favourite_bet_result']+underdog_results['away_favourite_bet_result']
     underdog_results.loc['Total']=underdog_results.sum()
+    underdog_results.loc['No. of Bets Made'] = underdog_results.loc[[1,-1]].sum() 
+    underdog_results.loc['% Winning'] = underdog_results.loc[1] / underdog_results.loc['No. of Bets Made']
+    cols_to_move=['underdog','favourite']
+    underdog_results = underdog_results[ cols_to_move + [ col for col in underdog_results if col not in cols_to_move ] ]
+    st.write('This shows the total number of BETS made and whether it was an underdog or favourite that covered')
+    st.write('not sure if this has value or not')
     st.write(underdog_results)
+
+    home_underdog_all = underdog_df['home_underdog_all_result'].value_counts()
+    away_underdog_all = underdog_df['away_underdog_all_result'].value_counts()
+    home_fav_all = underdog_df['home_favourite_all_result'].value_counts()
+    away_fav_all = underdog_df['away_favourite_all_result'].value_counts()
+    all_results = pd.concat([home_underdog_all,away_underdog_all,home_fav_all,away_fav_all],axis=1)
+    all_results=all_results.sort_index(ascending=False)
+    all_results['underdog']=all_results['home_underdog_all_result']+all_results['away_underdog_all_result']
+    all_results['favourite']=all_results['home_favourite_all_result']+all_results['away_favourite_all_result']
+    all_results.loc['Total']=all_results.sum()
+    all_results.loc['No. of Bets Made'] = all_results.loc[[1,-1]].sum() 
+    all_results.loc['% Winning'] = all_results.loc[1] / all_results.loc['No. of Bets Made']
+    cols_to_move=['underdog','favourite']
+    all_results = all_results[ cols_to_move + [ col for col in all_results if col not in cols_to_move ] ]
+    st.write(all_results)
+
+    
+    
 
 
 
