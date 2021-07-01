@@ -26,6 +26,7 @@ team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx'
 #         test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2015.pkl')
 #         return test 
 
+
 # fbref_scraper(url)
 with st.echo():
     nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
