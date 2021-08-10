@@ -10,6 +10,23 @@ st.set_page_config(layout="wide")
 st.header('just wondering about week 17 should move that out of playoff games see what happens  ✨')
 st.subheader('and also have a button for changing year')
 
+def get_table_download_link(df):
+    """Generates a link allowing the data in a given panda dataframe to be downloaded
+    in:  dataframe
+    out: href string
+    """
+    val = to_excel(df)
+    b64 = base64.b64encode(val)  # val looks like b'...'
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="extract.xlsx">Download csv file</a>' # decode b'abc' => abc
+
+def to_excel(df):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, sheet_name='Sheet1')
+    writer.save()
+    processed_data = output.getvalue()
+    return processed_data
+
 @st.cache
 def read_data(file):
     return pd.read_excel(file) 
@@ -17,7 +34,9 @@ data_2019 = read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2019_Data.xlsx'
 # data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Adj_week_zero.xlsx').copy()
 data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data.xlsx').copy()
 test_data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Test.xlsx').copy()
-odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds.xlsx').copy()
+# odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds.xlsx').copy()
+odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_1.xlsx').copy()
+# https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx').copy()
 
 # url='https://www.pro-football-reference.com/years/2015/games.htm'
@@ -27,11 +46,23 @@ team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx'
 #         return test 
 
 
+# st.write(data_2021)
+
 # fbref_scraper(url)
 with st.echo():
-    nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
-    prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
+    # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
+    prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
+    data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.pkl')
+    st.write(data_2021.head())
+    data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
+    data_2021['Date']=pd.to_datetime(data_2021['Date'],errors='coerce')
+    st.write(data_2021.head())
+    data_2021['TOW']=0
+    data_2021['TOL']=0
+    nfl_data=data_2021.set_index('Week').drop(['Pre0','Pre1','Pre2','Pre3'],axis=0).reset_index()
 # st.write('this is prior year data',prior_nfl_data)
+
+# st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
 
 with st.beta_expander('Historical odds function'):
     # st.write(odds_data)
@@ -656,8 +687,8 @@ with st.beta_expander('Underdog Analyis'):
 with st.beta_expander('Pro Football Ref Scraper'):
     pass
     # def fbref_scraper():
-    #     test = pd.read_html('https://www.pro-football-reference.com/years/2019/games.htm')[0]
-    #     test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2019.pkl')
+    #     test = pd.read_html('https://www.pro-football-reference.com/years/2021/games.htm')[0]
+    #     test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.pkl')
     #     return test  
         
     # test=fbref_scraper()
