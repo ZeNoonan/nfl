@@ -53,13 +53,25 @@ with st.echo():
     # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
     prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
     data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.pkl')
-    st.write(data_2021.head())
+    # st.write(data_2021.head())
     data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
-    data_2021['Date']=pd.to_datetime(data_2021['Date'],errors='coerce')
-    st.write(data_2021.head())
+    data_2021['month']=data_2021['Date'].str.split(' ').str[0]
+    data_2021['date_in_month']=data_2021['Date'].str.split(' ').str[1]
+    data_2021['year']=2021
+    
+    
     data_2021['TOW']=0
     data_2021['TOL']=0
-    nfl_data=data_2021.set_index('Week').drop(['Pre0','Pre1','Pre2','Pre3'],axis=0).reset_index()
+    data_2021=data_2021.set_index('Week').drop(['Pre0','Pre1','Pre2','Pre3','Week'],axis=0).reset_index()
+    st.write(data_2021)
+    data_2021['Week']=pd.to_numeric(data_2021['Week'])
+    data_2021['year']=np.where(data_2021['Week']>16,2022,2021)
+    data_2021['Date']=pd.to_datetime(data_2021['year'].astype(str) + data_2021['month']+ data_2021['date_in_month'].astype(str),format='%Y%B%d')
+    data_2021.loc['Week','Week']='Week'
+    # st.write(data_2021)
+
+    nfl_data=data_2021.copy()
+    st.write(nfl_data)
 # st.write('this is prior year data',prior_nfl_data)
 
 # st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
