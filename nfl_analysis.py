@@ -52,6 +52,8 @@ team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx'
 with st.echo():
     # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
     prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
+    
+    
     data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.pkl')
     # st.write(data_2021.head())
     data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
@@ -63,7 +65,7 @@ with st.echo():
     data_2021['TOW']=0
     data_2021['TOL']=0
     data_2021=data_2021.set_index('Week').drop(['Pre0','Pre1','Pre2','Pre3','Week'],axis=0).reset_index()
-    st.write(data_2021)
+    # st.write(data_2021)
     data_2021['Week']=pd.to_numeric(data_2021['Week'])
     data_2021['year']=np.where(data_2021['Week']>16,2022,2021)
     data_2021['Date']=pd.to_datetime(data_2021['year'].astype(str) + data_2021['month']+ data_2021['date_in_month'].astype(str),format='%Y%B%d')
@@ -71,7 +73,7 @@ with st.echo():
     # st.write(data_2021)
 
     nfl_data=data_2021.copy()
-    st.write(nfl_data)
+    # st.write('Just check this overall sense check its current year data',nfl_data)
 # st.write('this is prior year data',prior_nfl_data)
 
 # st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
@@ -114,8 +116,11 @@ with st.beta_expander('Pro Football Function'):
         fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','home_turnover','away_turnover']]
         fb_ref_2020['Turnover'] = fb_ref_2020['home_turnover'] - fb_ref_2020['away_turnover']
         # st.write(fb_ref_2020.dtypes)
+
+        # st.write('is it the merge left causing the trouble')
         # st.write('before the merge Pro-Football Ref',fb_ref_2020)
         # st.write('before the merge Odds Data',odds_data)
+        
         # st.write('Check and see if this is working right')
         # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Points','Away Points'], how='left')
         # IT'S IMPORTANT THAT THE ODDS MERGES CORRECTLY WITH FBREF Data for the games with neutral venues as need to get spread right!
@@ -136,9 +141,48 @@ def concat_current_prior(x,y):
     return current_plus_prior
     
 
-with st.echo():    
-    current=clean_pro_football_pickle(nfl_data)
-    prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
+# with st.echo():    
+
+def test_clean_pro_football_pickle(nfl_data):
+    nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
+    nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
+    nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
+    nfl_data['Away Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Winner/tie'],nfl_data['Loser/tie'])
+    nfl_data['Home Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts.1'],nfl_data['Pts'])
+    nfl_data['Away Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts'],nfl_data['Pts.1'])
+    nfl_data['home_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOL'],nfl_data['TOW']))
+    nfl_data['away_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOW'],nfl_data['TOL']))
+
+    # nfl_data=nfl_data[nfl_data['Week'].str.contains('Week')==False].copy()
+    
+    
+    # nfl_data['home_turnover']=pd.to_numeric(nfl_data['home_turnover'])
+    # nfl_data['away_turnover']=pd.to_numeric(nfl_data['away_turnover'])
+    # nfl_data['Home Points']=pd.to_numeric(nfl_data['Home Points'])
+    # nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
+    # nfl_data['Date']=pd.to_datetime(nfl_data['Date'])
+    # nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
+    # nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
+    # fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','home_turnover','away_turnover']]
+    # fb_ref_2020['Turnover'] = fb_ref_2020['home_turnover'] - fb_ref_2020['away_turnover']
+    # # st.write(fb_ref_2020.dtypes)
+    # st.write('is it the merge left causing the trouble')
+    # st.write('before the merge Pro-Football Ref',fb_ref_2020)
+    # st.write('before the merge Odds Data',odds_data)
+    # # st.write('Check and see if this is working right')
+    # # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Points','Away Points'], how='left')
+    # # IT'S IMPORTANT THAT THE ODDS MERGES CORRECTLY WITH FBREF Data for the games with neutral venues as need to get spread right!
+    # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
+    # # st.write('season pro #1 after merge with updated merged on',season_pro)
+    return nfl_data
+    # return season_pro
+
+test_current=test_clean_pro_football_pickle(nfl_data)
+st.write('CHECKING TEST Row 178', test_current)
+
+current=clean_pro_football_pickle(nfl_data)
+st.write('Issue THIS IS BLANK something wrong with cleaning of 2021 data Row 181', current)
+prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
 
 data = concat_current_prior(current,prior_data)
 # st.write('Just check the Data', data.sort_values(by=['Week','Date','Time']))
@@ -247,8 +291,10 @@ with st.beta_expander('Season to date Cover'):
     # st.write('this is season to date cover')
     st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
+with st.echo():
+    st.write('is there a problem here')
+    matrix_df=spread_workings(data)
 
-matrix_df=spread_workings(data)
 matrix_df=matrix_df.reset_index().rename(columns={'index':'unique_match_id'})
 test_df = matrix_df.copy()
 # st.write('check for unique match id', test_df)
@@ -270,12 +316,14 @@ with st.beta_expander('Games Played to be used in Matrix Multiplication'):
     finish=0
     first_4=first_qtr[first_qtr['Week'].between(start,finish)].copy()
     # st.write('checking first 4 #2',first_4)
+    st.write('just want to see what year am i taking', first_qtr)
     def games_matrix_workings(first_4):
         group_week = first_4.groupby('Week')
         raw_data_2=[]
         game_weights = iter([-0.125, -0.25,-0.5,-1])
         for name, group in group_week:
             group['game_adj']=next(game_weights)
+            # st.write('looking at for loop',group)
             raw_data_2.append(group)
 
         df3 = pd.concat(raw_data_2, ignore_index=True)
@@ -292,7 +340,7 @@ with st.beta_expander('Games Played to be used in Matrix Multiplication'):
         full_stack=full_stack.fillna(0)
         full_stack.columns = full_stack.columns.droplevel(0)
         return full_stack
-    st.write('Check that First_4 is working', first_4)
+    # st.write('Check that First_4 is working', first_4)
     full_stack=games_matrix_workings(first_4)
     st.write('Check sum if True all good', full_stack.sum().sum()==0)
     st.write('this is 1st part games played, need to automate this for every week')
@@ -362,6 +410,7 @@ with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
     list_power_ranking=[]
     power_df=df_power.loc[:,['Week','ID','adj_spread']].copy()
     games_df=matrix_df_1.copy()
+    st.write('Checking the games df', games_df)
     first=list(range(-3,18))
     last=list(range(0,21))
     for first,last in zip(first,last):
@@ -370,7 +419,7 @@ with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
         # st.write('this is first',first)
         # st.write('this is last',last)
         first_section=games_df[games_df['Week'].between(first,last)]
-        # st.write(first_section)
+        # st.write('Checking the first_section',first_section)
         full_game_matrix=games_matrix_workings(first_section)
         # st.write('this if full game matrix',full_game_matrix,'this is current week',last)
         adjusted_matrix=full_game_matrix.loc[0:30,0:30]
