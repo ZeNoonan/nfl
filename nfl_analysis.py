@@ -604,8 +604,10 @@ with st.beta_expander('Betting Slip Matches'):
     # cols_to_move=[]
     # cols = cols_to_move + [col for col in data_4 if col not in cols_to_move]
     # data_5=data_4[cols]
-    st.write(betting_matches)
-    st.write( betting_matches[(betting_matches['Home Team']=='Arizona Cardinals') | (betting_matches['Away Team']=='Arizona Cardinals')].set_index('Week') )
+    st.write(betting_matches.sort_values('Date'))
+    st.write('Below is just checking an individual team')
+    st.write( betting_matches[(betting_matches['Home Team']=='Arizona Cardinals') | 
+    (betting_matches['Away Team']=='Arizona Cardinals')].set_index('Week').sort_values(by='Date') )
 
 
 with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
@@ -648,8 +650,14 @@ with st.beta_expander('Analysis of Factors'):
         # st.write('df table 2', df_table_1)
         df_table_1.loc['Total']=df_table_1.sum()
         # st.write('latest', df_table_1)
-        df_table_1.loc['No. of Bets Made'] = df_table_1.loc[[1,-1]].sum() 
-        df_table_1.loc['% Winning'] = df_table_1.loc[1] / df_table_1.loc['No. of Bets Made']
+        # st.write('latest', df_table_1.shape)
+        if df_table_1.shape > (2,7):
+            st.write('Returning df with analysis')
+            df_table_1.loc['No. of Bets Made'] = df_table_1.loc[[1,-1]].sum() 
+            df_table_1.loc['% Winning'] = df_table_1.loc[1] / df_table_1.loc['No. of Bets Made']
+        else:
+            st.write('Returning df with no analysis')
+            return df_table_1
         return df_table_1
     total_factor_table = analysis_factor_function(analysis_factors)     
     st.write('This is the total number of matches broken down by Factor result')
@@ -706,8 +714,16 @@ with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
     # st.write('df table 2', df_factor_table_1)
     df_factor_table_1.loc['Total']=df_factor_table_1.sum()
     # st.write('latest', df_factor_table_1)
-    df_factor_table_1.loc['No. of Bets Made'] = df_factor_table_1.loc[[1,-1]].sum() 
-    df_factor_table_1.loc['% Winning'] = df_factor_table_1.loc[1] / df_factor_table_1.loc['No. of Bets Made']
+    # st.write('latest', df_factor_table_1.shape)
+
+    if df_factor_table_1.shape > (2,7):
+        df_factor_table_1.loc['No. of Bets Made'] = df_factor_table_1.loc[[1,-1]].sum() 
+        df_factor_table_1.loc['% Winning'] = df_factor_table_1.loc[1] / df_factor_table_1.loc['No. of Bets Made']
+    # else:
+    #     # st.write('Returning df with no anal')
+    #     return df_factor_table_1
+
+
     cols_to_move=['total_turnover','total_season_cover','power_diagnostic']
     df_factor_table_1 = df_factor_table_1[ cols_to_move + [ col for col in df_factor_table_1 if col not in cols_to_move ] ]
     st.write(df_factor_table_1)
@@ -760,8 +776,11 @@ with st.beta_expander('Underdog Analyis'):
     underdog_results['underdog']=underdog_results['home_underdog_bet_result']+underdog_results['away_underdog_bet_result']
     underdog_results['favourite']=underdog_results['home_favourite_bet_result']+underdog_results['away_favourite_bet_result']
     underdog_results.loc['Total']=underdog_results.sum()
-    underdog_results.loc['No. of Bets Made'] = underdog_results.loc[[1,-1]].sum() 
-    underdog_results.loc['% Winning'] = underdog_results.loc[1] / underdog_results.loc['No. of Bets Made']
+    # st.write('underdog', underdog_results)
+    # st.write('underdog', underdog_results.shape)
+    if underdog_results.shape > (2,6):
+        underdog_results.loc['No. of Bets Made'] = underdog_results.loc[[1,-1]].sum() 
+        underdog_results.loc['% Winning'] = underdog_results.loc[1] / underdog_results.loc['No. of Bets Made']
     cols_to_move=['underdog','favourite']
     underdog_results = underdog_results[ cols_to_move + [ col for col in underdog_results if col not in cols_to_move ] ]
     st.write('This shows the total number of BETS made and whether it was an underdog or favourite that covered')
@@ -777,8 +796,11 @@ with st.beta_expander('Underdog Analyis'):
     all_results['underdog']=all_results['home_underdog_all_result']+all_results['away_underdog_all_result']
     all_results['favourite']=all_results['home_favourite_all_result']+all_results['away_favourite_all_result']
     all_results.loc['Total']=all_results.sum()
-    all_results.loc['No. of Bets Made'] = all_results.loc[[1,-1]].sum() 
-    all_results.loc['% Winning'] = all_results.loc[1] / all_results.loc['No. of Bets Made']
+    # st.write('checking',all_results)
+    # st.write(all_results.shape)
+    if all_results.shape > (2,6):
+        all_results.loc['No. of Bets Made'] = all_results.loc[[1,-1]].sum() 
+        all_results.loc['% Winning'] = all_results.loc[1] / all_results.loc['No. of Bets Made']
     cols_to_move=['underdog','favourite']
     all_results = all_results[ cols_to_move + [ col for col in all_results if col not in cols_to_move ] ]
     st.write(all_results)
