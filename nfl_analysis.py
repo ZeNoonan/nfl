@@ -4,10 +4,11 @@ import streamlit as st
 from io import BytesIO
 import os
 import base64 
-import altair as alt  
+import altair as alt
+from st_aggrid import AgGrid
 
 st.set_page_config(layout="wide")
-st.header('just wondering about week 17 should move that out of playoff games see what happens  ✨')
+# st.header('just wondering about week 17 should move that out of playoff games see what happens  ✨')
 st.subheader('and also have a button for changing year')
 
 def get_table_download_link(df):
@@ -142,9 +143,10 @@ with st.beta_expander('Pro Football Function'):
 
 def clean_prior_year(x):
     x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:0,16:-1,15:-2,14:-3})
+    # x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:-1,16:-2,15:-3})
     x=x[x['Week'].between(-3,0)].copy()
     x=x.reset_index().drop('index',axis=1)
-    st.write('Check for errors',x[x['Away ID'].isna()])
+    # st.write('Check for errors',x[x['Away ID'].isna()])
     return x
 
 def concat_current_prior(x,y):
@@ -205,14 +207,16 @@ test_current=test_clean_pro_football_pickle(nfl_data)
 # st.write('CHECKING TEST Row 178', test_current)
 
 current=clean_pro_football_pickle(nfl_data)
-st.write('Issue THIS IS BLANK something wrong with cleaning of 2021 data Row 181', current)
+# st.write('Issue THIS IS BLANK something wrong with cleaning of 2021 data Row 181', current)
 
 
 # st.write('PRIOR NFL DATA', test_clean_pro_football_pickle(prior_nfl_data))
 prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
-st.write('PRIOR DATA', prior_data)
+# st.write('PRIOR DATA', prior_data)
+# st.write( prior_data[(prior_data['Home Team']=='Miami Dolphins') | (prior_data['Away Team']=='Miami Dolphins')].sort_values(by=['Week','Date','Time']) )
+# st.write( prior_data[(prior_data['Home Team']=='Buffalo Bills') | (prior_data['Away Team']=='Buffalo Bills')].sort_values(by=['Week','Date','Time']) )
 
-st.write('CHECK THIS AS data below combines the above')
+# st.write('CHECK THIS AS data below combines the above')
 
 # def test_clean_prior_year(x):
 #     x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:0,16:-1,15:-2,14:-3})
@@ -228,7 +232,7 @@ st.write('CHECK THIS AS data below combines the above')
 
 data = concat_current_prior(current,prior_data)
 
-st.write('Just check the Data', data.sort_values(by=['Week','Date','Time']))
+# st.write('Just check the Data', data.sort_values(by=['Week','Date','Time']))
 # st.write( data[(data['Home Team']=='Arizona Cardinals') | (data['Away Team']=='Arizona Cardinals')].sort_values(by=['Week','Date','Time']) )
 # st.write( data[(data['Home Team']=='Atlanta Falcons') | (data['Away Team']=='Atlanta Falcons')].sort_values(by=['Week','Date','Time']) )
 # st.write( data[(data['Home ID']==21) | (data['Away ID']==21)].sort_values(by=['Week','Date','Time']) )
@@ -334,10 +338,7 @@ with st.beta_expander('Season to date Cover'):
     # st.write('this is season to date cover')
     st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
-with st.echo():
-    st.write('is there a problem here')
-    matrix_df=spread_workings(data)
-
+matrix_df=spread_workings(data)
 matrix_df=matrix_df.reset_index().rename(columns={'index':'unique_match_id'})
 test_df = matrix_df.copy()
 # st.write('check for unique match id', test_df)
@@ -605,9 +606,12 @@ with st.beta_expander('Betting Slip Matches'):
     # cols = cols_to_move + [col for col in data_4 if col not in cols_to_move]
     # data_5=data_4[cols]
     st.write(betting_matches.sort_values('Date'))
-    st.write('Below is just checking an individual team')
-    st.write( betting_matches[(betting_matches['Home Team']=='Arizona Cardinals') | 
-    (betting_matches['Away Team']=='Arizona Cardinals')].set_index('Week').sort_values(by='Date') )
+
+    AgGrid(betting_matches)
+
+    # st.write('Below is just checking an individual team')
+    # st.write( betting_matches[(betting_matches['Home Team']=='Arizona Cardinals') | 
+    # (betting_matches['Away Team']=='Arizona Cardinals')].set_index('Week').sort_values(by='Date') )
 
 
 with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
@@ -734,7 +738,9 @@ with st.beta_expander('Power Ranking by Week'):
 
     # pivot_df=power_week.loc[:,['ID','final_power','week']].copy()
     team_names_id=team_names_id.rename(columns={'Away Team':'Team'})
-    pivot_df=pd.merge(power_week,team_names_id, on='ID')
+    id_names=team_names_id.drop_duplicates(subset=['ID'], keep='first')
+    pivot_df=pd.merge(power_week,id_names, on='ID')
+    # st.write('after merge', pivot_df)
     pivot_df=pivot_df.loc[:,['Team','final_power','week']].copy()
     # st.write('graphing?',pivot_df)
     power_pivot=pd.pivot_table(pivot_df,index='Team', columns='week')
