@@ -5,7 +5,8 @@ from io import BytesIO
 import os
 import base64 
 import altair as alt
-from st_aggrid import AgGrid
+# from st_aggrid import AgGrid
+from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode, JsCode
 
 st.set_page_config(layout="wide")
 # st.header('just wondering about week 17 should move that out of playoff games see what happens  ✨')
@@ -605,9 +606,60 @@ with st.beta_expander('Betting Slip Matches'):
     # cols_to_move=[]
     # cols = cols_to_move + [col for col in data_4 if col not in cols_to_move]
     # data_5=data_4[cols]
-    st.write(betting_matches.sort_values('Date'))
+    betting_matches=betting_matches.sort_values('Date')
+    st.write(betting_matches)
+    # st.write(betting_matches.dtypes)
+    presentation_betting_matches=betting_matches.copy()
+    
+    # def color_negative_red(val):
+    #     color = 'red' if val < 0 else 'black'
+    #     return 'color: %s' % color
+    # presentation_betting_matches['Spread'] = presentation_betting_matches['Spread'].apply(color_negative_red)
 
-    AgGrid(betting_matches)
+
+
+
+    presentation_betting_matches['home_power'] = presentation_betting_matches['home_power'].apply("{:.1f}".format)
+    presentation_betting_matches['away_power'] = presentation_betting_matches['away_power'].apply("{:.1f}".format)
+    presentation_betting_matches['Date'] = presentation_betting_matches['Date'].dt.strftime('%m/%d/%Y')
+
+    
+
+    AgGrid(presentation_betting_matches)
+    
+
+    # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
+    gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
+    cellsytle_jscode = JsCode("""
+    function(params) {
+        if (params.value < O) {
+            return {
+                'color': 'white',
+                'backgroundColor': 'darkred'
+            }
+        } else {
+            return {
+                'color': 'black',
+                'backgroundColor': 'white'
+            }
+        }
+    };
+    """)
+    gb.configure_column("Spread", cellStyle=cellsytle_jscode)
+
+    # gb.configure_pagination()
+    # gb.configure_side_bar()
+    # gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, aggFunc="sum", editable=True)
+    gridOptions = gb.build()
+    AgGrid(presentation_betting_matches, gridOptions=gridOptions, enable_enterprise_modules=True,allow_unsafe_jscode=True)
+
+
+
+    # AgGrid(betting_matches.sort_values('Date').style.format({'home_power':"{:.1f}",'away_power':"{:.1f}"}))
+    
+
+
+
 
     # st.write('Below is just checking an individual team')
     # st.write( betting_matches[(betting_matches['Home Team']=='Arizona Cardinals') | 
