@@ -608,7 +608,7 @@ with st.beta_expander('Betting Slip Matches'):
     # data_5=data_4[cols]
     betting_matches=betting_matches.sort_values('Date')
     st.write(betting_matches)
-    # st.write(betting_matches.dtypes)
+    st.write(betting_matches.dtypes)
     presentation_betting_matches=betting_matches.copy()
     
     # def color_negative_red(val):
@@ -619,40 +619,59 @@ with st.beta_expander('Betting Slip Matches'):
 
 
 
-    presentation_betting_matches['home_power'] = presentation_betting_matches['home_power'].apply("{:.1f}".format)
-    presentation_betting_matches['away_power'] = presentation_betting_matches['away_power'].apply("{:.1f}".format)
-    presentation_betting_matches['Date'] = presentation_betting_matches['Date'].dt.strftime('%m/%d/%Y')
-
+    # presentation_betting_matches['home_power'] = presentation_betting_matches['home_power'].apply("{:.1f}".format)
+    # presentation_betting_matches['away_power'] = presentation_betting_matches['away_power'].apply("{:.1f}".format)
+    # presentation_betting_matches['Date'] = presentation_betting_matches['Date'].dt.strftime('%m/%d/%Y')
+    
     
 
-    AgGrid(presentation_betting_matches)
+    # AgGrid(presentation_betting_matches)
     
 
     # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
+    grid_height = st.number_input("Grid height", min_value=300, value=400, step=100)
     gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
-    cellsytle_jscode = JsCode("""
+    gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
+    gb.configure_column("home_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
+    gb.configure_column("away_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
+    gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, aggFunc="sum", editable=True)
+
+
+
+    test_cellsytle_jscode = JsCode("""
     function(params) {
-        if (params.value < O) {
-            return {
-                'color': 'white',
-                'backgroundColor': 'darkred'
-            }
+        if (params.value < 0) {
+        return {
+            'color': 'red',
+        }
         } else {
             return {
                 'color': 'black',
-                'backgroundColor': 'white'
             }
         }
     };
     """)
-    gb.configure_column("Spread", cellStyle=cellsytle_jscode)
+    # # https://github.com/PablocFonseca/streamlit-aggrid/blob/main/st_aggrid/grid_options_builder.py
+    gb.configure_column(field="Spread", cellStyle=test_cellsytle_jscode)
+    gb.configure_column("home_power", cellStyle=test_cellsytle_jscode)
+    gb.configure_column("away_power", cellStyle=test_cellsytle_jscode)
+
 
     # gb.configure_pagination()
     # gb.configure_side_bar()
-    # gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, aggFunc="sum", editable=True)
+    gb.configure_grid_options(domLayout='normal')
     gridOptions = gb.build()
-    AgGrid(presentation_betting_matches, gridOptions=gridOptions, enable_enterprise_modules=True,allow_unsafe_jscode=True)
-
+    grid_response = AgGrid(
+        presentation_betting_matches, 
+        gridOptions=gridOptions,
+        height=grid_height, 
+        width='100%',
+        # data_return_mode=return_mode_value, 
+        # update_mode=update_mode_value,
+        # fit_columns_on_grid_load=fit_columns_on_grid_load,
+        allow_unsafe_jscode=True, #Set it to True to allow jsfunction to be injected
+        # enable_enterprise_modules=enable_enterprise_modules,
+    )
 
 
     # AgGrid(betting_matches.sort_values('Date').style.format({'home_power':"{:.1f}",'away_power':"{:.1f}"}))
