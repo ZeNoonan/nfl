@@ -12,6 +12,8 @@ st.set_page_config(layout="wide")
 # st.header('just wondering about week 17 should move that out of playoff games see what happens  ✨')
 st.subheader('and also have a button for changing year')
 
+# container=st.empty()
+
 def get_table_download_link(df):
     """Generates a link allowing the data in a given panda dataframe to be downloaded
     in:  dataframe
@@ -603,13 +605,14 @@ with st.beta_expander('Betting Slip Matches'):
     st.write('testing sum of betting all result',betting_matches['result_all'].sum())
     # st.write('testing factor')
     # st.write(betting_matches['total_factor'].sum())
-    # cols_to_move=[]
-    # cols = cols_to_move + [col for col in data_4 if col not in cols_to_move]
-    # data_5=data_4[cols]
+    cols_to_move=['Week','Date','Home Team','Away Team','bet_on','Spread','home_power','away_power','Home Points','Away Points','total_factor']
+    cols = cols_to_move + [col for col in betting_matches if col not in cols_to_move]
+    betting_matches=betting_matches[cols]
     betting_matches=betting_matches.sort_values('Date')
-    st.write(betting_matches)
-    st.write(betting_matches.dtypes)
+    # st.write(betting_matches)
+    # st.write(betting_matches.dtypes)
     presentation_betting_matches=betting_matches.copy()
+
     
     # def color_negative_red(val):
     #     color = 'red' if val < 0 else 'black'
@@ -629,11 +632,12 @@ with st.beta_expander('Betting Slip Matches'):
     
 
     # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
-    grid_height = st.number_input("Grid height", min_value=300, value=400, step=100)
+    grid_height = st.number_input("Grid height", min_value=400, value=550, step=100)
     gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
     gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
     gb.configure_column("home_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
     gb.configure_column("away_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
+    gb.configure_column("Date", type=["dateColumnFilter","customDateTimeFormat"], custom_format_string='dd-MM-yyyy', pivot=True)
     gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, aggFunc="sum", editable=True)
 
 
@@ -673,7 +677,7 @@ with st.beta_expander('Betting Slip Matches'):
         # enable_enterprise_modules=enable_enterprise_modules,
     )
 
-
+    # container.grid_response
     # AgGrid(betting_matches.sort_values('Date').style.format({'home_power':"{:.1f}",'away_power':"{:.1f}"}))
     
 
