@@ -53,30 +53,29 @@ team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx'
 # st.write(data_2021)
 
 # fbref_scraper(url)
-with st.echo():
+# with st.echo():
     # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
-    prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
-    
-    
-    data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.pkl')
-    # st.write(data_2021.head())
-    data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
-    data_2021['month']=data_2021['Date'].str.split(' ').str[0]
-    data_2021['date_in_month']=data_2021['Date'].str.split(' ').str[1]
-    data_2021['year']=2021
-    
-    
-    data_2021['TOW']=0
-    data_2021['TOL']=0
-    data_2021=data_2021.set_index('Week').drop(['Pre0','Pre1','Pre2','Pre3','Week'],axis=0).reset_index()
-    # st.write(data_2021)
-    data_2021['Week']=pd.to_numeric(data_2021['Week'])
-    data_2021['year']=np.where(data_2021['Week']>16,2022,2021)
-    data_2021['Date']=pd.to_datetime(data_2021['year'].astype(str) + data_2021['month']+ data_2021['date_in_month'].astype(str),format='%Y%B%d')
-    data_2021.loc['Week','Week']='Week'
-    # st.write(data_2021)
+prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
 
-    nfl_data=data_2021.copy()
+
+data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.pkl')
+
+data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
+data_2021['month']=data_2021['Date'].str.split(' ').str[0]
+data_2021['date_in_month']=data_2021['Date'].str.split(' ').str[1]
+data_2021['year']=2021
+data_2021['TOW']=0
+data_2021['TOL']=0
+data_2021=data_2021.set_index('Week').drop(['Pre0','Pre1','Pre2','Pre3','Week'],axis=0).reset_index()
+data_2021['Week']=pd.to_numeric(data_2021['Week'])
+data_2021['year']=np.where(data_2021['Week']>16,2022,2021)
+data_2021['Date']=pd.to_datetime(data_2021['year'].astype(str) + data_2021['month']+ data_2021['date_in_month'].astype(str),format='%Y%B%d')
+data_2021.loc['Week','Week']='Week'
+
+nfl_data=data_2021.copy()
+
+
+
     # st.write('Just check this overall sense check its current year data',nfl_data)
 # st.write('this is prior year data',prior_nfl_data)
 
