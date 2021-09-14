@@ -43,10 +43,10 @@ odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_1.
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx').copy()
 
-# url='https://www.pro-football-reference.com/years/2015/games.htm'
+# url='https://www.pro-football-reference.com/years/2021/games.htm'
 # def fbref_scraper(url):
 #         test = pd.read_html(url)[0]
-#         test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2015.pkl')
+#         test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021_updated.pkl')
 #         return test 
 
 
@@ -58,19 +58,19 @@ team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx'
 prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
 
 
-data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.pkl')
+data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021_updated.pkl')
 
-data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
-data_2021['month']=data_2021['Date'].str.split(' ').str[0]
-data_2021['date_in_month']=data_2021['Date'].str.split(' ').str[1]
-data_2021['year']=2021
-data_2021['TOW']=0
-data_2021['TOL']=0
-data_2021=data_2021.set_index('Week').drop(['Pre0','Pre1','Pre2','Pre3','Week'],axis=0).reset_index()
-data_2021['Week']=pd.to_numeric(data_2021['Week'])
-data_2021['year']=np.where(data_2021['Week']>16,2022,2021)
-data_2021['Date']=pd.to_datetime(data_2021['year'].astype(str) + data_2021['month']+ data_2021['date_in_month'].astype(str),format='%Y%B%d')
-data_2021.loc['Week','Week']='Week'
+# data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
+# data_2021['month']=data_2021['Date'].str.split(' ').str[0]
+# data_2021['date_in_month']=data_2021['Date'].str.split(' ').str[1]
+# data_2021['year']=2021
+# data_2021['TOW']=0
+# data_2021['TOL']=0
+# data_2021=data_2021.set_index('Week').drop(['Pre0','Pre1','Pre2','Pre3','Week'],axis=0).reset_index()
+# data_2021['Week']=pd.to_numeric(data_2021['Week'])
+# data_2021['year']=np.where(data_2021['Week']>16,2022,2021)
+# data_2021['Date']=pd.to_datetime(data_2021['year'].astype(str) + data_2021['month']+ data_2021['date_in_month'].astype(str),format='%Y%B%d')
+# data_2021.loc['Week','Week']='Week'
 
 nfl_data=data_2021.copy()
 
@@ -143,6 +143,56 @@ with st.beta_expander('Pro Football Function'):
         return season_pro
     # st.write(season_pro.head(3))
 
+    def clean_pro_football_pickle_2021(nfl_data):
+        nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
+        nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
+        nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
+        nfl_data['Away Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Winner/tie'],nfl_data['Loser/tie'])
+        nfl_data['Home Points']=np.where(nfl_data['at_venue']=='@',nfl_data['PtsL'],nfl_data['PtsW'])
+        nfl_data['Away Points']=np.where(nfl_data['at_venue']=='@',nfl_data['PtsW'],nfl_data['PtsL'])
+        nfl_data['home_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOL'],nfl_data['TOW']))
+        nfl_data['away_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOW'],nfl_data['TOL']))
+
+        # nfl_data=nfl_data[nfl_data['Week'].str.contains('Week')==False].copy()
+        nfl_data=nfl_data[nfl_data['Week'].str.contains('Week',na=False)==False].copy()
+        nfl_data=nfl_data.dropna(subset=["Week"])
+        
+        nfl_data['home_turnover']=pd.to_numeric(nfl_data['home_turnover'])
+        nfl_data['away_turnover']=pd.to_numeric(nfl_data['away_turnover'])
+        nfl_data['Home Points']=pd.to_numeric(nfl_data['Home Points'])
+        nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
+        nfl_data['Date']=pd.to_datetime(nfl_data['Date'])
+        nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
+        nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
+        fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','home_turnover','away_turnover']]
+        fb_ref_2020['Turnover'] = fb_ref_2020['home_turnover'] - fb_ref_2020['away_turnover']
+        # st.write(fb_ref_2020.dtypes)
+
+        # st.write('is it the merge left causing the trouble')
+        # st.write('before the merge Pro-Football Ref',fb_ref_2020)
+        # st.write('before the merge Odds Data',odds_data)
+        
+        # st.write('Check and see if this is working right')
+        # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Points','Away Points'], how='left')
+        # IT'S IMPORTANT THAT THE ODDS MERGES CORRECTLY WITH FBREF Data for the games with neutral venues as need to get spread right!
+
+        team_names_id_1=team_names_id.rename(columns={'Away Team':'Home Team'})
+        fb_ref_2020=pd.merge(fb_ref_2020,team_names_id_1,on='Home Team').rename(columns={'ID':'Home ID'})
+        fb_ref_2020=pd.merge(fb_ref_2020,team_names_id,on='Away Team').rename(columns={'ID':'Away ID'})
+
+        # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
+        st.write('data before merge', fb_ref_2020.sort_values(by='Date',ascending=False ))
+        st.write('odds data before merge', odds_data.sort_values(by='Date',ascending=False ))
+
+        # drop home and away points from odds data to make the merge easier
+        
+        odds_data_updated=odds_data.drop(['Home Points', 'Away Points'], axis=1)
+
+        # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points', 'Home ID','Away ID'], how='left')
+        season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['Date','Home Team','Away Team', 'Home ID','Away ID'], how='left')
+        st.write('season pro #1 after merge with updated merged on',season_pro.sort_values(by='Date',ascending=True ))
+        return season_pro
+
 def clean_prior_year(x):
     x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:0,16:-1,15:-2,14:-3})
     # x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:-1,16:-2,15:-3})
@@ -205,16 +255,17 @@ def test_clean_pro_football_pickle(nfl_data):
 
 
 # st.write('this is the raw data')
-test_current=test_clean_pro_football_pickle(nfl_data)
+# test_current=test_clean_pro_football_pickle(nfl_data)
 # st.write('CHECKING TEST Row 178', test_current)
 
-current=clean_pro_football_pickle(nfl_data)
+# st.write('check', nfl_data)
+current=clean_pro_football_pickle_2021(nfl_data)
 # st.write('Issue THIS IS BLANK something wrong with cleaning of 2021 data Row 181', current)
 
 
 # st.write('PRIOR NFL DATA', test_clean_pro_football_pickle(prior_nfl_data))
 prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
-# st.write('PRIOR DATA', prior_data)
+st.write('PRIOR DATA', prior_data)
 # st.write( prior_data[(prior_data['Home Team']=='Miami Dolphins') | (prior_data['Away Team']=='Miami Dolphins')].sort_values(by=['Week','Date','Time']) )
 # st.write( prior_data[(prior_data['Home Team']=='Buffalo Bills') | (prior_data['Away Team']=='Buffalo Bills')].sort_values(by=['Week','Date','Time']) )
 
@@ -234,7 +285,7 @@ prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
 
 data = concat_current_prior(current,prior_data)
 
-# st.write('Just check the Data', data.sort_values(by=['Week','Date','Time']))
+st.write('Just check the Data', data.sort_values(by=['Week','Date','Time']))
 # st.write( data[(data['Home Team']=='Arizona Cardinals') | (data['Away Team']=='Arizona Cardinals')].sort_values(by=['Week','Date','Time']) )
 # st.write( data[(data['Home Team']=='Atlanta Falcons') | (data['Away Team']=='Atlanta Falcons')].sort_values(by=['Week','Date','Time']) )
 # st.write( data[(data['Home ID']==21) | (data['Away ID']==21)].sort_values(by=['Week','Date','Time']) )
@@ -457,14 +508,14 @@ with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
     power_df=df_power.loc[:,['Week','ID','adj_spread']].copy()
 
     games_df=matrix_df_1.copy()
-    st.write('Checking the games df', games_df)
+    st.write('Checking the games df', games_df[((games_df['Home ID']==24)|(games_df['Away ID']==24))])
     first=list(range(-3,18))
     last=list(range(0,21))
     for first,last in zip(first,last):
         # st.header('start xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
         # st.write('week no.', last)
-        # st.write('this is first',first)
-        # st.write('this is last',last)
+        
+        
         first_section=games_df[games_df['Week'].between(first,last)]
         # st.write('Checking the first_section',first_section)
         full_game_matrix=games_matrix_workings(first_section)
@@ -475,10 +526,11 @@ with st.beta_expander('CORRECT Power Ranking Matrix Multiplication'):
         df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
         # st.write('this is the inverse matrix',df_inv, 'last number ie current week', last)
         # st.write('this is shape of inverse matrix', df_inv.shape)
-
+        # st.write('this is first',first)
         power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID')\
         .drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:30,:]
-        
+        # st.write('power df week', power_df_week)
+        # st.write('this is last',last)
         # st.write('this is the power_df_week',power_df_week)
         # st.write('this is the shape', power_df_week.shape)
         # st.write(pd.DataFrame(power_df_week).dtypes)
@@ -511,7 +563,7 @@ with st.beta_expander('Adding Power Ranking to Matches'):
     updated_df['spread_working']=updated_df['home_power']-updated_df['away_power']+updated_df['Spread']
     updated_df['power_pick'] = np.where(updated_df['spread_working'] > 0, 1,
     np.where(updated_df['spread_working'] < 0,-1,0))
-    st.write(updated_df)
+    st.write(updated_df.sort_values(by='Week'))
 
 with st.beta_expander('Adding Season to Date Cover to Matches'):
     # df = pd.DataFrame([['mon',19,'cardinals', 3], ['tue',20,'patriots', 4], ['wed',20,'patriots', 5]], columns=['date','week','team', 'stdc'])
@@ -673,7 +725,7 @@ with st.beta_expander('Betting Slip Matches'):
         # update_mode=update_mode_value,
         # fit_columns_on_grid_load=fit_columns_on_grid_load,
         allow_unsafe_jscode=True, #Set it to True to allow jsfunction to be injected
-        # enable_enterprise_modules=enable_enterprise_modules,
+        enable_enterprise_modules=True,
     )
 
     # container.grid_response
@@ -686,6 +738,36 @@ with st.beta_expander('Betting Slip Matches'):
     # st.write('Below is just checking an individual team')
     # st.write( betting_matches[(betting_matches['Home Team']=='Arizona Cardinals') | 
     # (betting_matches['Away Team']=='Arizona Cardinals')].set_index('Week').sort_values(by='Date') )
+
+with st.beta_expander('Power Ranking by Week'):
+    power_week=power_ranking_combined.copy()
+    # st.write('power', power_week)
+
+    # pivot_df=power_week.loc[:,['ID','final_power','week']].copy()
+    team_names_id=team_names_id.rename(columns={'Away Team':'Team'})
+    id_names=team_names_id.drop_duplicates(subset=['ID'], keep='first')
+    pivot_df=pd.merge(power_week,id_names, on='ID')
+    # st.write('after merge', pivot_df)
+    pivot_df=pivot_df.loc[:,['Team','final_power','week']].copy()
+    # st.write('graphing?',pivot_df)
+    power_pivot=pd.pivot_table(pivot_df,index='Team', columns='week')
+    pivot_df_test = pivot_df.copy()
+    pivot_df_test=pivot_df_test[pivot_df_test['week']<19]
+    pivot_df_test['average']=pivot_df.groupby('Team')['final_power'].transform(np.mean)
+    # st.write('graphing?',pivot_df_test)
+    power_pivot.columns = power_pivot.columns.droplevel(0)
+    power_pivot['average'] = power_pivot.mean(axis=1)
+    # st.write(power_pivot)
+    # https://stackoverflow.com/questions/67045668/altair-text-over-a-heatmap-in-a-script
+    pivot_df=pivot_df.sort_values(by='final_power',ascending=False)
+    chart_power= alt.Chart(pivot_df_test).mark_rect().encode(alt.X('week:O',axis=alt.Axis(title='week',labelAngle=0)),
+    alt.Y('Team',sort=alt.SortField(field='average', order='descending')),color=alt.Color('final_power:Q',scale=alt.Scale(scheme='redyellowgreen')))
+    # https://altair-viz.github.io/gallery/layered_heatmap_text.html
+    # https://vega.github.io/vega/docs/schemes/
+    text=chart_power.mark_text().encode(text=alt.Text('final_power:N',format=",.0f"),color=alt.value('black'))
+    st.altair_chart(chart_power + text,use_container_width=True)
+    # https://github.com/altair-viz/altair/issues/820#issuecomment-386856394
+
 
 
 with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
@@ -731,7 +813,7 @@ with st.beta_expander('Analysis of Factors'):
         # st.write('latest', df_table_1.shape)
         if df_table_1.shape > (2,7):
             st.write('Returning df with analysis')
-            df_table_1.loc['No. of Bets Made'] = df_table_1.loc[[1,-1]].sum() 
+            df_table_1.loc['No. of Bets Made'] = df_table_1.loc[[1,-1]].sum() # No losing bets so far!!!
             df_table_1.loc['% Winning'] = df_table_1.loc[1] / df_table_1.loc['No. of Bets Made']
         else:
             st.write('Returning df with no analysis')
@@ -806,34 +888,6 @@ with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
     df_factor_table_1 = df_factor_table_1[ cols_to_move + [ col for col in df_factor_table_1 if col not in cols_to_move ] ]
     st.write(df_factor_table_1)
 
-with st.beta_expander('Power Ranking by Week'):
-    power_week=power_ranking_combined.copy()
-    # st.write('power', power_week)
-
-    # pivot_df=power_week.loc[:,['ID','final_power','week']].copy()
-    team_names_id=team_names_id.rename(columns={'Away Team':'Team'})
-    id_names=team_names_id.drop_duplicates(subset=['ID'], keep='first')
-    pivot_df=pd.merge(power_week,id_names, on='ID')
-    # st.write('after merge', pivot_df)
-    pivot_df=pivot_df.loc[:,['Team','final_power','week']].copy()
-    # st.write('graphing?',pivot_df)
-    power_pivot=pd.pivot_table(pivot_df,index='Team', columns='week')
-    pivot_df_test = pivot_df.copy()
-    pivot_df_test=pivot_df_test[pivot_df_test['week']<19]
-    pivot_df_test['average']=pivot_df.groupby('Team')['final_power'].transform(np.mean)
-    # st.write('graphing?',pivot_df_test)
-    power_pivot.columns = power_pivot.columns.droplevel(0)
-    power_pivot['average'] = power_pivot.mean(axis=1)
-    # st.write(power_pivot)
-    # https://stackoverflow.com/questions/67045668/altair-text-over-a-heatmap-in-a-script
-    pivot_df=pivot_df.sort_values(by='final_power',ascending=False)
-    chart_power= alt.Chart(pivot_df_test).mark_rect().encode(alt.X('week:O',axis=alt.Axis(title='week',labelAngle=0)),
-    alt.Y('Team',sort=alt.SortField(field='average', order='descending')),color=alt.Color('final_power:Q',scale=alt.Scale(scheme='redyellowgreen')))
-    # https://altair-viz.github.io/gallery/layered_heatmap_text.html
-    # https://vega.github.io/vega/docs/schemes/
-    text=chart_power.mark_text().encode(text=alt.Text('final_power:N',format=",.0f"),color=alt.value('black'))
-    st.altair_chart(chart_power + text,use_container_width=True)
-    # https://github.com/altair-viz/altair/issues/820#issuecomment-386856394
 
 with st.beta_expander('Underdog Analyis'):
     underdog_df = betting_matches.copy()
