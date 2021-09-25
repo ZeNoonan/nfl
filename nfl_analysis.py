@@ -43,16 +43,16 @@ odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_1.
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx').copy()
 
-# url='https://www.pro-football-reference.com/years/2021/games.htm'
-# def fbref_scraper(url):
-#         test = pd.read_html(url)[0]
-#         test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021_updated.pkl')
-#         return test 
+url='https://www.pro-football-reference.com/years/2021/games.htm'
+def fbref_scraper(url):
+        test = pd.read_html(url)[0]
+        test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021_updated.pkl')
+        return test 
 
 
 # st.write(data_2021)
 
-# fbref_scraper(url)
+fbref_scraper(url)
 # with st.echo():
     # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
 prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
@@ -656,7 +656,7 @@ with st.beta_expander('Betting Slip Matches'):
     st.write('testing sum of betting all result',betting_matches['result_all'].sum())
     # st.write('testing factor')
     # st.write(betting_matches['total_factor'].sum())
-    cols_to_move=['Week','Date','Home Team','Away Team','bet_on','Spread','home_power','away_power','Home Points','Away Points','total_factor']
+    cols_to_move=['Week','Date','Home Team','Away Team','bet_on','result','Spread','home_power','away_power','Home Points','Away Points','total_factor']
     cols = cols_to_move + [col for col in betting_matches if col not in cols_to_move]
     betting_matches=betting_matches[cols]
     betting_matches=betting_matches.sort_values('Date')
