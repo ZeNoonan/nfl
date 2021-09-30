@@ -52,7 +52,7 @@ def fbref_scraper(url):
 
 # st.write(data_2021)
 
-fbref_scraper(url)
+# fbref_scraper(url)
 # with st.echo():
     # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
 prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
@@ -181,8 +181,8 @@ with st.beta_expander('Pro Football Function'):
         fb_ref_2020=pd.merge(fb_ref_2020,team_names_id,on='Away Team').rename(columns={'ID':'Away ID'})
 
         # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points'], how='left')
-        st.write('data before merge', fb_ref_2020.sort_values(by='Date',ascending=False ))
-        st.write('odds data before merge', odds_data.sort_values(by='Date',ascending=False ))
+        # st.write('data before merge', fb_ref_2020.sort_values(by='Date',ascending=False ))
+        # st.write('odds data before merge', odds_data.sort_values(by='Date',ascending=False ))
 
         # drop home and away points from odds data to make the merge easier
         
@@ -190,7 +190,7 @@ with st.beta_expander('Pro Football Function'):
 
         # season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points', 'Home ID','Away ID'], how='left')
         season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['Date','Home Team','Away Team', 'Home ID','Away ID'], how='left')
-        st.write('season pro #1 after merge with updated merged on',season_pro.sort_values(by='Date',ascending=True ))
+        # st.write('season pro #1 after merge with updated merged on',season_pro.sort_values(by='Date',ascending=True ))
         return season_pro
 
 def clean_prior_year(x):
@@ -265,7 +265,7 @@ current=clean_pro_football_pickle_2021(nfl_data)
 
 # st.write('PRIOR NFL DATA', test_clean_pro_football_pickle(prior_nfl_data))
 prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
-st.write('PRIOR DATA', prior_data)
+# st.write('PRIOR DATA', prior_data)
 # st.write( prior_data[(prior_data['Home Team']=='Miami Dolphins') | (prior_data['Away Team']=='Miami Dolphins')].sort_values(by=['Week','Date','Time']) )
 # st.write( prior_data[(prior_data['Home Team']=='Buffalo Bills') | (prior_data['Away Team']=='Buffalo Bills')].sort_values(by=['Week','Date','Time']) )
 
@@ -285,7 +285,7 @@ st.write('PRIOR DATA', prior_data)
 
 data = concat_current_prior(current,prior_data)
 
-st.write('Just check the Data', data.sort_values(by=['Week','Date','Time']))
+# st.write('Just check the Data', data.sort_values(by=['Week','Date','Time']))
 # st.write( data[(data['Home Team']=='Arizona Cardinals') | (data['Away Team']=='Arizona Cardinals')].sort_values(by=['Week','Date','Time']) )
 # st.write( data[(data['Home Team']=='Atlanta Falcons') | (data['Away Team']=='Atlanta Falcons')].sort_values(by=['Week','Date','Time']) )
 # st.write( data[(data['Home ID']==21) | (data['Away ID']==21)].sort_values(by=['Week','Date','Time']) )
@@ -565,7 +565,7 @@ with st.beta_expander('Adding Power Ranking to Matches'):
     np.where(updated_df['spread_working'] < 0,-1,0))
     st.write(updated_df.sort_values(by='Week'))
 
-with st.beta_expander('Adding Season to Date Cover to Matches'):
+with st.beta_expander('Adding Season to Date Cover to Matches FIX THIS GRAPH'):
     # df = pd.DataFrame([['mon',19,'cardinals', 3], ['tue',20,'patriots', 4], ['wed',20,'patriots', 5]], columns=['date','week','team', 'stdc'])
     # st.write('df1',df)
     # df2 = pd.DataFrame([['sun',18,'saints'], ['tue',20,'patriots'], ['wed',20,'patriots']], columns=['date','week','team'])
