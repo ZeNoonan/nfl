@@ -593,18 +593,25 @@ with st.beta_expander('Adding Season to Date Cover to Matches FIX THIS GRAPH'):
     # last_occurence = spread_3.groupby(['ID'],as_index=False).last()
     # st.write(last_occurence)
     stdc_df=pd.merge(spread_3,team_names_id,on='ID').rename(columns={'Away Team':'Team'})
+    team_names_id_update=team_names_id.drop_duplicates(subset=['ID'], keep='first')
+    # st.write(team_names_id_update)
+    # st.write(spread_3.sort_values(by=['Week','ID']))
+    df_stdc_1=pd.merge(spread_3,team_names_id_update,on='ID').rename(columns={'Away Team':'Team'})
+    # st.write('after merge',df_stdc_1.sort_values(by=['ID','Week']))
+    df_stdc_1=df_stdc_1.loc[:,['Week','ID','Team','cover']].copy()
     stdc_df=stdc_df.loc[:,['Week','Team','cover']].copy()
     # stdc_df['last_week']=
     # stdc_df['Week']=stdc_df['Week'].replace({17:'week_17'})
     
     stdc_df['average']=stdc_df.groupby('Team')['cover'].transform(np.mean)
-    # st.write(stdc_df.sort_values(by=['Team','Week']))
+    df_stdc_1['average']=df_stdc_1.groupby('Team')['cover'].transform(np.mean)
+    # st.write(df_stdc_1.sort_values(by=['ID','Week']))
     
     stdc_pivot=pd.pivot_table(stdc_df,index='Team', columns='Week')
     stdc_pivot.columns = stdc_pivot.columns.droplevel(0)
     # st.write(stdc_pivot)
 
-    chart_cover= alt.Chart(stdc_df).mark_rect().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
+    chart_cover= alt.Chart(df_stdc_1).mark_rect().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
     alt.Y('Team',sort=alt.SortField(field='average', order='descending')),color=alt.Color('cover:Q',scale=alt.Scale(scheme='redyellowgreen')))
     # https://altair-viz.github.io/gallery/layered_heatmap_text.html
     # https://vega.github.io/vega/docs/schemes/
