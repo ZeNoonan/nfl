@@ -565,7 +565,7 @@ with st.beta_expander('Adding Power Ranking to Matches'):
     np.where(updated_df['spread_working'] < 0,-1,0))
     st.write(updated_df.sort_values(by='Week'))
 
-with st.beta_expander('Adding Season to Date Cover to Matches FIX THIS GRAPH'):
+with st.beta_expander('Season to Date Cover Graph'):
     # df = pd.DataFrame([['mon',19,'cardinals', 3], ['tue',20,'patriots', 4], ['wed',20,'patriots', 5]], columns=['date','week','team', 'stdc'])
     # st.write('df1',df)
     # df2 = pd.DataFrame([['sun',18,'saints'], ['tue',20,'patriots'], ['wed',20,'patriots']], columns=['date','week','team'])
@@ -619,8 +619,8 @@ with st.beta_expander('Adding Season to Date Cover to Matches FIX THIS GRAPH'):
     st.altair_chart(chart_cover + text_cover,use_container_width=True)
 
     
-with st.beta_expander('Adding Turnover to Matches'):
-    st.write('this is turnovers', turnover_3)
+with st.beta_expander('Turnover Factor by Match Graph'):
+    # st.write('this is turnovers', turnover_3)
     turnover_matches = turnover_3.loc[:,['Date','Week','ID','prev_turnover', 'turnover_sign']].copy()
     turnover_home=turnover_matches.rename(columns={'ID':'Home ID'})
     
@@ -628,7 +628,16 @@ with st.beta_expander('Adding Turnover to Matches'):
     turnover_away['turnover_sign']=-turnover_away['turnover_sign']
     updated_df=pd.merge(updated_df,turnover_home,on=['Date','Week','Home ID'],how='left').rename(columns={'prev_turnover':'home_prev_turnover','turnover_sign':'home_turnover_sign'})
     updated_df=pd.merge(updated_df,turnover_away,on=['Date','Week','Away ID'],how='left').rename(columns={'prev_turnover':'away_prev_turnover','turnover_sign':'away_turnover_sign'})
-    # st.write('check matches week 20', updated_df)
+    # st.write()
+    df_stdc_1=pd.merge(turnover_matches,team_names_id_update,on='ID').rename(columns={'Away Team':'Team'})
+    df_stdc_1['average']=df_stdc_1.groupby('Team')['turnover_sign'].transform(np.mean)
+    chart_cover= alt.Chart(df_stdc_1).mark_rect().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
+    alt.Y('Team',sort=alt.SortField(field='average', order='ascending')),color=alt.Color('turnover_sign:Q',scale=alt.Scale(scheme='redyellowgreen')))
+    # https://altair-viz.github.io/gallery/layered_heatmap_text.html
+    # https://vega.github.io/vega/docs/schemes/
+    text_cover=chart_cover.mark_text().encode(text=alt.Text('turnover_sign:N'),color=alt.value('black'))
+    st.altair_chart(chart_cover + text_cover,use_container_width=True)
+    # st.write('turnover graph', df_stdc_1)
     # TEST Workings
     # st.write('check that Turnover coming in correctly', updated_df[updated_df['Week']==18])
     # st.write('Check Total')
@@ -785,10 +794,36 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     st.write('total_matches per my calculation',total_matches)
     analysis=betting_matches.copy()
     totals = analysis.groupby('total_factor').agg(winning=('result_all','count'))
+    totals_graph=totals.reset_index().rename(columns={'winning':'number_of_games'})
+
+    # st.write('totals grpah', totals_graph)
+    chart_power= alt.Chart(totals_graph).mark_bar().encode(alt.X('total_factor:O',axis=alt.Axis(title='total_factor_per_match',labelAngle=0)),
+    alt.Y('number_of_games'))
+    text=chart_power.mark_text(dy=-7).encode(text=alt.Text('number_of_games:N',format=",.0f"),color=alt.value('black'))
+    st.altair_chart(chart_power + text,use_container_width=True)
+
     totals_1=analysis.groupby([analysis['total_factor'].abs(),'result_all']).agg(winning=('result_all','count')).reset_index()
     totals_1['result_all']=totals_1['result_all'].replace({0:'tie',1:'win',-1:'lose'})
-    st.write('shows the number of games at each factor level')
-    st.write(totals.rename(columns={'winning':'number_of_games'}))
+    st.write('checking graph data',totals_1.dtypes)
+    # totals_1['total_factor']=totals_1['total_factor'].astype(str)
+    st.write('checking graph data',totals_1.dtypes)
+    st.write('checking graph data',totals_1)
+    # https://www.quackit.com/css/css_color_codes.cfm
+    color_scale = alt.Scale(
+    domain=[
+        "lose",
+        "tie",
+        "win"],
+        range=["red", "lightgrey","LimeGreen"])
+    chart_power= alt.Chart(totals_1).mark_bar().encode(alt.X('total_factor:O',axis=alt.Axis(title='factor',labelAngle=0)),
+    alt.Y('winning'),color=alt.Color('result_all',scale=color_scale))
+    # alt.Y('winning'),color=alt.Color('result_all'))
+    st.altair_chart(chart_power,use_container_width=True)
+    # test_chart=
+
+
+    # st.write('shows the number of games at each factor level')
+    # st.write(totals.rename(columns={'winning':'number_of_games'}))
     st.write('sum of each factor level should correspond to table above',totals_1)
     st.write('sum of winning column should be 267 I think',totals_1['winning'].sum())
     st.write('count of week column should be 267',analysis['Week'].count())
