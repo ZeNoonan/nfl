@@ -5,6 +5,7 @@ from io import BytesIO
 import os
 import base64 
 import altair as alt
+import datetime as dt
 # from st_aggrid import AgGrid
 from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode, JsCode
 
@@ -33,15 +34,22 @@ def to_excel(df):
 
 @st.cache
 def read_data(file):
-    return pd.read_excel(file) 
+    return pd.read_excel(file)
+
+@st.cache
+def read_csv_data(file):
+    return pd.read_csv(file)
+
 data_2019 = read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2019_Data.xlsx').copy()
 # data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Adj_week_zero.xlsx').copy()
 data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data.xlsx').copy()
 test_data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Test.xlsx').copy()
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds.xlsx').copy()
-odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_1.xlsx').copy()
+odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_betting_odds_current.csv').copy()
+# odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_1.xlsx').copy()
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
-team_names_id = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx').copy()
+team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
+
 
 url='https://www.pro-football-reference.com/years/2021/games.htm'
 
@@ -61,16 +69,30 @@ def fbref_scraper_csv(url):
 # with st.echo():
     # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
 # prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
-prior_nfl_data = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.csv')
+prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
+# st.write(prior_nfl_data)
+# prior_nfl_data = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.csv')
 # st.write(prior_nfl_data)
 
 # data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021_updated.pkl')
-data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.csv')
+data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
+
+
+# data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.csv')
 # st.write(data_2021)
+def clean_csv(x):
+    # x['Date']=pd.to_datetime(x['Date'])
+    x['year'] = x['Date'].str[:4]
+    x['month'] = x['Date'].str[5:7]
+    x['day'] = x['Date'].str[8:10]
+    x['Date'] = pd.to_datetime(x[['year','month','day']])
+    return x
 
-
+# st.write(data_2021)
+# st.write(data_2021['Date'])
+# nfl_data=clean_csv(data_2021).copy()
 nfl_data=data_2021.copy()
-
+# st.write('dtypes',nfl_data.dtypes)
 
 
     # st.write('Just check this overall sense check its current year data',nfl_data)
@@ -80,6 +102,8 @@ nfl_data=data_2021.copy()
 
 # with st.beta_expander('Historical odds function'):
 odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close']].copy()
+odds_data['Date']=pd.to_datetime(odds_data['Date'])
+# st.write('pre odds', odds_data.dtypes)
 team_names_id=team_names_id.rename(columns={'Team':'Home Team'})
 odds_data=pd.merge(odds_data,team_names_id,on='Home Team').rename(columns={'ID':'Home ID'}).sort_values(by='Date',ascending=False)
 team_names_id=team_names_id.rename(columns={'Home Team':'Away Team'})
@@ -141,12 +165,14 @@ def clean_pro_football_pickle_2021(nfl_data):
     fb_ref_2020=pd.merge(fb_ref_2020,team_names_id_1,on='Home Team').rename(columns={'ID':'Home ID'})
     fb_ref_2020=pd.merge(fb_ref_2020,team_names_id,on='Away Team').rename(columns={'ID':'Away ID'})
     odds_data_updated=odds_data.drop(['Home Points', 'Away Points'], axis=1)
+    # st.write('odds data', odds_data_updated.dtypes)
+    # st.write('fb', fb_ref_2020.dtypes)
     season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['Date','Home Team','Away Team', 'Home ID','Away ID'], how='left')
     return season_pro
 
 def clean_prior_year(x):
-    x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:0,16:-1,15:-2,14:-3})
     # x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:-1,16:-2,15:-3})
+    x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:0,16:-1,15:-2,14:-3})
     x=x[x['Week'].between(-3,0)].copy()
     x=x.reset_index().drop('index',axis=1)
     # st.write('Check for errors',x[x['Away ID'].isna()])
@@ -923,8 +949,8 @@ with st.beta_expander('Tests'):
         return x
 
 
-    test_prior=clean_pro_football_pickle(prior_nfl_data)
-    test_prior_data = test_clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
+    # test_prior=clean_pro_football_pickle(prior_nfl_data)
+    # test_prior_data = test_clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
 
     def pre_season():
         # not sure if this even works, think its for pre-season
