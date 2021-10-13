@@ -60,7 +60,7 @@ def fbref_scraper(url):
 
 def fbref_scraper_csv(url):
         test = pd.read_html(url)[0]
-        test.to_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
+        test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
 fbref_scraper_csv(url)
