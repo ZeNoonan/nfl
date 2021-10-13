@@ -60,12 +60,10 @@ def fbref_scraper(url):
 
 def fbref_scraper_csv(url):
         test = pd.read_html(url)[0]
-        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.csv')
+        test.to_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
         return test
 
-
-
-# fbref_scraper_csv(url)
+fbref_scraper_csv(url)
 # with st.echo():
     # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
 # prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
