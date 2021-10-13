@@ -63,7 +63,7 @@ def fbref_scraper_csv(url):
         test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
-fbref_scraper_csv(url)
+# fbref_scraper_csv(url)
 # with st.echo():
     # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
 # prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
@@ -73,8 +73,8 @@ prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/mai
 # st.write(prior_nfl_data)
 
 # data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021_updated.pkl')
-data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
-
+# data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
+data_2021= pd.read_html(url)[0]
 
 # data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.csv')
 # st.write(data_2021)
