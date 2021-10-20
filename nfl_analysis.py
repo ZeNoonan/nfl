@@ -5,7 +5,7 @@ import streamlit as st
 # import os
 # import base64 
 import altair as alt
-# import datetime as dt
+import datetime as dt
 # from st_aggrid import AgGrid
 from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode, JsCode
 
@@ -49,7 +49,7 @@ odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/n
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_1.xlsx').copy()
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
-
+# st.write('odds data', odds_data)
 
 url='https://www.pro-football-reference.com/years/2021/games.htm'
 
@@ -63,7 +63,8 @@ def fbref_scraper_csv(url):
         test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
-# fbref_scraper_csv(url)
+fbref_scraper_csv(url)
+
 # with st.echo():
     # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
 # prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
@@ -73,8 +74,9 @@ prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/mai
 # st.write(prior_nfl_data)
 
 # data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021_updated.pkl')
-# data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
-data_2021= pd.read_html(url)[0]
+data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
+# data_2021= pd.read_html(url)[0]
+# st.write('data', data_2021)
 
 # data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.csv')
 # st.write(data_2021)
@@ -100,14 +102,21 @@ nfl_data=data_2021.copy()
 
 # with st.beta_expander('Historical odds function'):
 odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close']].copy()
-odds_data['Date']=pd.to_datetime(odds_data['Date'])
+# st.write('odds data before datetime', odds_data)
+odds_data['Date']=pd.to_datetime(odds_data['Date']).dt.normalize()
+odds_data['year']=odds_data['Date'].dt.year
+odds_data['month']=odds_data['Date'].dt.month
+odds_data['day']=odds_data['Date'].dt.day
+
+# odds_data['Date'] = pd.to_datetime([dt.datetime.strftime(d, "%Y-%m-%d %H:%M") for d in odds_data["Date"]])
 # st.write('pre odds', odds_data.dtypes)
 team_names_id=team_names_id.rename(columns={'Team':'Home Team'})
 odds_data=pd.merge(odds_data,team_names_id,on='Home Team').rename(columns={'ID':'Home ID'}).sort_values(by='Date',ascending=False)
 team_names_id=team_names_id.rename(columns={'Home Team':'Away Team'})
 odds_data=pd.merge(odds_data,team_names_id,on='Away Team').rename(columns={'ID':'Away ID','Home Score':'Home Points',
 'Away Score':'Away Points','Home Line Close':'Spread'}).sort_values(by='Date',ascending=False)
-
+odds_data['Spread']=pd.to_numeric(odds_data['Spread'])
+# st.write('odds', odds_data)
 
 
 # with st.beta_expander('Pro Football Function'):
@@ -154,7 +163,8 @@ def clean_pro_football_pickle_2021(nfl_data):
     nfl_data['away_turnover']=pd.to_numeric(nfl_data['away_turnover'])
     nfl_data['Home Points']=pd.to_numeric(nfl_data['Home Points'])
     nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
-    nfl_data['Date']=pd.to_datetime(nfl_data['Date'])
+    nfl_data['Date']=pd.to_datetime(nfl_data['Date']).dt.normalize()
+    # nfl_data['Date'] = pd.to_datetime([dt.datetime.strftime(d, "%Y-%m-%d %H:%M") for d in nfl_data["Date"]])
     nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
     nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
     fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','home_turnover','away_turnover']]
@@ -162,10 +172,21 @@ def clean_pro_football_pickle_2021(nfl_data):
     team_names_id_1=team_names_id.rename(columns={'Away Team':'Home Team'})
     fb_ref_2020=pd.merge(fb_ref_2020,team_names_id_1,on='Home Team').rename(columns={'ID':'Home ID'})
     fb_ref_2020=pd.merge(fb_ref_2020,team_names_id,on='Away Team').rename(columns={'ID':'Away ID'})
+
+    fb_ref_2020['year']=fb_ref_2020['Date'].dt.year
+    fb_ref_2020['month']=fb_ref_2020['Date'].dt.month
+    fb_ref_2020['day']=fb_ref_2020['Date'].dt.day
+
     odds_data_updated=odds_data.drop(['Home Points', 'Away Points'], axis=1)
-    # st.write('odds data', odds_data_updated.dtypes)
-    # st.write('fb', fb_ref_2020.dtypes)
-    season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['Date','Home Team','Away Team', 'Home ID','Away ID'], how='left')
+    st.write('odds data before merge', odds_data_updated)
+    st.write(odds_data_updated.dtypes)
+    st.write('fb before merge', fb_ref_2020)
+    st.write('fbreft', fb_ref_2020.dtypes)
+    
+    # season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['Date','Home Team','Away Team', 'Home ID','Away ID'], how='left')
+    season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['year','month','day','Home Team','Away Team', 'Home ID','Away ID'], how='left')
+    st.write('after merge', season_pro)
+    st.write(season_pro.dtypes)
     return season_pro
 
 def clean_prior_year(x):
