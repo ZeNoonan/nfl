@@ -10,10 +10,6 @@ import datetime as dt
 from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode, JsCode
 
 st.set_page_config(layout="wide")
-# st.header('just wondering about week 17 should move that out of playoff games see what happens  ✨')
-# st.subheader('and also have a button for changing year')
-
-# container=st.empty()
 
 def get_table_download_link(df):
     """Generates a link allowing the data in a given panda dataframe to be downloaded
@@ -36,35 +32,24 @@ def to_excel(df):
 def read_data(file):
     return pd.read_excel(file)
 
-# @st.cache
+@st.cache
 def read_csv_data(file):
-    return pd.read_csv(file,encoding='utf-8')
+    return pd.read_csv(file)
 
-# data_2019 = read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2019_Data.xlsx').copy()
-# data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Adj_week_zero.xlsx').copy()
-# data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data.xlsx').copy()
-# test_data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Test.xlsx').copy()
-# odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds.xlsx').copy()
-
-# odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_betting_odds_current.csv')
-odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv')
+# Run this once below 
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx').copy()
 def csv_save(x):
     x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv')
     return x
 # csv_save(odds_data)
+# odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv').copy()
+odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds.csv').copy()
 
-# odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_1.xlsx').copy()
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
-# st.write('odds data', odds_data)
 
 url='https://www.pro-football-reference.com/years/2021/games.htm'
 
-def fbref_scraper(url):
-        test = pd.read_html(url)[0]
-        test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021_updated.pkl')
-        return test 
 
 def fbref_scraper_csv(url):
         test = pd.read_html(url)[0]
@@ -74,25 +59,11 @@ def fbref_scraper_csv(url):
         return test
 
 # fbref_scraper_csv(url)
-# fbref_scraper(url)
 
-# with st.echo():
-    # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
-# prior_nfl_data = pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
 prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
-# st.write(prior_nfl_data)
-# prior_nfl_data = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.csv')
-# st.write(prior_nfl_data)
-
-# data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021_updated.pkl')
 
 data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
-# data_2021=pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2021_scores.xlsx')
-# data_2021= pd.read_html(url)[0]
-# st.write('data', data_2021)
 
-# data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.csv')
-# st.write(data_2021)
 def clean_csv(x):
     # x['Date']=pd.to_datetime(x['Date'])
     x['year'] = x['Date'].str[:4]
@@ -101,16 +72,7 @@ def clean_csv(x):
     x['Date'] = pd.to_datetime(x[['year','month','day']])
     return x
 
-# st.write(data_2021)
-# st.write(data_2021['Date'])
-# nfl_data=clean_csv(data_2021).copy()
 nfl_data=data_2021.copy()
-# st.write('dtypes',nfl_data.dtypes)
-
-
-    # st.write('Just check this overall sense check its current year data',nfl_data)
-# st.write('this is prior year data',prior_nfl_data)
-
 # st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
 
 # with st.beta_expander('Historical odds function'):
