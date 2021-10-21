@@ -36,16 +36,24 @@ def to_excel(df):
 def read_data(file):
     return pd.read_excel(file)
 
-@st.cache
+# @st.cache
 def read_csv_data(file):
-    return pd.read_csv(file)
+    return pd.read_csv(file,encoding='utf-8')
 
 # data_2019 = read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2019_Data.xlsx').copy()
 # data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Adj_week_zero.xlsx').copy()
 # data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data.xlsx').copy()
 # test_data_2020=read_data('C:/Users/Darragh/Documents/Python/NFL/NFL_2020_Data_Test.xlsx').copy()
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds.xlsx').copy()
-odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_betting_odds_current.csv').copy()
+
+# odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_betting_odds_current.csv')
+odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv')
+# odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx').copy()
+def csv_save(x):
+    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv')
+    return x
+# csv_save(odds_data)
+
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_1.xlsx').copy()
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
@@ -60,10 +68,13 @@ def fbref_scraper(url):
 
 def fbref_scraper_csv(url):
         test = pd.read_html(url)[0]
-        test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
+        # test.to_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2021_scores.xlsx')
+        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
+        # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
-fbref_scraper_csv(url)
+# fbref_scraper_csv(url)
+# fbref_scraper(url)
 
 # with st.echo():
     # nfl_data=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2020.pkl')
@@ -74,7 +85,9 @@ prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/mai
 # st.write(prior_nfl_data)
 
 # data_2021=pd.read_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021_updated.pkl')
+
 data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
+# data_2021=pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2021_scores.xlsx')
 # data_2021= pd.read_html(url)[0]
 # st.write('data', data_2021)
 
@@ -178,15 +191,15 @@ def clean_pro_football_pickle_2021(nfl_data):
     fb_ref_2020['day']=fb_ref_2020['Date'].dt.day
 
     odds_data_updated=odds_data.drop(['Home Points', 'Away Points'], axis=1)
-    st.write('odds data before merge', odds_data_updated)
-    st.write(odds_data_updated.dtypes)
-    st.write('fb before merge', fb_ref_2020)
-    st.write('fbreft', fb_ref_2020.dtypes)
+    # st.write('odds data before merge', odds_data_updated)
+    # st.write(odds_data_updated.dtypes)
+    # st.write('fb before merge', fb_ref_2020)
+    # st.write('fbreft', fb_ref_2020.dtypes)
     
     # season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['Date','Home Team','Away Team', 'Home ID','Away ID'], how='left')
-    season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['year','month','day','Home Team','Away Team', 'Home ID','Away ID'], how='left')
-    st.write('after merge', season_pro)
-    st.write(season_pro.dtypes)
+    season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['Date','year','month','day','Home Team','Away Team', 'Home ID','Away ID'], how='left')
+    # st.write('after merge', season_pro)
+    # st.write(season_pro.dtypes)
     return season_pro
 
 def clean_prior_year(x):
