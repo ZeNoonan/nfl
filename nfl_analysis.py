@@ -63,6 +63,7 @@ def fbref_scraper_csv(url):
 prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
 
 data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
+# data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
 # st.write('check data', data_2021)
 
 def clean_csv(x):
@@ -619,7 +620,7 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     alt.Y('number_of_games'))
     text=chart_power.mark_text(dy=-7).encode(text=alt.Text('number_of_games:N',format=",.0f"),color=alt.value('black'))
     st.altair_chart(chart_power + text,use_container_width=True)
-
+    
     totals_1=analysis.groupby([analysis['total_factor'].abs(),'result_all']).agg(winning=('result_all','count')).reset_index()
     totals_1['result_all']=totals_1['result_all'].replace({0:'tie',1:'win',-1:'lose'})
     st.write('checking graph data',totals_1.dtypes)
