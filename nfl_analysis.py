@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
-# from io import BytesIO
+from io import BytesIO
 # import os
-# import base64 
+import base64 
 import altair as alt
 import datetime as dt
 # from st_aggrid import AgGrid
@@ -11,22 +11,24 @@ from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataRe
 
 st.set_page_config(layout="wide")
 
-def get_table_download_link(df):
-    """Generates a link allowing the data in a given panda dataframe to be downloaded
-    in:  dataframe
-    out: href string
-    """
-    val = to_excel(df)
-    b64 = base64.b64encode(val)  # val looks like b'...'
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="extract.xlsx">Download csv file</a>' # decode b'abc' => abc
+finished_week=8
 
-def to_excel(df):
-    output = BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    df.to_excel(writer, sheet_name='Sheet1')
-    writer.save()
-    processed_data = output.getvalue()
-    return processed_data
+# def get_table_download_link(df):
+#     """Generates a link allowing the data in a given panda dataframe to be downloaded
+#     in:  dataframe
+#     out: href string
+#     """
+#     val = to_excel(df)
+#     b64 = base64.b64encode(val)  # val looks like b'...'
+#     return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="extract.xlsx">Download csv file</a>' # decode b'abc' => abc
+
+# def to_excel(df):
+#     output = BytesIO()
+#     writer = pd.ExcelWriter(output, engine='xlsxwriter')
+#     df.to_excel(writer, sheet_name='Sheet1')
+#     writer.save()
+#     processed_data = output.getvalue()
+#     return processed_data
 
 @st.cache
 def read_data(file):
@@ -47,6 +49,8 @@ odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/n
 
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
+# team_names_id=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.csv')
+
 
 url='https://www.pro-football-reference.com/years/2021/games.htm'
 
@@ -61,6 +65,7 @@ def fbref_scraper_csv(url):
 # fbref_scraper_csv(url)
 
 prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
+# prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
 
 data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
 # data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
@@ -607,11 +612,13 @@ with st.beta_expander('Power Pick Factor by Team'):
 
 with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     matches_in_regular_season= (32 * 16) / 2
-    st.write('In 2020 there were 13 matches in playoffs looks like this was new so 269 total matches in 2020 season compared with 267 in previous seasons')
+    # st.write('In 2020 there were 13 matches in playoffs looks like this was new so 269 total matches in 2020 season compared with 267 in previous seasons')
     matches_in_playoffs = 13
     total_matches =matches_in_regular_season + matches_in_playoffs
-    st.write('total_matches per my calculation',total_matches)
+    # st.write('total_matches per my calculation',total_matches)
     analysis=betting_matches.copy()
+    analysis=analysis[analysis['Week']<finished_week+1]
+    # st.write('analysis',analysis)
     totals = analysis.groupby('total_factor').agg(winning=('result_all','count'))
     totals_graph=totals.reset_index().rename(columns={'winning':'number_of_games'})
 
@@ -623,9 +630,9 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     
     totals_1=analysis.groupby([analysis['total_factor'].abs(),'result_all']).agg(winning=('result_all','count')).reset_index()
     totals_1['result_all']=totals_1['result_all'].replace({0:'tie',1:'win',-1:'lose'})
-    st.write('checking graph data',totals_1.dtypes)
+    # st.write('checking graph data',totals_1.dtypes)
     # totals_1['total_factor']=totals_1['total_factor'].astype(str)
-    st.write('checking graph data',totals_1.dtypes)
+    # st.write('checking graph data',totals_1.dtypes)
     st.write('checking graph data',totals_1)
     # https://www.quackit.com/css/css_color_codes.cfm
     color_scale = alt.Scale(
@@ -637,18 +644,20 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     chart_power= alt.Chart(totals_1).mark_bar().encode(alt.X('total_factor:O',axis=alt.Axis(title='factor',labelAngle=0)),
     alt.Y('winning'),color=alt.Color('result_all',scale=color_scale))
     # alt.Y('winning'),color=alt.Color('result_all'))
+    st.write('do the normalised stacked bar chart which shows percentage')
     st.altair_chart(chart_power,use_container_width=True)
     # test_chart=
 
 
     # st.write('shows the number of games at each factor level')
     # st.write(totals.rename(columns={'winning':'number_of_games'}))
-    st.write('sum of each factor level should correspond to table above',totals_1)
-    st.write('sum of winning column should be 267 I think',totals_1['winning'].sum())
-    st.write('count of week column should be 267',analysis['Week'].count())
+    # st.write('sum of each factor level should correspond to table above',totals_1)
+    # st.write('sum of winning column should be 267 I think',totals_1['winning'].sum())
+    # st.write('count of week column should be 267',analysis['Week'].count())
 
 with st.beta_expander('Analysis of Factors'):
     analysis_factors = betting_matches.copy()
+    analysis_factors=analysis_factors[analysis_factors['Week']<finished_week+1]
     def analysis_factor_function(analysis_factors):
         analysis_factors['home_turnover_success?'] = analysis_factors['home_turnover_sign'] * analysis_factors['home_cover_result']
         analysis_factors['away_turnover_success?'] = analysis_factors['away_turnover_sign'] * analysis_factors['home_cover_result']
@@ -680,7 +689,7 @@ with st.beta_expander('Analysis of Factors'):
             st.write('Returning df with no analysis')
             return df_table_1
         return df_table_1
-    total_factor_table = analysis_factor_function(analysis_factors)     
+    total_factor_table = analysis_factor_function(analysis_factors)   
     st.write('This is the total number of matches broken down by Factor result')
     cols_to_move=['total_turnover','total_season_cover','power_ranking_success?']
     total_factor_table = total_factor_table[ cols_to_move + [ col for col in total_factor_table if col not in cols_to_move ] ]
@@ -691,6 +700,41 @@ with st.beta_expander('Analysis of Factors'):
     bets_made_factor_table = bets_made_factor_table[ cols_to_move + [ col for col in bets_made_factor_table if col not in cols_to_move ] ]
     st.write('This is the matches BET ON broken down by Factor result')
     st.write(bets_made_factor_table)
+
+    st.write('graph work below')
+    graph_factor_table = total_factor_table.copy().loc[[-1,0,1],:].reset_index().rename(columns={'index':'result_all'})
+    graph_factor_table['result_all']=graph_factor_table['result_all'].replace({0:'tie',1:'win',-1:'lose'})
+    graph_factor_table=graph_factor_table.melt(id_vars='result_all',var_name='total_factor',value_name='winning')
+    chart_power= alt.Chart(graph_factor_table).mark_bar().encode(alt.X('total_factor:O',axis=alt.Axis(title='factor',labelAngle=0)),
+    alt.Y('winning'),color=alt.Color('result_all',scale=color_scale))
+    # alt.Y('winning'),color=alt.Color('result_all'))
+    # st.write('do the normalised stacked bar chart which shows percentage')
+    st.altair_chart(chart_power,use_container_width=True)
+
+    normalized_table = graph_factor_table.copy()
+    normalized_table=normalized_table[normalized_table['result_all']!='tie']
+    # st.write('normalized', normalized_table)
+    chart_power= alt.Chart(normalized_table).mark_bar().encode(alt.X('total_factor:O',axis=alt.Axis(title='factor',labelAngle=0)),
+    alt.Y('winning',stack="normalize"),color=alt.Color('result_all',scale=color_scale))
+    overlay = pd.DataFrame({'winning': [0.5]})
+    vline = alt.Chart(overlay).mark_rule(color='black', strokeWidth=2).encode(y='winning:Q')
+    
+    
+    text = alt.Chart(normalized_table).mark_text(dx=-1, dy=+37, color='white').encode(
+    x=alt.X('total_factor:O'),
+    y=alt.Y('winning',stack="normalize"),
+    detail='winning',
+    text=alt.Text('winning:Q', format='.0f'))
+    
+    # chart_power=chart_power+text
+
+    # updated_test_chart = alt.layer(chart_power,vline)
+    updated_test_chart=chart_power+vline+text
+    
+    st.altair_chart(updated_test_chart,use_container_width=True)
+
+
+    st.write(graph_factor_table)
 
 with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
     df_factor = betting_matches.copy()
@@ -830,7 +874,7 @@ with st.beta_expander('Tests'):
     # test_prior=clean_pro_football_pickle(prior_nfl_data)
     # test_prior_data = test_clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
 
-    def pre_season():
+    def pre_season(data_2021):
         # not sure if this even works, think its for pre-season
         data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
         data_2021['month']=data_2021['Date'].str.split(' ').str[0]
