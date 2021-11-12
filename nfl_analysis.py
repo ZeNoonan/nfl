@@ -682,26 +682,28 @@ with st.beta_expander('Analysis of Factors'):
         # st.write('latest', df_table_1)
         # st.write('latest', df_table_1.shape)
         if df_table_1.shape > (2,7):
-            st.write('Returning df with analysis')
+            # st.write('Returning df with analysis')
             df_table_1.loc['No. of Bets Made'] = df_table_1.loc[[1,-1]].sum() # No losing bets so far!!!
-            df_table_1.loc['% Winning'] = df_table_1.loc[1] / df_table_1.loc['No. of Bets Made']
+            df_table_1.loc['% Winning'] = ((df_table_1.loc[1] / df_table_1.loc['No. of Bets Made'])*100).apply('{:,.1f}%'.format)
         else:
-            st.write('Returning df with no analysis')
+            # st.write('Returning df with no analysis')
             return df_table_1
         return df_table_1
     total_factor_table = analysis_factor_function(analysis_factors)   
     st.write('This is the total number of matches broken down by Factor result')
     cols_to_move=['total_turnover','total_season_cover','power_ranking_success?']
     total_factor_table = total_factor_table[ cols_to_move + [ col for col in total_factor_table if col not in cols_to_move ] ]
+    total_factor_table=total_factor_table.loc[:,['total_turnover','total_season_cover','power_ranking_success?']]
     st.write(total_factor_table)
     factor_bets = (analysis_factors[analysis_factors['bet_sign']!=0]).copy()
     bets_made_factor_table = analysis_factor_function(factor_bets)
     # cols_to_move=['total_turnover','total_season_cover','power_ranking_success?']
     bets_made_factor_table = bets_made_factor_table[ cols_to_move + [ col for col in bets_made_factor_table if col not in cols_to_move ] ]
+    bets_made_factor_table=bets_made_factor_table.loc[:,['total_turnover','total_season_cover','power_ranking_success?']]
     st.write('This is the matches BET ON broken down by Factor result')
     st.write(bets_made_factor_table)
 
-    st.write('graph work below')
+    # st.write('graph work below')
     graph_factor_table = total_factor_table.copy().loc[[-1,0,1],:].reset_index().rename(columns={'index':'result_all'})
     graph_factor_table['result_all']=graph_factor_table['result_all'].replace({0:'tie',1:'win',-1:'lose'})
     graph_factor_table=graph_factor_table.melt(id_vars='result_all',var_name='total_factor',value_name='winning')
@@ -709,11 +711,12 @@ with st.beta_expander('Analysis of Factors'):
     alt.Y('winning'),color=alt.Color('result_all',scale=color_scale))
     # alt.Y('winning'),color=alt.Color('result_all'))
     # st.write('do the normalised stacked bar chart which shows percentage')
-    st.altair_chart(chart_power,use_container_width=True)
+    # st.altair_chart(chart_power,use_container_width=True)
 
     normalized_table = graph_factor_table.copy()
     normalized_table=normalized_table[normalized_table['result_all']!='tie']
-    # st.write('normalized', normalized_table)
+    normalized_table= normalized_table[(normalized_table['total_factor']=='total_turnover') | (normalized_table['total_factor']=='total_season_cover')
+     | (normalized_table['total_factor']=='power_ranking_success?')].copy()
     chart_power= alt.Chart(normalized_table).mark_bar().encode(alt.X('total_factor:O',axis=alt.Axis(title='factor',labelAngle=0)),
     alt.Y('winning',stack="normalize"),color=alt.Color('result_all',scale=color_scale))
     overlay = pd.DataFrame({'winning': [0.5]})
@@ -734,7 +737,7 @@ with st.beta_expander('Analysis of Factors'):
     st.altair_chart(updated_test_chart,use_container_width=True)
 
 
-    st.write(graph_factor_table)
+    # st.write(graph_factor_table)
 
 with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
     df_factor = betting_matches.copy()
