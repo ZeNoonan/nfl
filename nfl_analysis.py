@@ -633,7 +633,7 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     # st.write('checking graph data',totals_1.dtypes)
     # totals_1['total_factor']=totals_1['total_factor'].astype(str)
     # st.write('checking graph data',totals_1.dtypes)
-    st.write('checking graph data',totals_1)
+    # st.write('checking graph data',totals_1)
     # https://www.quackit.com/css/css_color_codes.cfm
     color_scale = alt.Scale(
     domain=[
@@ -643,11 +643,23 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
         range=["red", "lightgrey","LimeGreen"])
     chart_power= alt.Chart(totals_1).mark_bar().encode(alt.X('total_factor:O',axis=alt.Axis(title='factor',labelAngle=0)),
     alt.Y('winning'),color=alt.Color('result_all',scale=color_scale))
-    # alt.Y('winning'),color=alt.Color('result_all'))
-    st.write('do the normalised stacked bar chart which shows percentage')
-    st.altair_chart(chart_power,use_container_width=True)
-    # test_chart=
+    # st.altair_chart(chart_power,use_container_width=True)
 
+    
+    normalized_table = (totals_1[totals_1['result_all']!='tie']).copy()
+    # st.write('graph date to be cleaned',totals_1)
+    chart_power= alt.Chart(normalized_table).mark_bar().encode(alt.X('total_factor:O',axis=alt.Axis(title='factor',labelAngle=0)),
+    alt.Y('winning',stack="normalize"),color=alt.Color('result_all',scale=color_scale))
+    overlay = pd.DataFrame({'winning': [0.5]})
+    vline = alt.Chart(overlay).mark_rule(color='black', strokeWidth=2).encode(y='winning:Q')
+    text = alt.Chart(normalized_table).mark_text(dx=-1, dy=+60, color='white').encode(
+    x=alt.X('total_factor:O'),
+    y=alt.Y('winning',stack="normalize"),
+    detail='winning',
+    text=alt.Text('winning:Q', format='.0f'))
+    updated_test_chart=chart_power+vline+text
+    
+    st.altair_chart(updated_test_chart,use_container_width=True)
 
     # st.write('shows the number of games at each factor level')
     # st.write(totals.rename(columns={'winning':'number_of_games'}))
