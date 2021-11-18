@@ -667,6 +667,11 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     # st.write('sum of winning column should be 267 I think',totals_1['winning'].sum())
     # st.write('count of week column should be 267',analysis['Week'].count())
 
+    reset_data=totals_1.copy()
+    reset_data['result_all']=reset_data['result_all'].replace({'tie':0,'win':1,'lose':-1})
+    reset_data=reset_data.pivot(index='result_all',columns='total_factor',values='winning')
+    st.write(reset_data)
+
 with st.beta_expander('Analysis of Factors'):
     analysis_factors = betting_matches.copy()
     analysis_factors=analysis_factors[analysis_factors['Week']<finished_week+1]
