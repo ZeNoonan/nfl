@@ -669,8 +669,16 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
 
     reset_data=totals_1.copy()
     reset_data['result_all']=reset_data['result_all'].replace({'tie':0,'win':1,'lose':-1})
-    reset_data=reset_data.pivot(index='result_all',columns='total_factor',values='winning')
+    reset_data=reset_data.pivot(index='result_all',columns='total_factor',values='winning').fillna(0)
+    reset_data['betting_factor_total']=reset_data[3]+reset_data[4]+reset_data[5]
+    reset_data=reset_data.sort_values(by='betting_factor_total',ascending=False)
+    reset_data.loc['Total']=reset_data.sum()
+    reset_data.loc['No. of Bets Made'] = reset_data.loc[[1,-1]].sum() 
+    reset_data=reset_data.apply(pd.to_numeric, downcast='integer')
+    reset_data.loc['% Winning'] = ((reset_data.loc[1] / reset_data.loc['No. of Bets Made'])*100).apply('{:,.1f}%'.format)
+    st.write('This shows the betting result')
     st.write(reset_data)
+    st.write('Broken down by the number of factors indicating the strength of the signal')
 
 with st.beta_expander('Analysis of Factors'):
     analysis_factors = betting_matches.copy()
@@ -756,7 +764,7 @@ with st.beta_expander('Analysis of Factors'):
 
     # st.write(graph_factor_table)
 
-with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
+with st.beta_expander('Checking Performance where Total Factor = 2 or 3:  Additional Diagnostic'):
     df_factor = betting_matches.copy()
     two_factor_df = df_factor[df_factor['total_factor'].abs()==2]
     # st.write(two_factor_df)
@@ -803,7 +811,7 @@ with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
 
     if df_factor_table_1.shape > (2,7):
         df_factor_table_1.loc['No. of Bets Made'] = df_factor_table_1.loc[[1,-1]].sum() 
-        df_factor_table_1.loc['% Winning'] = df_factor_table_1.loc[1] / df_factor_table_1.loc['No. of Bets Made']
+        df_factor_table_1.loc['% Winning'] = ((df_factor_table_1.loc[1] / df_factor_table_1.loc['No. of Bets Made'])*100).apply('{:,.1f}%'.format)
     # else:
     #     # st.write('Returning df with no anal')
     #     return df_factor_table_1
@@ -811,6 +819,7 @@ with st.beta_expander('Checking Performance where Total Factor = 2 or 3'):
 
     cols_to_move=['total_turnover','total_season_cover','power_diagnostic']
     df_factor_table_1 = df_factor_table_1[ cols_to_move + [ col for col in df_factor_table_1 if col not in cols_to_move ] ]
+    df_factor_table_1=df_factor_table_1.loc[:,['total_turnover','total_season_cover','power_diagnostic']]
     st.write(df_factor_table_1)
 
 
