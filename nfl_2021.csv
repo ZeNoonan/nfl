@@ -1,67 +1,67 @@
 ,Week,Day,Date,Time,Winner/tie,Unnamed: 5,Loser/tie,Unnamed: 7,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 0,1,Thu,2021-09-09,8:20PM,Tampa Bay Buccaneers,,Dallas Cowboys,boxscore,31,29,431,4,451,1
 1,1,Sun,2021-09-12,1:00PM,Philadelphia Eagles,@,Atlanta Falcons,boxscore,32,6,434,0,260,0
-2,1,Sun,2021-09-12,1:00PM,Carolina Panthers,,New York Jets,boxscore,19,14,381,1,252,1
-3,1,Sun,2021-09-12,1:00PM,Cincinnati Bengals,,Minnesota Vikings,boxscore,27,24,366,0,403,1
+2,1,Sun,2021-09-12,1:00PM,Pittsburgh Steelers,@,Buffalo Bills,boxscore,23,16,252,0,371,1
+3,1,Sun,2021-09-12,1:00PM,Carolina Panthers,,New York Jets,boxscore,19,14,381,1,252,1
 4,1,Sun,2021-09-12,1:00PM,Seattle Seahawks,@,Indianapolis Colts,boxscore,28,16,381,1,336,1
-5,1,Sun,2021-09-12,1:00PM,Los Angeles Chargers,@,Washington Football Team,boxscore,20,16,424,2,259,1
+5,1,Sun,2021-09-12,1:00PM,Arizona Cardinals,@,Tennessee Titans,boxscore,38,13,416,1,248,3
 6,1,Sun,2021-09-12,1:00PM,San Francisco 49ers,@,Detroit Lions,boxscore,41,33,442,2,430,1
-7,1,Sun,2021-09-12,1:00PM,Pittsburgh Steelers,@,Buffalo Bills,boxscore,23,16,252,0,371,1
-8,1,Sun,2021-09-12,1:00PM,Houston Texans,,Jacksonville Jaguars,boxscore,37,21,449,0,395,3
-9,1,Sun,2021-09-12,1:00PM,Arizona Cardinals,@,Tennessee Titans,boxscore,38,13,416,1,248,3
-10,1,Sun,2021-09-12,4:25PM,Miami Dolphins,@,New England Patriots,boxscore,17,16,259,1,393,2
-11,1,Sun,2021-09-12,4:25PM,Kansas City Chiefs,,Cleveland Browns,boxscore,33,29,397,0,457,2
-12,1,Sun,2021-09-12,4:25PM,New Orleans Saints,,Green Bay Packers,boxscore,38,3,322,0,229,3
+7,1,Sun,2021-09-12,1:00PM,Houston Texans,,Jacksonville Jaguars,boxscore,37,21,449,0,395,3
+8,1,Sun,2021-09-12,1:00PM,Cincinnati Bengals,,Minnesota Vikings,boxscore,27,24,366,0,403,1
+9,1,Sun,2021-09-12,1:00PM,Los Angeles Chargers,@,Washington Football Team,boxscore,20,16,424,2,259,1
+10,1,Sun,2021-09-12,4:25PM,Kansas City Chiefs,,Cleveland Browns,boxscore,33,29,397,0,457,2
+11,1,Sun,2021-09-12,4:25PM,New Orleans Saints,,Green Bay Packers,boxscore,38,3,322,0,229,3
+12,1,Sun,2021-09-12,4:25PM,Miami Dolphins,@,New England Patriots,boxscore,17,16,259,1,393,2
 13,1,Sun,2021-09-12,4:25PM,Denver Broncos,@,New York Giants,boxscore,27,13,420,1,314,1
 14,1,Sun,2021-09-12,8:20PM,Los Angeles Rams,,Chicago Bears,boxscore,34,14,386,0,322,2
 15,1,Mon,2021-09-13,8:15PM,Las Vegas Raiders,,Baltimore Ravens,boxscore,33,27,491,1,406,2
 16,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 17,2,Thu,2021-09-16,8:20PM,Washington Football Team,,New York Giants,boxscore,30,29,407,1,391,0
-18,2,Sun,2021-09-19,1:00PM,Buffalo Bills,@,Miami Dolphins,boxscore,35,0,314,2,216,3
-19,2,Sun,2021-09-19,1:00PM,Chicago Bears,,Cincinnati Bengals,boxscore,20,17,206,1,248,4
-20,2,Sun,2021-09-19,1:00PM,New England Patriots,@,New York Jets,boxscore,25,6,260,0,336,4
-21,2,Sun,2021-09-19,1:00PM,Denver Broncos,@,Jacksonville Jaguars,boxscore,23,13,398,0,189,2
-22,2,Sun,2021-09-19,1:00PM,Carolina Panthers,,New Orleans Saints,boxscore,26,7,383,1,128,2
-23,2,Sun,2021-09-19,1:00PM,Cleveland Browns,,Houston Texans,boxscore,31,21,355,2,302,2
-24,2,Sun,2021-09-19,1:00PM,San Francisco 49ers,@,Philadelphia Eagles,boxscore,17,11,306,0,328,0
-25,2,Sun,2021-09-19,1:00PM,Las Vegas Raiders,@,Pittsburgh Steelers,boxscore,26,17,425,0,331,1
+18,2,Sun,2021-09-19,1:00PM,Chicago Bears,,Cincinnati Bengals,boxscore,20,17,206,1,248,4
+19,2,Sun,2021-09-19,1:00PM,New England Patriots,@,New York Jets,boxscore,25,6,260,0,336,4
+20,2,Sun,2021-09-19,1:00PM,San Francisco 49ers,@,Philadelphia Eagles,boxscore,17,11,306,0,328,0
+21,2,Sun,2021-09-19,1:00PM,Las Vegas Raiders,@,Pittsburgh Steelers,boxscore,26,17,425,0,331,1
+22,2,Sun,2021-09-19,1:00PM,Denver Broncos,@,Jacksonville Jaguars,boxscore,23,13,398,0,189,2
+23,2,Sun,2021-09-19,1:00PM,Buffalo Bills,@,Miami Dolphins,boxscore,35,0,314,2,216,3
+24,2,Sun,2021-09-19,1:00PM,Carolina Panthers,,New Orleans Saints,boxscore,26,7,383,1,128,2
+25,2,Sun,2021-09-19,1:00PM,Cleveland Browns,,Houston Texans,boxscore,31,21,355,2,302,2
 26,2,Sun,2021-09-19,1:00PM,Los Angeles Rams,@,Indianapolis Colts,boxscore,27,24,371,2,354,2
-27,2,Sun,2021-09-19,4:05PM,Arizona Cardinals,,Minnesota Vikings,boxscore,34,33,474,2,419,0
-28,2,Sun,2021-09-19,4:05PM,Tampa Bay Buccaneers,,Atlanta Falcons,boxscore,48,25,341,1,348,3
+27,2,Sun,2021-09-19,4:05PM,Tampa Bay Buccaneers,,Atlanta Falcons,boxscore,48,25,341,1,348,3
+28,2,Sun,2021-09-19,4:05PM,Arizona Cardinals,,Minnesota Vikings,boxscore,34,33,474,2,419,0
 29,2,Sun,2021-09-19,4:25PM,Tennessee Titans,@,Seattle Seahawks,boxscore,33,30,532,1,397,0
 30,2,Sun,2021-09-19,4:25PM,Dallas Cowboys,@,Los Angeles Chargers,boxscore,20,17,419,1,408,2
 31,2,Sun,2021-09-19,8:20PM,Baltimore Ravens,,Kansas City Chiefs,boxscore,36,35,481,2,405,2
 32,2,Mon,2021-09-20,8:15PM,Green Bay Packers,,Detroit Lions,boxscore,35,17,323,0,344,2
 33,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 34,3,Thu,2021-09-23,8:20PM,Carolina Panthers,@,Houston Texans,boxscore,24,9,407,0,193,0
-35,3,Sun,2021-09-26,1:00PM,Baltimore Ravens,@,Detroit Lions,boxscore,19,17,387,1,285,0
-36,3,Sun,2021-09-26,1:00PM,Atlanta Falcons,@,New York Giants,boxscore,17,14,296,1,346,1
-37,3,Sun,2021-09-26,1:00PM,Los Angeles Chargers,@,Kansas City Chiefs,boxscore,30,24,352,0,437,4
+35,3,Sun,2021-09-26,1:00PM,Atlanta Falcons,@,New York Giants,boxscore,17,14,296,1,346,1
+36,3,Sun,2021-09-26,1:00PM,Buffalo Bills,,Washington Football Team,boxscore,43,21,481,0,290,3
+37,3,Sun,2021-09-26,1:00PM,Cincinnati Bengals,@,Pittsburgh Steelers,boxscore,24,10,268,1,342,2
 38,3,Sun,2021-09-26,1:00PM,Tennessee Titans,,Indianapolis Colts,boxscore,25,16,368,3,265,0
-39,3,Sun,2021-09-26,1:00PM,Buffalo Bills,,Washington Football Team,boxscore,43,21,481,0,290,3
-40,3,Sun,2021-09-26,1:00PM,Cleveland Browns,,Chicago Bears,boxscore,26,6,418,0,47,0
-41,3,Sun,2021-09-26,1:00PM,New Orleans Saints,@,New England Patriots,boxscore,28,13,252,0,300,3
-42,3,Sun,2021-09-26,1:00PM,Cincinnati Bengals,@,Pittsburgh Steelers,boxscore,24,10,268,1,342,2
-43,3,Sun,2021-09-26,1:00PM,Arizona Cardinals,@,Jacksonville Jaguars,boxscore,31,19,407,1,361,4
+39,3,Sun,2021-09-26,1:00PM,Arizona Cardinals,@,Jacksonville Jaguars,boxscore,31,19,407,1,361,4
+40,3,Sun,2021-09-26,1:00PM,Baltimore Ravens,@,Detroit Lions,boxscore,19,17,387,1,285,0
+41,3,Sun,2021-09-26,1:00PM,Los Angeles Chargers,@,Kansas City Chiefs,boxscore,30,24,352,0,437,4
+42,3,Sun,2021-09-26,1:00PM,Cleveland Browns,,Chicago Bears,boxscore,26,6,418,0,47,0
+43,3,Sun,2021-09-26,1:00PM,New Orleans Saints,@,New England Patriots,boxscore,28,13,252,0,300,3
 44,3,Sun,2021-09-26,4:05PM,Las Vegas Raiders,,Miami Dolphins,boxscore,31,28,497,1,330,0
 45,3,Sun,2021-09-26,4:05PM,Denver Broncos,,New York Jets,boxscore,26,0,343,1,162,2
-46,3,Sun,2021-09-26,4:25PM,Los Angeles Rams,,Tampa Bay Buccaneers,boxscore,34,24,407,0,446,0
-47,3,Sun,2021-09-26,4:25PM,Minnesota Vikings,,Seattle Seahawks,boxscore,30,17,453,0,389,0
+46,3,Sun,2021-09-26,4:25PM,Minnesota Vikings,,Seattle Seahawks,boxscore,30,17,453,0,389,0
+47,3,Sun,2021-09-26,4:25PM,Los Angeles Rams,,Tampa Bay Buccaneers,boxscore,34,24,407,0,446,0
 48,3,Sun,2021-09-26,8:20PM,Green Bay Packers,@,San Francisco 49ers,boxscore,30,28,353,0,298,2
 49,3,Mon,2021-09-27,8:15PM,Dallas Cowboys,,Philadelphia Eagles,boxscore,41,21,380,1,367,2
 50,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 51,4,Thu,2021-09-30,8:20PM,Cincinnati Bengals,,Jacksonville Jaguars,boxscore,24,21,420,0,341,0
-52,4,Sun,2021-10-03,1:00PM,Buffalo Bills,,Houston Texans,boxscore,40,0,450,1,109,5
+52,4,Sun,2021-10-03,1:00PM,Kansas City Chiefs,@,Philadelphia Eagles,boxscore,42,30,471,1,461,0
 53,4,Sun,2021-10-03,1:00PM,Chicago Bears,,Detroit Lions,boxscore,24,14,373,1,351,2
 54,4,Sun,2021-10-03,1:00PM,New York Giants,@,New Orleans Saints,boxscore,27,21,485,1,405,1
 55,4,Sun,2021-10-03,1:00PM,Cleveland Browns,@,Minnesota Vikings,boxscore,14,7,327,0,255,1
 56,4,Sun,2021-10-03,1:00PM,New York Jets,,Tennessee Titans,boxscore,27,24,355,1,430,0
 57,4,Sun,2021-10-03,1:00PM,Washington Football Team,@,Atlanta Falcons,boxscore,34,30,412,0,374,0
-58,4,Sun,2021-10-03,1:00PM,Dallas Cowboys,,Carolina Panthers,boxscore,36,28,433,0,379,2
-59,4,Sun,2021-10-03,1:00PM,Kansas City Chiefs,@,Philadelphia Eagles,boxscore,42,30,471,1,461,0
+58,4,Sun,2021-10-03,1:00PM,Buffalo Bills,,Houston Texans,boxscore,40,0,450,1,109,5
+59,4,Sun,2021-10-03,1:00PM,Dallas Cowboys,,Carolina Panthers,boxscore,36,28,433,0,379,2
 60,4,Sun,2021-10-03,1:00PM,Indianapolis Colts,@,Miami Dolphins,boxscore,27,17,349,1,203,2
-61,4,Sun,2021-10-03,4:05PM,Arizona Cardinals,@,Los Angeles Rams,boxscore,37,20,465,0,401,2
-62,4,Sun,2021-10-03,4:05PM,Seattle Seahawks,@,San Francisco 49ers,boxscore,28,21,234,0,457,2
+61,4,Sun,2021-10-03,4:05PM,Seattle Seahawks,@,San Francisco 49ers,boxscore,28,21,234,0,457,2
+62,4,Sun,2021-10-03,4:05PM,Arizona Cardinals,@,Los Angeles Rams,boxscore,37,20,465,0,401,2
 63,4,Sun,2021-10-03,4:25PM,Baltimore Ravens,@,Denver Broncos,boxscore,23,7,406,0,254,1
 64,4,Sun,2021-10-03,4:25PM,Green Bay Packers,,Pittsburgh Steelers,boxscore,27,17,367,1,282,2
 65,4,Sun,2021-10-03,8:20PM,Tampa Bay Buccaneers,@,New England Patriots,boxscore,19,17,381,0,294,2
@@ -69,14 +69,14 @@
 67,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 68,5,Thu,2021-10-07,8:20PM,Los Angeles Rams,@,Seattle Seahawks,boxscore,26,17,476,1,354,2
 69,5,Sun,2021-10-10,9:30AM,Atlanta Falcons,,New York Jets,boxscore,27,20,450,2,230,1
-70,5,Sun,2021-10-10,1:00PM,New England Patriots,@,Houston Texans,boxscore,25,22,352,2,360,1
-71,5,Sun,2021-10-10,1:00PM,Philadelphia Eagles,@,Carolina Panthers,boxscore,21,18,273,2,267,3
-72,5,Sun,2021-10-10,1:00PM,Tampa Bay Buccaneers,,Miami Dolphins,boxscore,45,17,558,0,301,2
-73,5,Sun,2021-10-10,1:00PM,Minnesota Vikings,,Detroit Lions,boxscore,19,17,384,2,288,2
-74,5,Sun,2021-10-10,1:00PM,Tennessee Titans,@,Jacksonville Jaguars,boxscore,37,19,368,0,454,2
-75,5,Sun,2021-10-10,1:00PM,New Orleans Saints,@,Washington Football Team,boxscore,33,22,369,2,373,2
-76,5,Sun,2021-10-10,1:00PM,Green Bay Packers,@,Cincinnati Bengals,boxscore,25,22,466,1,367,2
-77,5,Sun,2021-10-10,1:00PM,Pittsburgh Steelers,,Denver Broncos,boxscore,27,19,391,1,374,1
+70,5,Sun,2021-10-10,1:00PM,Minnesota Vikings,,Detroit Lions,boxscore,19,17,384,2,288,2
+71,5,Sun,2021-10-10,1:00PM,New England Patriots,@,Houston Texans,boxscore,25,22,352,2,360,1
+72,5,Sun,2021-10-10,1:00PM,Philadelphia Eagles,@,Carolina Panthers,boxscore,21,18,273,2,267,3
+73,5,Sun,2021-10-10,1:00PM,Green Bay Packers,@,Cincinnati Bengals,boxscore,25,22,466,1,367,2
+74,5,Sun,2021-10-10,1:00PM,Pittsburgh Steelers,,Denver Broncos,boxscore,27,19,391,1,374,1
+75,5,Sun,2021-10-10,1:00PM,Tennessee Titans,@,Jacksonville Jaguars,boxscore,37,19,368,0,454,2
+76,5,Sun,2021-10-10,1:00PM,Tampa Bay Buccaneers,,Miami Dolphins,boxscore,45,17,558,0,301,2
+77,5,Sun,2021-10-10,1:00PM,New Orleans Saints,@,Washington Football Team,boxscore,33,22,369,2,373,2
 78,5,Sun,2021-10-10,4:05PM,Chicago Bears,@,Las Vegas Raiders,boxscore,20,9,252,0,259,1
 79,5,Sun,2021-10-10,4:05PM,Los Angeles Chargers,,Cleveland Browns,boxscore,47,42,493,1,531,0
 80,5,Sun,2021-10-10,4:25PM,Arizona Cardinals,,San Francisco 49ers,boxscore,17,10,304,1,338,1
@@ -86,16 +86,16 @@
 84,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 85,6,Thu,2021-10-14,8:20PM,Tampa Bay Buccaneers,@,Philadelphia Eagles,boxscore,28,22,399,1,213,1
 86,6,Sun,2021-10-17,9:30AM,Jacksonville Jaguars,,Miami Dolphins,boxscore,23,20,396,1,431,1
-87,6,Sun,2021-10-17,1:00PM,Kansas City Chiefs,@,Washington Football Team,boxscore,31,13,499,3,276,2
-88,6,Sun,2021-10-17,1:00PM,Green Bay Packers,@,Chicago Bears,boxscore,24,14,323,0,277,1
-89,6,Sun,2021-10-17,1:00PM,Cincinnati Bengals,@,Detroit Lions,boxscore,34,11,398,1,228,1
-90,6,Sun,2021-10-17,1:00PM,Los Angeles Rams,@,New York Giants,boxscore,38,11,365,2,261,4
-91,6,Sun,2021-10-17,1:00PM,Minnesota Vikings,@,Carolina Panthers,boxscore,34,28,571,1,306,3
-92,6,Sun,2021-10-17,1:00PM,Indianapolis Colts,,Houston Texans,boxscore,31,3,388,0,353,3
-93,6,Sun,2021-10-17,1:00PM,Baltimore Ravens,,Los Angeles Chargers,boxscore,34,6,327,2,208,1
+87,6,Sun,2021-10-17,1:00PM,Green Bay Packers,@,Chicago Bears,boxscore,24,14,323,0,277,1
+88,6,Sun,2021-10-17,1:00PM,Los Angeles Rams,@,New York Giants,boxscore,38,11,365,2,261,4
+89,6,Sun,2021-10-17,1:00PM,Baltimore Ravens,,Los Angeles Chargers,boxscore,34,6,327,2,208,1
+90,6,Sun,2021-10-17,1:00PM,Minnesota Vikings,@,Carolina Panthers,boxscore,34,28,571,1,306,3
+91,6,Sun,2021-10-17,1:00PM,Kansas City Chiefs,@,Washington Football Team,boxscore,31,13,499,3,276,2
+92,6,Sun,2021-10-17,1:00PM,Cincinnati Bengals,@,Detroit Lions,boxscore,34,11,398,1,228,1
+93,6,Sun,2021-10-17,1:00PM,Indianapolis Colts,,Houston Texans,boxscore,31,3,388,0,353,3
 94,6,Sun,2021-10-17,4:05PM,Arizona Cardinals,@,Cleveland Browns,boxscore,37,14,352,0,290,3
-95,6,Sun,2021-10-17,4:25PM,Dallas Cowboys,@,New England Patriots,boxscore,35,29,567,2,335,2
-96,6,Sun,2021-10-17,4:25PM,Las Vegas Raiders,@,Denver Broncos,boxscore,34,24,426,0,421,4
+95,6,Sun,2021-10-17,4:25PM,Las Vegas Raiders,@,Denver Broncos,boxscore,34,24,426,0,421,4
+96,6,Sun,2021-10-17,4:25PM,Dallas Cowboys,@,New England Patriots,boxscore,35,29,567,2,335,2
 97,6,Sun,2021-10-17,8:20PM,Pittsburgh Steelers,,Seattle Seahawks,boxscore,23,20,345,1,309,1
 98,6,Mon,2021-10-18,8:15PM,Tennessee Titans,,Buffalo Bills,boxscore,34,31,362,1,417,1
 99,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
@@ -103,24 +103,24 @@
 101,7,Sun,2021-10-24,1:00PM,Atlanta Falcons,@,Miami Dolphins,boxscore,30,28,397,2,413,2
 102,7,Sun,2021-10-24,1:00PM,Green Bay Packers,,Washington Football Team,boxscore,24,10,304,1,430,2
 103,7,Sun,2021-10-24,1:00PM,New York Giants,,Carolina Panthers,boxscore,25,3,302,0,173,1
-104,7,Sun,2021-10-24,1:00PM,New England Patriots,,New York Jets,boxscore,54,13,551,0,299,3
-105,7,Sun,2021-10-24,1:00PM,Tennessee Titans,,Kansas City Chiefs,boxscore,27,3,369,1,334,3
-106,7,Sun,2021-10-24,1:00PM,Cincinnati Bengals,@,Baltimore Ravens,boxscore,41,17,520,1,393,0
-107,7,Sun,2021-10-24,4:05PM,Los Angeles Rams,,Detroit Lions,boxscore,28,19,374,0,415,2
-108,7,Sun,2021-10-24,4:05PM,Las Vegas Raiders,,Philadelphia Eagles,boxscore,33,22,442,1,358,2
-109,7,Sun,2021-10-24,4:25PM,Arizona Cardinals,,Houston Texans,boxscore,31,5,397,1,160,1
-110,7,Sun,2021-10-24,4:25PM,Tampa Bay Buccaneers,,Chicago Bears,boxscore,38,3,408,1,311,5
+104,7,Sun,2021-10-24,1:00PM,Tennessee Titans,,Kansas City Chiefs,boxscore,27,3,369,1,334,3
+105,7,Sun,2021-10-24,1:00PM,Cincinnati Bengals,@,Baltimore Ravens,boxscore,41,17,520,1,393,0
+106,7,Sun,2021-10-24,1:00PM,New England Patriots,,New York Jets,boxscore,54,13,551,0,299,3
+107,7,Sun,2021-10-24,4:05PM,Las Vegas Raiders,,Philadelphia Eagles,boxscore,33,22,442,1,358,2
+108,7,Sun,2021-10-24,4:05PM,Los Angeles Rams,,Detroit Lions,boxscore,28,19,374,0,415,2
+109,7,Sun,2021-10-24,4:25PM,Tampa Bay Buccaneers,,Chicago Bears,boxscore,38,3,408,1,311,5
+110,7,Sun,2021-10-24,4:25PM,Arizona Cardinals,,Houston Texans,boxscore,31,5,397,1,160,1
 111,7,Sun,2021-10-24,8:20PM,Indianapolis Colts,@,San Francisco 49ers,boxscore,30,18,295,2,280,4
 112,7,Mon,2021-10-25,8:15PM,New Orleans Saints,@,Seattle Seahawks,boxscore,13,10,304,1,219,0
 113,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 114,8,Thu,2021-10-28,8:20PM,Green Bay Packers,@,Arizona Cardinals,boxscore,24,21,335,0,334,3
 115,8,Sun,2021-10-31,1:00PM,Carolina Panthers,@,Atlanta Falcons,boxscore,19,13,332,1,213,2
 116,8,Sun,2021-10-31,1:00PM,Buffalo Bills,,Miami Dolphins,boxscore,26,11,351,0,262,2
-117,8,Sun,2021-10-31,1:00PM,San Francisco 49ers,@,Chicago Bears,boxscore,33,22,467,0,324,1
-118,8,Sun,2021-10-31,1:00PM,New York Jets,,Cincinnati Bengals,boxscore,34,31,511,3,318,1
+117,8,Sun,2021-10-31,1:00PM,Philadelphia Eagles,@,Detroit Lions,boxscore,44,6,350,0,228,1
+118,8,Sun,2021-10-31,1:00PM,San Francisco 49ers,@,Chicago Bears,boxscore,33,22,467,0,324,1
 119,8,Sun,2021-10-31,1:00PM,Pittsburgh Steelers,@,Cleveland Browns,boxscore,15,10,370,0,306,1
-120,8,Sun,2021-10-31,1:00PM,Philadelphia Eagles,@,Detroit Lions,boxscore,44,6,350,0,228,1
-121,8,Sun,2021-10-31,1:00PM,Los Angeles Rams,@,Houston Texans,boxscore,38,22,467,0,323,1
+120,8,Sun,2021-10-31,1:00PM,Los Angeles Rams,@,Houston Texans,boxscore,38,22,467,0,323,1
+121,8,Sun,2021-10-31,1:00PM,New York Jets,,Cincinnati Bengals,boxscore,34,31,511,3,318,1
 122,8,Sun,2021-10-31,1:00PM,Tennessee Titans,@,Indianapolis Colts,boxscore,34,31,340,2,307,3
 123,8,Sun,2021-10-31,4:05PM,Seattle Seahawks,,Jacksonville Jaguars,boxscore,31,7,229,0,309,1
 124,8,Sun,2021-10-31,4:05PM,New England Patriots,@,Los Angeles Chargers,boxscore,27,24,352,1,369,2
@@ -130,45 +130,45 @@
 128,8,Mon,2021-11-01,8:15PM,Kansas City Chiefs,,New York Giants,boxscore,20,17,368,2,300,1
 129,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 130,9,Thu,2021-11-04,8:20PM,Indianapolis Colts,,New York Jets,boxscore,45,30,532,0,486,2
-131,9,Sun,2021-11-07,1:00PM,Jacksonville Jaguars,,Buffalo Bills,boxscore,9,6,218,1,301,3
-132,9,Sun,2021-11-07,1:00PM,Baltimore Ravens,,Minnesota Vikings,boxscore,34,31,500,2,318,0
-133,9,Sun,2021-11-07,1:00PM,Denver Broncos,@,Dallas Cowboys,boxscore,30,16,407,0,290,2
-134,9,Sun,2021-11-07,1:00PM,Atlanta Falcons,@,New Orleans Saints,boxscore,27,25,366,0,376,1
+131,9,Sun,2021-11-07,1:00PM,Baltimore Ravens,,Minnesota Vikings,boxscore,34,31,500,2,318,0
+132,9,Sun,2021-11-07,1:00PM,Atlanta Falcons,@,New Orleans Saints,boxscore,27,25,366,0,376,1
+133,9,Sun,2021-11-07,1:00PM,Jacksonville Jaguars,,Buffalo Bills,boxscore,9,6,218,1,301,3
+134,9,Sun,2021-11-07,1:00PM,Denver Broncos,@,Dallas Cowboys,boxscore,30,16,407,0,290,2
 135,9,Sun,2021-11-07,1:00PM,Miami Dolphins,,Houston Texans,boxscore,17,9,262,5,272,4
-136,9,Sun,2021-11-07,1:00PM,New England Patriots,@,Carolina Panthers,boxscore,24,6,273,2,240,3
-137,9,Sun,2021-11-07,1:00PM,Cleveland Browns,@,Cincinnati Bengals,boxscore,41,16,361,0,348,3
+136,9,Sun,2021-11-07,1:00PM,Cleveland Browns,@,Cincinnati Bengals,boxscore,41,16,361,0,348,3
+137,9,Sun,2021-11-07,1:00PM,New England Patriots,@,Carolina Panthers,boxscore,24,6,273,2,240,3
 138,9,Sun,2021-11-07,1:00PM,New York Giants,,Las Vegas Raiders,boxscore,23,16,247,1,403,3
 139,9,Sun,2021-11-07,4:05PM,Los Angeles Chargers,@,Philadelphia Eagles,boxscore,27,24,445,0,331,0
-140,9,Sun,2021-11-07,4:25PM,Arizona Cardinals,@,San Francisco 49ers,boxscore,31,17,437,0,337,3
-141,9,Sun,2021-11-07,4:25PM,Kansas City Chiefs,,Green Bay Packers,boxscore,13,7,237,0,301,2
+140,9,Sun,2021-11-07,4:25PM,Kansas City Chiefs,,Green Bay Packers,boxscore,13,7,237,0,301,2
+141,9,Sun,2021-11-07,4:25PM,Arizona Cardinals,@,San Francisco 49ers,boxscore,31,17,437,0,337,3
 142,9,Sun,2021-11-07,8:20PM,Tennessee Titans,@,Los Angeles Rams,boxscore,28,16,194,1,347,2
 143,9,Mon,2021-11-08,8:15PM,Pittsburgh Steelers,,Chicago Bears,boxscore,29,27,280,1,414,2
 144,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 145,10,Thu,2021-11-11,8:20PM,Miami Dolphins,,Baltimore Ravens,boxscore,22,10,350,0,304,2
-146,10,Sun,2021-11-14,1:00PM,Pittsburgh Steelers,,Detroit Lions,boxscore,16,16,387,3,306,0
-147,10,Sun,2021-11-14,1:00PM,Dallas Cowboys,,Atlanta Falcons,boxscore,43,3,431,1,214,3
+146,10,Sun,2021-11-14,1:00PM,Dallas Cowboys,,Atlanta Falcons,boxscore,43,3,431,1,214,3
+147,10,Sun,2021-11-14,1:00PM,Buffalo Bills,@,New York Jets,boxscore,45,17,489,2,366,5
 148,10,Sun,2021-11-14,1:00PM,Tennessee Titans,,New Orleans Saints,boxscore,23,21,264,0,373,1
-149,10,Sun,2021-11-14,1:00PM,Buffalo Bills,@,New York Jets,boxscore,45,17,489,2,366,5
+149,10,Sun,2021-11-14,1:00PM,Pittsburgh Steelers,,Detroit Lions,boxscore,16,16,387,3,306,0
 150,10,Sun,2021-11-14,1:00PM,Washington Football Team,,Tampa Bay Buccaneers,boxscore,29,19,320,1,273,2
 151,10,Sun,2021-11-14,1:00PM,New England Patriots,,Cleveland Browns,boxscore,45,7,452,0,217,1
 152,10,Sun,2021-11-14,1:00PM,Indianapolis Colts,,Jacksonville Jaguars,boxscore,23,17,295,0,331,1
 153,10,Sun,2021-11-14,4:05PM,Minnesota Vikings,@,Los Angeles Chargers,boxscore,27,20,381,1,253,1
 154,10,Sun,2021-11-14,4:05PM,Carolina Panthers,@,Arizona Cardinals,boxscore,34,10,341,2,169,2
-155,10,Sun,2021-11-14,4:25PM,Green Bay Packers,,Seattle Seahawks,boxscore,17,0,393,1,208,2
-156,10,Sun,2021-11-14,4:25PM,Philadelphia Eagles,@,Denver Broncos,boxscore,30,13,386,1,308,1
+155,10,Sun,2021-11-14,4:25PM,Philadelphia Eagles,@,Denver Broncos,boxscore,30,13,386,1,308,1
+156,10,Sun,2021-11-14,4:25PM,Green Bay Packers,,Seattle Seahawks,boxscore,17,0,393,1,208,2
 157,10,Sun,2021-11-14,8:20PM,Kansas City Chiefs,@,Las Vegas Raiders,boxscore,41,14,516,1,299,2
 158,10,Mon,2021-11-15,8:15PM,San Francisco 49ers,,Los Angeles Rams,boxscore,31,10,335,0,278,2
 159,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 160,11,Thu,2021-11-18,8:20PM,New England Patriots,@,Atlanta Falcons,boxscore,25,0,308,1,165,4
-161,11,Sun,2021-11-21,1:00PM,Indianapolis Colts,@,Buffalo Bills,boxscore,41,15,370,0,311,4
-162,11,Sun,2021-11-21,1:00PM,San Francisco 49ers,@,Jacksonville Jaguars,boxscore,30,10,333,0,200,2
-163,11,Sun,2021-11-21,1:00PM,Baltimore Ravens,@,Chicago Bears,boxscore,16,13,299,1,353,1
+161,11,Sun,2021-11-21,1:00PM,San Francisco 49ers,@,Jacksonville Jaguars,boxscore,30,10,333,0,200,2
+162,11,Sun,2021-11-21,1:00PM,Baltimore Ravens,@,Chicago Bears,boxscore,16,13,299,1,353,1
+163,11,Sun,2021-11-21,1:00PM,Indianapolis Colts,@,Buffalo Bills,boxscore,41,15,370,0,311,4
 164,11,Sun,2021-11-21,1:00PM,Houston Texans,@,Tennessee Titans,boxscore,22,13,190,0,420,5
 165,11,Sun,2021-11-21,1:00PM,Philadelphia Eagles,,New Orleans Saints,boxscore,40,29,380,1,323,3
-166,11,Sun,2021-11-21,1:00PM,Miami Dolphins,@,New York Jets,boxscore,24,17,388,1,380,1
-167,11,Sun,2021-11-21,1:00PM,Cleveland Browns,,Detroit Lions,boxscore,13,10,349,2,245,2
-168,11,Sun,2021-11-21,1:00PM,Minnesota Vikings,,Green Bay Packers,boxscore,34,31,408,0,467,0
-169,11,Sun,2021-11-21,1:00PM,Washington Football Team,@,Carolina Panthers,boxscore,27,21,369,1,297,0
+166,11,Sun,2021-11-21,1:00PM,Cleveland Browns,,Detroit Lions,boxscore,13,10,349,2,245,2
+167,11,Sun,2021-11-21,1:00PM,Minnesota Vikings,,Green Bay Packers,boxscore,34,31,408,0,467,0
+168,11,Sun,2021-11-21,1:00PM,Washington Football Team,@,Carolina Panthers,boxscore,27,21,369,1,297,0
+169,11,Sun,2021-11-21,1:00PM,Miami Dolphins,@,New York Jets,boxscore,24,17,388,1,380,1
 170,11,Sun,2021-11-21,4:05PM,Cincinnati Bengals,@,Las Vegas Raiders,boxscore,32,13,288,1,278,2
 171,11,Sun,2021-11-21,4:25PM,Kansas City Chiefs,,Dallas Cowboys,boxscore,19,9,370,2,276,3
 172,11,Sun,2021-11-21,4:25PM,Arizona Cardinals,@,Seattle Seahawks,boxscore,23,13,413,0,266,0
@@ -190,48 +190,48 @@
 188,12,Sun,2021-11-28,4:25PM,Green Bay Packers,,Los Angeles Rams,boxscore,36,28,399,1,353,3
 189,12,Sun,2021-11-28,8:20PM,Baltimore Ravens,,Cleveland Browns,boxscore,16,10,303,4,262,2
 190,12,Mon,2021-11-29,8:15PM,Washington Football Team,,Seattle Seahawks,boxscore,17,15,371,1,267,1
-191,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
-192,13,Thu,2021-12-02,8:20PM,Dallas Cowboys,@,New Orleans Saints,preview,,,,,,
-193,13,Sun,2021-12-05,1:00PM,Arizona Cardinals,@,Chicago Bears,preview,,,,,,
-194,13,Sun,2021-12-05,1:00PM,Denver Broncos,@,Kansas City Chiefs,preview,,,,,,
-195,13,Sun,2021-12-05,1:00PM,New York Giants,@,Miami Dolphins,preview,,,,,,
-196,13,Sun,2021-12-05,1:00PM,Tampa Bay Buccaneers,@,Atlanta Falcons,preview,,,,,,
-197,13,Sun,2021-12-05,1:00PM,Minnesota Vikings,@,Detroit Lions,preview,,,,,,
-198,13,Sun,2021-12-05,1:00PM,Indianapolis Colts,@,Houston Texans,preview,,,,,,
-199,13,Sun,2021-12-05,1:00PM,Philadelphia Eagles,@,New York Jets,preview,,,,,,
-200,13,Sun,2021-12-05,1:00PM,Los Angeles Chargers,@,Cincinnati Bengals,preview,,,,,,
-201,13,Sun,2021-12-05,4:05PM,Washington Football Team,@,Las Vegas Raiders,preview,,,,,,
-202,13,Sun,2021-12-05,4:25PM,Jacksonville Jaguars,@,Los Angeles Rams,preview,,,,,,
-203,13,Sun,2021-12-05,4:25PM,Baltimore Ravens,@,Pittsburgh Steelers,preview,,,,,,
-204,13,Sun,2021-12-05,8:20PM,San Francisco 49ers,@,Seattle Seahawks,preview,,,,,,
-205,13,Mon,2021-12-06,8:15PM,New England Patriots,@,Buffalo Bills,preview,,,,,,
+191,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
+192,13,Thu,2021-12-02,8:20PM,Dallas Cowboys,@,New Orleans Saints,boxscore,27,17,377,1,405,4
+193,13,Sun,2021-12-05,1:00PM,Detroit Lions,,Minnesota Vikings,boxscore,29,27,372,2,426,1
+194,13,Sun,2021-12-05,1:00PM,Arizona Cardinals,@,Chicago Bears,boxscore,33,22,257,0,329,4
+195,13,Sun,2021-12-05,1:00PM,Tampa Bay Buccaneers,@,Atlanta Falcons,boxscore,30,17,425,1,380,1
+196,13,Sun,2021-12-05,1:00PM,Los Angeles Chargers,@,Cincinnati Bengals,boxscore,41,22,363,3,356,4
+197,13,Sun,2021-12-05,1:00PM,Philadelphia Eagles,@,New York Jets,boxscore,33,18,418,0,282,1
+198,13,Sun,2021-12-05,1:00PM,Miami Dolphins,,New York Giants,boxscore,20,9,297,0,250,1
+199,13,Sun,2021-12-05,1:00PM,Indianapolis Colts,@,Houston Texans,boxscore,31,0,389,1,141,2
+200,13,Sun,2021-12-05,4:00PM,Seattle Seahawks,,San Francisco 49ers,boxscore,30,23,327,3,365,3
+201,13,Sun,2021-12-05,4:05PM,Washington Football Team,@,Las Vegas Raiders,boxscore,17,15,298,1,310,0
+202,13,Sun,2021-12-05,4:25PM,Los Angeles Rams,,Jacksonville Jaguars,boxscore,37,7,418,0,197,2
+203,13,Sun,2021-12-05,4:25PM,Pittsburgh Steelers,,Baltimore Ravens,boxscore,20,19,321,0,326,1
+204,13,Sun,2021-12-05,8:20PM,Kansas City Chiefs,,Denver Broncos,boxscore,22,9,267,1,404,3
+205,13,Mon,2021-12-06,8:15PM,New England Patriots,@,Buffalo Bills,boxscore,14,10,241,1,230,1
 206,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 207,14,Thu,2021-12-09,8:20PM,Pittsburgh Steelers,@,Minnesota Vikings,preview,,,,,,
-208,14,Sun,2021-12-12,1:00PM,Las Vegas Raiders,@,Kansas City Chiefs,preview,,,,,,
-209,14,Sun,2021-12-12,1:00PM,San Francisco 49ers,@,Cincinnati Bengals,preview,,,,,,
-210,14,Sun,2021-12-12,1:00PM,Baltimore Ravens,@,Cleveland Browns,preview,,,,,,
-211,14,Sun,2021-12-12,1:00PM,Atlanta Falcons,@,Carolina Panthers,preview,,,,,,
+208,14,Sun,2021-12-12,1:00PM,New Orleans Saints,@,New York Jets,preview,,,,,,
+209,14,Sun,2021-12-12,1:00PM,Las Vegas Raiders,@,Kansas City Chiefs,preview,,,,,,
+210,14,Sun,2021-12-12,1:00PM,Atlanta Falcons,@,Carolina Panthers,preview,,,,,,
+211,14,Sun,2021-12-12,1:00PM,Dallas Cowboys,@,Washington Football Team,preview,,,,,,
 212,14,Sun,2021-12-12,1:00PM,Seattle Seahawks,@,Houston Texans,preview,,,,,,
-213,14,Sun,2021-12-12,1:00PM,New Orleans Saints,@,New York Jets,preview,,,,,,
-214,14,Sun,2021-12-12,1:00PM,Dallas Cowboys,@,Washington Football Team,preview,,,,,,
-215,14,Sun,2021-12-12,1:00PM,Jacksonville Jaguars,@,Tennessee Titans,preview,,,,,,
-216,14,Sun,2021-12-12,4:05PM,Detroit Lions,@,Denver Broncos,preview,,,,,,
-217,14,Sun,2021-12-12,4:05PM,New York Giants,@,Los Angeles Chargers,preview,,,,,,
+213,14,Sun,2021-12-12,1:00PM,Jacksonville Jaguars,@,Tennessee Titans,preview,,,,,,
+214,14,Sun,2021-12-12,1:00PM,Baltimore Ravens,@,Cleveland Browns,preview,,,,,,
+215,14,Sun,2021-12-12,1:00PM,San Francisco 49ers,@,Cincinnati Bengals,preview,,,,,,
+216,14,Sun,2021-12-12,4:05PM,New York Giants,@,Los Angeles Chargers,preview,,,,,,
+217,14,Sun,2021-12-12,4:05PM,Detroit Lions,@,Denver Broncos,preview,,,,,,
 218,14,Sun,2021-12-12,4:25PM,Buffalo Bills,@,Tampa Bay Buccaneers,preview,,,,,,
 219,14,Sun,2021-12-12,8:20PM,Chicago Bears,@,Green Bay Packers,preview,,,,,,
 220,14,Mon,2021-12-13,8:15PM,Los Angeles Rams,@,Arizona Cardinals,preview,,,,,,
 221,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 222,15,Thu,2021-12-16,8:20PM,Kansas City Chiefs,@,Los Angeles Chargers,preview,,,,,,
-223,15,Sun,2021-12-19,1:00PM,New York Jets,@,Miami Dolphins,preview,,,,,,
-224,15,Sun,2021-12-19,1:00PM,Washington Football Team,@,Philadelphia Eagles,preview,,,,,,
-225,15,Sun,2021-12-19,1:00PM,Dallas Cowboys,@,New York Giants,preview,,,,,,
-226,15,Sun,2021-12-19,1:00PM,Carolina Panthers,@,Buffalo Bills,preview,,,,,,
+223,15,Sat,2021-12-18,4:30PM,Las Vegas Raiders,@,Cleveland Browns,preview,,,,,,
+224,15,Sat,2021-12-18,8:20PM,New England Patriots,@,Indianapolis Colts,preview,,,,,,
+225,15,Sun,2021-12-19,1:00PM,Carolina Panthers,@,Buffalo Bills,preview,,,,,,
+226,15,Sun,2021-12-19,1:00PM,Tennessee Titans,@,Pittsburgh Steelers,preview,,,,,,
 227,15,Sun,2021-12-19,1:00PM,Arizona Cardinals,@,Detroit Lions,preview,,,,,,
-228,15,Sun,2021-12-19,1:00PM,New England Patriots,@,Indianapolis Colts,preview,,,,,,
-229,15,Sun,2021-12-19,1:00PM,Las Vegas Raiders,@,Cleveland Browns,preview,,,,,,
-230,15,Sun,2021-12-19,1:00PM,Houston Texans,@,Jacksonville Jaguars,preview,,,,,,
+228,15,Sun,2021-12-19,1:00PM,New York Jets,@,Miami Dolphins,preview,,,,,,
+229,15,Sun,2021-12-19,1:00PM,Houston Texans,@,Jacksonville Jaguars,preview,,,,,,
+230,15,Sun,2021-12-19,1:00PM,Dallas Cowboys,@,New York Giants,preview,,,,,,
 231,15,Sun,2021-12-19,1:00PM,Green Bay Packers,@,Baltimore Ravens,preview,,,,,,
-232,15,Sun,2021-12-19,1:00PM,Tennessee Titans,@,Pittsburgh Steelers,preview,,,,,,
+232,15,Sun,2021-12-19,1:00PM,Washington Football Team,@,Philadelphia Eagles,preview,,,,,,
 233,15,Sun,2021-12-19,4:05PM,Atlanta Falcons,@,San Francisco 49ers,preview,,,,,,
 234,15,Sun,2021-12-19,4:05PM,Cincinnati Bengals,@,Denver Broncos,preview,,,,,,
 235,15,Sun,2021-12-19,4:25PM,Seattle Seahawks,@,Los Angeles Rams,preview,,,,,,
@@ -241,13 +241,13 @@
 239,16,Thu,2021-12-23,8:20PM,San Francisco 49ers,@,Tennessee Titans,preview,,,,,,
 240,16,Sat,2021-12-25,4:30PM,Cleveland Browns,@,Green Bay Packers,preview,,,,,,
 241,16,Sat,2021-12-25,8:15PM,Indianapolis Colts,@,Arizona Cardinals,preview,,,,,,
-242,16,Sun,2021-12-26,1:00PM,New York Giants,@,Philadelphia Eagles,preview,,,,,,
-243,16,Sun,2021-12-26,1:00PM,Jacksonville Jaguars,@,New York Jets,preview,,,,,,
-244,16,Sun,2021-12-26,1:00PM,Los Angeles Chargers,@,Houston Texans,preview,,,,,,
+242,16,Sun,2021-12-26,1:00PM,Detroit Lions,@,Atlanta Falcons,preview,,,,,,
+243,16,Sun,2021-12-26,1:00PM,Tampa Bay Buccaneers,@,Carolina Panthers,preview,,,,,,
+244,16,Sun,2021-12-26,1:00PM,Jacksonville Jaguars,@,New York Jets,preview,,,,,,
 245,16,Sun,2021-12-26,1:00PM,Baltimore Ravens,@,Cincinnati Bengals,preview,,,,,,
-246,16,Sun,2021-12-26,1:00PM,Los Angeles Rams,@,Minnesota Vikings,preview,,,,,,
-247,16,Sun,2021-12-26,1:00PM,Tampa Bay Buccaneers,@,Carolina Panthers,preview,,,,,,
-248,16,Sun,2021-12-26,1:00PM,Detroit Lions,@,Atlanta Falcons,preview,,,,,,
+246,16,Sun,2021-12-26,1:00PM,Los Angeles Chargers,@,Houston Texans,preview,,,,,,
+247,16,Sun,2021-12-26,1:00PM,New York Giants,@,Philadelphia Eagles,preview,,,,,,
+248,16,Sun,2021-12-26,1:00PM,Los Angeles Rams,@,Minnesota Vikings,preview,,,,,,
 249,16,Sun,2021-12-26,1:00PM,Buffalo Bills,@,New England Patriots,preview,,,,,,
 250,16,Sun,2021-12-26,4:05PM,Chicago Bears,@,Seattle Seahawks,preview,,,,,,
 251,16,Sun,2021-12-26,4:25PM,Pittsburgh Steelers,@,Kansas City Chiefs,preview,,,,,,
@@ -256,35 +256,35 @@
 254,16,Mon,2021-12-27,8:15PM,Miami Dolphins,@,New Orleans Saints,preview,,,,,,
 255,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 256,17,Sun,2022-01-02,1:00PM,Atlanta Falcons,@,Buffalo Bills,preview,,,,,,
-257,17,Sun,2022-01-02,1:00PM,Tampa Bay Buccaneers,@,New York Jets,preview,,,,,,
-258,17,Sun,2022-01-02,1:00PM,Philadelphia Eagles,@,Washington Football Team,preview,,,,,,
-259,17,Sun,2022-01-02,1:00PM,Kansas City Chiefs,@,Cincinnati Bengals,preview,,,,,,
-260,17,Sun,2022-01-02,1:00PM,New York Giants,@,Chicago Bears,preview,,,,,,
-261,17,Sun,2022-01-02,1:00PM,Carolina Panthers,@,New Orleans Saints,preview,,,,,,
+257,17,Sun,2022-01-02,1:00PM,Arizona Cardinals,@,Dallas Cowboys,preview,,,,,,
+258,17,Sun,2022-01-02,1:00PM,New York Giants,@,Chicago Bears,preview,,,,,,
+259,17,Sun,2022-01-02,1:00PM,Philadelphia Eagles,@,Washington Football Team,preview,,,,,,
+260,17,Sun,2022-01-02,1:00PM,Kansas City Chiefs,@,Cincinnati Bengals,preview,,,,,,
+261,17,Sun,2022-01-02,1:00PM,Tampa Bay Buccaneers,@,New York Jets,preview,,,,,,
 262,17,Sun,2022-01-02,1:00PM,Jacksonville Jaguars,@,New England Patriots,preview,,,,,,
-263,17,Sun,2022-01-02,1:00PM,Arizona Cardinals,@,Dallas Cowboys,preview,,,,,,
-264,17,Sun,2022-01-02,1:00PM,Las Vegas Raiders,@,Indianapolis Colts,preview,,,,,,
-265,17,Sun,2022-01-02,1:00PM,Miami Dolphins,@,Tennessee Titans,preview,,,,,,
-266,17,Sun,2022-01-02,4:05PM,Houston Texans,@,San Francisco 49ers,preview,,,,,,
-267,17,Sun,2022-01-02,4:05PM,Denver Broncos,@,Los Angeles Chargers,preview,,,,,,
+263,17,Sun,2022-01-02,1:00PM,Carolina Panthers,@,New Orleans Saints,preview,,,,,,
+264,17,Sun,2022-01-02,1:00PM,Miami Dolphins,@,Tennessee Titans,preview,,,,,,
+265,17,Sun,2022-01-02,1:00PM,Las Vegas Raiders,@,Indianapolis Colts,preview,,,,,,
+266,17,Sun,2022-01-02,4:05PM,Denver Broncos,@,Los Angeles Chargers,preview,,,,,,
+267,17,Sun,2022-01-02,4:05PM,Houston Texans,@,San Francisco 49ers,preview,,,,,,
 268,17,Sun,2022-01-02,4:25PM,Los Angeles Rams,@,Baltimore Ravens,preview,,,,,,
 269,17,Sun,2022-01-02,4:25PM,Detroit Lions,@,Seattle Seahawks,preview,,,,,,
 270,17,Sun,2022-01-02,8:20PM,Minnesota Vikings,@,Green Bay Packers,preview,,,,,,
 271,17,Mon,2022-01-03,8:15PM,Cleveland Browns,@,Pittsburgh Steelers,preview,,,,,,
 272,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
-273,18,Sun,2022-01-09,1:00PM,Green Bay Packers,@,Detroit Lions,preview,,,,,,
-274,18,Sun,2022-01-09,1:00PM,Carolina Panthers,@,Tampa Bay Buccaneers,preview,,,,,,
-275,18,Sun,2022-01-09,1:00PM,Cincinnati Bengals,@,Cleveland Browns,preview,,,,,,
-276,18,Sun,2022-01-09,1:00PM,Tennessee Titans,@,Houston Texans,preview,,,,,,
-277,18,Sun,2022-01-09,1:00PM,Chicago Bears,@,Minnesota Vikings,preview,,,,,,
-278,18,Sun,2022-01-09,1:00PM,New York Jets,@,Buffalo Bills,preview,,,,,,
-279,18,Sun,2022-01-09,1:00PM,Indianapolis Colts,@,Jacksonville Jaguars,preview,,,,,,
-280,18,Sun,2022-01-09,1:00PM,New Orleans Saints,@,Atlanta Falcons,preview,,,,,,
-281,18,Sun,2022-01-09,1:00PM,Pittsburgh Steelers,@,Baltimore Ravens,preview,,,,,,
-282,18,Sun,2022-01-09,1:00PM,Dallas Cowboys,@,Philadelphia Eagles,preview,,,,,,
-283,18,Sun,2022-01-09,1:00PM,New England Patriots,@,Miami Dolphins,preview,,,,,,
-284,18,Sun,2022-01-09,1:00PM,Washington Football Team,@,New York Giants,preview,,,,,,
-285,18,Sun,2022-01-09,4:25PM,Kansas City Chiefs,@,Denver Broncos,preview,,,,,,
+273,18,Sun,2022-01-09,1:00PM,New York Jets,@,Buffalo Bills,preview,,,,,,
+274,18,Sun,2022-01-09,1:00PM,Indianapolis Colts,@,Jacksonville Jaguars,preview,,,,,,
+275,18,Sun,2022-01-09,1:00PM,Carolina Panthers,@,Tampa Bay Buccaneers,preview,,,,,,
+276,18,Sun,2022-01-09,1:00PM,Dallas Cowboys,@,Philadelphia Eagles,preview,,,,,,
+277,18,Sun,2022-01-09,1:00PM,Cincinnati Bengals,@,Cleveland Browns,preview,,,,,,
+278,18,Sun,2022-01-09,1:00PM,Green Bay Packers,@,Detroit Lions,preview,,,,,,
+279,18,Sun,2022-01-09,1:00PM,Chicago Bears,@,Minnesota Vikings,preview,,,,,,
+280,18,Sun,2022-01-09,1:00PM,Pittsburgh Steelers,@,Baltimore Ravens,preview,,,,,,
+281,18,Sun,2022-01-09,1:00PM,New England Patriots,@,Miami Dolphins,preview,,,,,,
+282,18,Sun,2022-01-09,1:00PM,Washington Football Team,@,New York Giants,preview,,,,,,
+283,18,Sun,2022-01-09,1:00PM,Tennessee Titans,@,Houston Texans,preview,,,,,,
+284,18,Sun,2022-01-09,1:00PM,New Orleans Saints,@,Atlanta Falcons,preview,,,,,,
+285,18,Sun,2022-01-09,4:25PM,Los Angeles Chargers,@,Las Vegas Raiders,preview,,,,,,
 286,18,Sun,2022-01-09,4:25PM,Seattle Seahawks,@,Arizona Cardinals,preview,,,,,,
-287,18,Sun,2022-01-09,4:25PM,Los Angeles Chargers,@,Las Vegas Raiders,preview,,,,,,
-288,18,Sun,2022-01-09,4:25PM,San Francisco 49ers,@,Los Angeles Rams,preview,,,,,,
+287,18,Sun,2022-01-09,4:25PM,San Francisco 49ers,@,Los Angeles Rams,preview,,,,,,
+288,18,Sun,2022-01-09,4:25PM,Kansas City Chiefs,@,Denver Broncos,preview,,,,,,
