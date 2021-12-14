@@ -11,7 +11,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataRe
 
 st.set_page_config(layout="wide")
 
-finished_week=13
+finished_week=14
 
 # def get_table_download_link(df):
 #     """Generates a link allowing the data in a given panda dataframe to be downloaded
@@ -39,13 +39,15 @@ def read_csv_data(file):
     return pd.read_csv(file)
 
 # Run this once below 
-# odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx')
+odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx')
 def csv_save(x):
     x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv')
     return x
-# csv_save(odds_data_excel)
-# odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv').copy()
-odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds.csv').copy()
+csv_save(odds_data_excel)
+odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv').copy()
+# odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx').copy()
+# st.write(odds_data)
+# odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds.csv').copy()
 
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
@@ -67,8 +69,8 @@ def fbref_scraper_csv(url):
 prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
 # prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
 
-data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
-# data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
+# data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
+data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
 # st.write('check data', data_2021)
 
 def clean_csv(x):
@@ -98,7 +100,7 @@ team_names_id=team_names_id.rename(columns={'Home Team':'Away Team'})
 odds_data=pd.merge(odds_data,team_names_id,on='Away Team').rename(columns={'ID':'Away ID','Home Score':'Home Points',
 'Away Score':'Away Points','Home Line Close':'Spread'}).sort_values(by='Date',ascending=False)
 odds_data['Spread']=pd.to_numeric(odds_data['Spread'])
-# st.write('odds', odds_data)
+st.write('odds', odds_data)
 
 
 # with st.beta_expander('Pro Football Function'):
