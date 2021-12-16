@@ -69,8 +69,8 @@ def fbref_scraper_csv(url):
 prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
 # prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
 
-# data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
-data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
+data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
+# data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
 # st.write('check data', data_2021)
 
 def clean_csv(x):
