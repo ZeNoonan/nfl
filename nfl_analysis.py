@@ -100,7 +100,7 @@ team_names_id=team_names_id.rename(columns={'Home Team':'Away Team'})
 odds_data=pd.merge(odds_data,team_names_id,on='Away Team').rename(columns={'ID':'Away ID','Home Score':'Home Points',
 'Away Score':'Away Points','Home Line Close':'Spread'}).sort_values(by='Date',ascending=False)
 odds_data['Spread']=pd.to_numeric(odds_data['Spread'])
-st.write('odds', odds_data)
+# st.write('odds', odds_data)
 
 
 # with st.beta_expander('Pro Football Function'):
