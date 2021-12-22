@@ -11,7 +11,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataRe
 
 st.set_page_config(layout="wide")
 
-finished_week=14
+finished_week=15
 
 # def get_table_download_link(df):
 #     """Generates a link allowing the data in a given panda dataframe to be downloaded
@@ -51,6 +51,7 @@ odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/n
 
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
+# st.write(team_names_id)
 # team_names_id=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.csv')
 
 
@@ -408,7 +409,7 @@ for first,last in zip(first,last):
     result['week']=last+1
     power_ranking.append(result)
 power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
-    # st.write('power ranking combined', power_ranking_combined)
+# st.write('power ranking combined', power_ranking_combined)
     
 # with st.beta_expander('Adding Power Ranking to Matches'):
 matches_df = spread.copy()
@@ -422,7 +423,7 @@ updated_df['power_pick'] = np.where(updated_df['spread_working'] > 0, 1,
 np.where(updated_df['spread_working'] < 0,-1,0))
     # st.write(updated_df.sort_values(by='Week'))
 
-with st.beta_expander('Season to Date Cover Graph'):
+with st.expander('Season to Date Cover Graph'):
     st.write('Positive number means the number of games to date that you have covered the spread; in other words teams with a positive number have beaten expectations')
     st.write('Negative number means the number of games to date that you have not covered the spread; in other words teams with a negative number have performed below expectations')
     st.write('blanks in graph are where the team got a bye week')
@@ -468,7 +469,7 @@ with st.beta_expander('Season to Date Cover Graph'):
     st.altair_chart(chart_cover + text_cover,use_container_width=True)
 
     
-with st.beta_expander('Turnover Factor by Match Graph'):
+with st.expander('Turnover Factor by Match Graph'):
     st.write('-1 means you received more turnovers than other team, 1 means you gave up more turnovers to other team')
     # st.write('this is turnovers', turnover_3)
     turnover_matches = turnover_3.loc[:,['Date','Week','ID','prev_turnover', 'turnover_sign']].copy()
@@ -493,7 +494,7 @@ with st.beta_expander('Turnover Factor by Match Graph'):
     text_cover=chart_cover.mark_text().encode(text=alt.Text('turnover_sign:N'),color=alt.value('black'))
     st.altair_chart(chart_cover + text_cover,use_container_width=True)
 
-with st.beta_expander('Betting Slip Matches'):
+with st.expander('Betting Slip Matches'):
     betting_matches=updated_df.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
     'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick','home_cover_result']]
     betting_matches['total_factor']=betting_matches['home_turnover_sign']+betting_matches['away_turnover_sign']+betting_matches['home_cover_sign']+\
@@ -565,7 +566,7 @@ with st.beta_expander('Betting Slip Matches'):
     # st.write( betting_matches[(betting_matches['Home Team']=='Arizona Cardinals') | 
     # (betting_matches['Away Team']=='Arizona Cardinals')].set_index('Week').sort_values(by='Date') )
 
-with st.beta_expander('Power Ranking by Week'):
+with st.expander('Power Ranking by Week'):
     power_week=power_ranking_combined.copy()
     team_names_id=team_names_id.rename(columns={'Away Team':'Team'})
     id_names=team_names_id.drop_duplicates(subset=['ID'], keep='first')
@@ -591,7 +592,7 @@ with st.beta_expander('Power Ranking by Week'):
     st.altair_chart(chart_power + text,use_container_width=True)
     # https://github.com/altair-viz/altair/issues/820#issuecomment-386856394
 
-with st.beta_expander('Power Pick Factor by Team'):
+with st.expander('Power Pick Factor by Team'):
     st.write('Positive number means the market has undervalued the team as compared to the spread')
     st.write('Negative number means the market has overvalued the team as compared to the spread')    
     power_factor=betting_matches.loc[:,['Week','Home Team','Away Team','power_pick']].rename(columns={'power_pick':'home_power_pick'})
@@ -612,7 +613,7 @@ with st.beta_expander('Power Pick Factor by Team'):
     # st.write('data',power_factor)
 
 
-with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
+with st.expander('Analysis of Betting Results across 1 to 5 factors'):
     matches_in_regular_season= (32 * 16) / 2
     # st.write('In 2020 there were 13 matches in playoffs looks like this was new so 269 total matches in 2020 season compared with 267 in previous seasons')
     matches_in_playoffs = 13
@@ -674,15 +675,21 @@ with st.beta_expander('Analysis of Betting Results across 1 to 5 factors'):
     reset_data=reset_data.pivot(index='result_all',columns='total_factor',values='winning').fillna(0)
     reset_data['betting_factor_total']=reset_data[3]+reset_data[4]+reset_data[5]
     reset_data=reset_data.sort_values(by='betting_factor_total',ascending=False)
+
+    reset_data=reset_data.reset_index()
+    # st.write('reset data', reset_data)
+    reset_data['result_all']=reset_data['result_all'].astype(str)
+    reset_data=reset_data.set_index('result_all')
+
     reset_data.loc['Total']=reset_data.sum()
-    reset_data.loc['No. of Bets Made'] = reset_data.loc[[1,-1]].sum() 
+    reset_data.loc['No. of Bets Made'] = reset_data.loc[['1','-1']].sum() 
     reset_data=reset_data.apply(pd.to_numeric, downcast='integer')
-    reset_data.loc['% Winning'] = ((reset_data.loc[1] / reset_data.loc['No. of Bets Made'])*100).apply('{:,.1f}%'.format)
+    reset_data.loc['% Winning'] = ((reset_data.loc['1'] / reset_data.loc['No. of Bets Made'])*100)
     st.write('This shows the betting result')
     st.write(reset_data)
     st.write('Broken down by the number of factors indicating the strength of the signal')
 
-with st.beta_expander('Analysis of Factors'):
+with st.expander('Analysis of Factors'):
     analysis_factors = betting_matches.copy()
     analysis_factors=analysis_factors[analysis_factors['Week']<finished_week+1]
     def analysis_factor_function(analysis_factors):
@@ -705,13 +712,20 @@ with st.beta_expander('Analysis of Factors'):
         # st.write(test)
         df_table_1['total_season_cover'] = df_table_1['home_cover_season_success?'] + df_table_1['away_cover_season_success?']
         # st.write('df table 2', df_table_1)
+
+        df_table_1=df_table_1.reset_index()
+        # st.write('reset data', df_table_1)
+        df_table_1['index']=df_table_1['index'].astype(str)
+        df_table_1=df_table_1.set_index('index')
+
+
         df_table_1.loc['Total']=df_table_1.sum()
         # st.write('latest', df_table_1)
         # st.write('latest', df_table_1.shape)
         if df_table_1.shape > (2,7):
             # st.write('Returning df with analysis')
-            df_table_1.loc['No. of Bets Made'] = df_table_1.loc[[1,-1]].sum() # No losing bets so far!!!
-            df_table_1.loc['% Winning'] = ((df_table_1.loc[1] / df_table_1.loc['No. of Bets Made'])*100).apply('{:,.1f}%'.format)
+            df_table_1.loc['No. of Bets Made'] = df_table_1.loc[['1','-1']].sum() # No losing bets so far!!!
+            df_table_1.loc['% Winning'] = ((df_table_1.loc['1'] / df_table_1.loc['No. of Bets Made'])*100)
         else:
             # st.write('Returning df with no analysis')
             return df_table_1
@@ -731,8 +745,8 @@ with st.beta_expander('Analysis of Factors'):
     st.write(bets_made_factor_table)
 
     # st.write('graph work below')
-    graph_factor_table = total_factor_table.copy().loc[[-1,0,1],:].reset_index().rename(columns={'index':'result_all'})
-    graph_factor_table['result_all']=graph_factor_table['result_all'].replace({0:'tie',1:'win',-1:'lose'})
+    graph_factor_table = total_factor_table.copy().loc[['-1','0','1'],:].reset_index().rename(columns={'index':'result_all'})
+    graph_factor_table['result_all']=graph_factor_table['result_all'].replace({'0':'tie','1':'win','-1':'lose'})
     graph_factor_table=graph_factor_table.melt(id_vars='result_all',var_name='total_factor',value_name='winning')
     chart_power= alt.Chart(graph_factor_table).mark_bar().encode(alt.X('total_factor:O',axis=alt.Axis(title='factor',labelAngle=0)),
     alt.Y('winning'),color=alt.Color('result_all',scale=color_scale))
@@ -766,7 +780,7 @@ with st.beta_expander('Analysis of Factors'):
 
     # st.write(graph_factor_table)
 
-with st.beta_expander('Checking Performance where Total Factor = 2 or 3:  Additional Diagnostic'):
+with st.expander('Checking Performance where Total Factor = 2 or 3:  Additional Diagnostic'):
     df_factor = betting_matches.copy()
     two_factor_df = df_factor[df_factor['total_factor'].abs()==2]
     # st.write(two_factor_df)
@@ -807,13 +821,21 @@ with st.beta_expander('Checking Performance where Total Factor = 2 or 3:  Additi
     # st.write(test)
     df_factor_table_1['total_season_cover'] = df_factor_table_1['home_cover_diagnostic'] + df_factor_table_1['away_cover_diagnostic']
     # st.write('df table 2', df_factor_table_1)
+
+    df_factor_table_1=df_factor_table_1.reset_index()
+    # st.write('reset data', df_factor_table_1)
+    df_factor_table_1['index']=df_factor_table_1['index'].astype(int)
+    df_factor_table_1['index']=df_factor_table_1['index'].astype(str)
+    df_factor_table_1=df_factor_table_1.set_index('index')
+
+
     df_factor_table_1.loc['Total']=df_factor_table_1.sum()
     # st.write('latest', df_factor_table_1)
     # st.write('latest', df_factor_table_1.shape)
 
     if df_factor_table_1.shape > (2,7):
-        df_factor_table_1.loc['No. of Bets Made'] = df_factor_table_1.loc[[1,-1]].sum() 
-        df_factor_table_1.loc['% Winning'] = ((df_factor_table_1.loc[1] / df_factor_table_1.loc['No. of Bets Made'])*100).apply('{:,.1f}%'.format)
+        df_factor_table_1.loc['No. of Bets Made'] = df_factor_table_1.loc[['1','-1']].sum() 
+        df_factor_table_1.loc['% Winning'] = ((df_factor_table_1.loc['1'] / df_factor_table_1.loc['No. of Bets Made'])*100)
     # else:
     #     # st.write('Returning df with no anal')
     #     return df_factor_table_1
@@ -822,10 +844,10 @@ with st.beta_expander('Checking Performance where Total Factor = 2 or 3:  Additi
     cols_to_move=['total_turnover','total_season_cover','power_diagnostic']
     df_factor_table_1 = df_factor_table_1[ cols_to_move + [ col for col in df_factor_table_1 if col not in cols_to_move ] ]
     df_factor_table_1=df_factor_table_1.loc[:,['total_turnover','total_season_cover','power_diagnostic']]
-    st.write(df_factor_table_1)
+    st.write(df_factor_table_1.style.format('{:.0f}',subset=['total_turnover','total_season_cover','power_diagnostic']))
 
 
-with st.beta_expander('Underdog Analyis'):
+with st.expander('Underdog Analyis'):
     underdog_df = betting_matches.copy()
     filter_bets_underdog=(underdog_df['Spread']>0.1) &(underdog_df['bet_sign']!=0)
     filter_bets_favourite=(underdog_df['Spread']<0.1) &(underdog_df['bet_sign']!=0)
@@ -845,12 +867,20 @@ with st.beta_expander('Underdog Analyis'):
     underdog_results=underdog_results.sort_index(ascending=False)
     underdog_results['underdog']=underdog_results['home_underdog_bet_result']+underdog_results['away_underdog_bet_result']
     underdog_results['favourite']=underdog_results['home_favourite_bet_result']+underdog_results['away_favourite_bet_result']
+
+    underdog_results=underdog_results.reset_index()
+    # st.write('reset data', underdog_results)
+    underdog_results['index']=underdog_results['index'].astype(int)
+    underdog_results['index']=underdog_results['index'].astype(str)
+    underdog_results=underdog_results.set_index('index')
+
+
     underdog_results.loc['Total']=underdog_results.sum()
     # st.write('underdog', underdog_results)
     # st.write('underdog', underdog_results.shape)
     if underdog_results.shape > (2,6):
-        underdog_results.loc['No. of Bets Made'] = underdog_results.loc[[1,-1]].sum() 
-        underdog_results.loc['% Winning'] = underdog_results.loc[1] / underdog_results.loc['No. of Bets Made']
+        underdog_results.loc['No. of Bets Made'] = underdog_results.loc[['1','-1']].sum() 
+        underdog_results.loc['% Winning'] = underdog_results.loc['1'] / underdog_results.loc['No. of Bets Made']
     cols_to_move=['underdog','favourite']
     underdog_results = underdog_results[ cols_to_move + [ col for col in underdog_results if col not in cols_to_move ] ]
     st.write('This shows the total number of BETS made and whether it was an underdog or favourite that covered')
@@ -865,12 +895,20 @@ with st.beta_expander('Underdog Analyis'):
     all_results=all_results.sort_index(ascending=False)
     all_results['underdog']=all_results['home_underdog_all_result']+all_results['away_underdog_all_result']
     all_results['favourite']=all_results['home_favourite_all_result']+all_results['away_favourite_all_result']
+
+    all_results=all_results.reset_index()
+    # st.write('reset data', all_results)
+    all_results['index']=all_results['index'].astype(int)
+    all_results['index']=all_results['index'].astype(str)
+    all_results=all_results.set_index('index')
+
+
     all_results.loc['Total']=all_results.sum()
     # st.write('checking',all_results)
     # st.write(all_results.shape)
     if all_results.shape > (2,6):
-        all_results.loc['No. of Bets Made'] = all_results.loc[[1,-1]].sum() 
-        all_results.loc['% Winning'] = all_results.loc[1] / all_results.loc['No. of Bets Made']
+        all_results.loc['No. of Bets Made'] = all_results.loc[['1','-1']].sum() 
+        all_results.loc['% Winning'] = all_results.loc['1'] / all_results.loc['No. of Bets Made']
     cols_to_move=['underdog','favourite']
     all_results = all_results[ cols_to_move + [ col for col in all_results if col not in cols_to_move ] ]
     st.write(all_results)
@@ -890,7 +928,7 @@ with st.beta_expander('Underdog Analyis'):
         
     # test=fbref_scraper()
 
-with st.beta_expander('Tests'):
+with st.expander('Tests'):
     st.write('To Check that all ok with odds data')
     st.write(odds_data[odds_data['Away ID'].isna()])
 
