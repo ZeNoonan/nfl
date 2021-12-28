@@ -11,7 +11,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataRe
 
 st.set_page_config(layout="wide")
 
-finished_week=15
+finished_week=16
 
 # def get_table_download_link(df):
 #     """Generates a link allowing the data in a given panda dataframe to be downloaded
