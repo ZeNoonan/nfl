@@ -27,10 +27,10 @@ def csv_save(x):
     x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv')
     return x
 # csv_save(odds_data_excel)
-odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv').copy()
+# odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv').copy()
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx').copy()
 # st.write(odds_data)
-# odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds.csv').copy()
+odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds.csv').copy()
 
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
