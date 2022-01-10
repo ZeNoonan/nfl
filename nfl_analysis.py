@@ -22,11 +22,11 @@ def read_csv_data(file):
     return pd.read_csv(file)
 
 # Run this once below 
-odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx')
+# odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx')
 def csv_save(x):
     x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv')
     return x
-csv_save(odds_data_excel)
+# csv_save(odds_data_excel)
 # odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv').copy()
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx').copy()
 # st.write(odds_data)
@@ -48,7 +48,7 @@ def fbref_scraper_csv(url):
         # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
-fbref_scraper_csv(url)
+# fbref_scraper_csv(url)
 
 prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
 # prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
