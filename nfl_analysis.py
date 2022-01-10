@@ -27,10 +27,10 @@ def csv_save(x):
     x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv')
     return x
 # csv_save(odds_data_excel)
-# odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv').copy()
+odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv').copy()
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx').copy()
 # st.write(odds_data)
-odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds.csv').copy()
+# odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds.csv').copy()
 
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
@@ -133,7 +133,8 @@ def clean_pro_football_pickle_2021(nfl_data):
     nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
     nfl_data['Date']=pd.to_datetime(nfl_data['Date']).dt.normalize()
     # nfl_data['Date'] = pd.to_datetime([dt.datetime.strftime(d, "%Y-%m-%d %H:%M") for d in nfl_data["Date"]])
-    nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
+    # nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
+    nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':19,'Division':20,'ConfChamp':21,'SuperBowl':22})
     nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
     fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','home_turnover','away_turnover']]
     fb_ref_2020['Turnover'] = fb_ref_2020['home_turnover'] - fb_ref_2020['away_turnover']
@@ -197,6 +198,7 @@ def test_clean_pro_football_pickle(nfl_data):
 
 
 current=clean_pro_football_pickle_2021(nfl_data)
+# st.write('current line 201',current.sort_values(by='Week'))
 prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
 # st.write( prior_data[(prior_data['Home Team']=='Miami Dolphins') | (prior_data['Away Team']=='Miami Dolphins')].sort_values(by=['Week','Date','Time']) )
 
@@ -348,7 +350,7 @@ grouped = test_df_2.groupby('ID')
 # https://stackoverflow.com/questions/62471485/is-it-possible-to-insert-missing-sequence-numbers-in-python
 ranking_power=[]
 for name, group in grouped:
-    dfseq = pd.DataFrame.from_dict({'Week': range( -3,21 )}).merge(group, on='Week', how='outer').fillna(np.NaN)
+    dfseq = pd.DataFrame.from_dict({'Week': range( -3,22 )}).merge(group, on='Week', how='outer').fillna(np.NaN)
     dfseq['ID']=dfseq['ID'].fillna(method='ffill')
     dfseq['home_pts_adv']=dfseq['home_pts_adv'].fillna(0)
     dfseq['spread']=dfseq['spread'].fillna(0)
@@ -373,8 +375,8 @@ power_df=df_power.loc[:,['Week','ID','adj_spread']].copy()
 
 games_df=matrix_df_1.copy()
 # st.write('Checking the games df', games_df[((games_df['Home ID']==24)|(games_df['Away ID']==24))])
-first=list(range(-3,18))
-last=list(range(0,21))
+first=list(range(-3,19))
+last=list(range(0,22))
 for first,last in zip(first,last):
     first_section=games_df[games_df['Week'].between(first,last)]
     full_game_matrix=games_matrix_workings(first_section)
@@ -559,7 +561,7 @@ with st.expander('Power Ranking by Week'):
     # st.write('graphing?',pivot_df)
     power_pivot=pd.pivot_table(pivot_df,index='Team', columns='week')
     pivot_df_test = pivot_df.copy()
-    pivot_df_test=pivot_df_test[pivot_df_test['week']<19]
+    pivot_df_test=pivot_df_test[pivot_df_test['week']<20]
     pivot_df_test['average']=pivot_df.groupby('Team')['final_power'].transform(np.mean)
     # st.write('graphing?',pivot_df_test)
     power_pivot.columns = power_pivot.columns.droplevel(0)
