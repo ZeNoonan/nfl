@@ -669,8 +669,14 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
     reset_data.loc['Total']=reset_data.sum()
     reset_data.loc['No. of Bets Made'] = reset_data.loc[['1','-1']].sum() 
     reset_data=reset_data.apply(pd.to_numeric, downcast='integer')
-    reset_data.loc['% Winning'] = ((reset_data.loc['1'] / reset_data.loc['No. of Bets Made'])*100)
+    reset_data.loc['% Winning'] = ((reset_data.loc['1'] / reset_data.loc['No. of Bets Made'])).replace({'<NA>':np.NaN})
     st.write('This shows the betting result')
+    # st.write(reset_data)
+
+    # https://stackoverflow.com/questions/64428836/use-pandas-style-to-format-index-rows-of-dataframe
+    reset_data = reset_data.style.format("{:.0f}", na_rep='-')
+    reset_data = reset_data.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
+
     st.write(reset_data)
     st.write('Broken down by the number of factors indicating the strength of the signal')
 
@@ -710,7 +716,7 @@ with st.expander('Analysis of Factors'):
         if df_table_1.shape > (2,7):
             # st.write('Returning df with analysis')
             df_table_1.loc['No. of Bets Made'] = df_table_1.loc[['1','-1']].sum() # No losing bets so far!!!
-            df_table_1.loc['% Winning'] = ((df_table_1.loc['1'] / df_table_1.loc['No. of Bets Made'])*100)
+            df_table_1.loc['% Winning'] = ((df_table_1.loc['1'] / df_table_1.loc['No. of Bets Made']))
         else:
             # st.write('Returning df with no analysis')
             return df_table_1
@@ -720,14 +726,20 @@ with st.expander('Analysis of Factors'):
     cols_to_move=['total_turnover','total_season_cover','power_ranking_success?']
     total_factor_table = total_factor_table[ cols_to_move + [ col for col in total_factor_table if col not in cols_to_move ] ]
     total_factor_table=total_factor_table.loc[:,['total_turnover','total_season_cover','power_ranking_success?']]
-    st.write(total_factor_table)
+    
+    total_factor_table_presentation = total_factor_table.style.format("{:.0f}", na_rep='-')
+    total_factor_table_presentation = total_factor_table_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
+    
+    st.write(total_factor_table_presentation)
     factor_bets = (analysis_factors[analysis_factors['bet_sign']!=0]).copy()
     bets_made_factor_table = analysis_factor_function(factor_bets)
     # cols_to_move=['total_turnover','total_season_cover','power_ranking_success?']
     bets_made_factor_table = bets_made_factor_table[ cols_to_move + [ col for col in bets_made_factor_table if col not in cols_to_move ] ]
     bets_made_factor_table=bets_made_factor_table.loc[:,['total_turnover','total_season_cover','power_ranking_success?']]
     st.write('This is the matches BET ON broken down by Factor result')
-    st.write(bets_made_factor_table)
+    bets_made_factor_table_presentation = bets_made_factor_table.style.format("{:.0f}", na_rep='-')
+    bets_made_factor_table_presentation = bets_made_factor_table_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
+    st.write(bets_made_factor_table_presentation)
 
     # st.write('graph work below')
     graph_factor_table = total_factor_table.copy().loc[['-1','0','1'],:].reset_index().rename(columns={'index':'result_all'})
@@ -820,7 +832,7 @@ with st.expander('Checking Performance where Total Factor = 2 or 3:  Additional 
 
     if df_factor_table_1.shape > (2,7):
         df_factor_table_1.loc['No. of Bets Made'] = df_factor_table_1.loc[['1','-1']].sum() 
-        df_factor_table_1.loc['% Winning'] = ((df_factor_table_1.loc['1'] / df_factor_table_1.loc['No. of Bets Made'])*100)
+        df_factor_table_1.loc['% Winning'] = ((df_factor_table_1.loc['1'] / df_factor_table_1.loc['No. of Bets Made']))
     # else:
     #     # st.write('Returning df with no anal')
     #     return df_factor_table_1
@@ -829,7 +841,11 @@ with st.expander('Checking Performance where Total Factor = 2 or 3:  Additional 
     cols_to_move=['total_turnover','total_season_cover','power_diagnostic']
     df_factor_table_1 = df_factor_table_1[ cols_to_move + [ col for col in df_factor_table_1 if col not in cols_to_move ] ]
     df_factor_table_1=df_factor_table_1.loc[:,['total_turnover','total_season_cover','power_diagnostic']]
-    st.write(df_factor_table_1.style.format('{:.0f}',subset=['total_turnover','total_season_cover','power_diagnostic']))
+
+    df_factor_table_1_presentation = df_factor_table_1.style.format("{:.0f}", na_rep='-')
+    df_factor_table_1_presentation = df_factor_table_1_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
+
+    st.write(df_factor_table_1_presentation)
 
 
 with st.expander('Underdog Analyis'):
@@ -870,7 +886,11 @@ with st.expander('Underdog Analyis'):
     underdog_results = underdog_results[ cols_to_move + [ col for col in underdog_results if col not in cols_to_move ] ]
     st.write('This shows the total number of BETS made and whether it was an underdog or favourite that covered')
     st.write('not sure if this has value or not')
-    st.write(underdog_results)
+
+    underdog_results_presentation = underdog_results.style.format("{:.0f}", na_rep='-')
+    underdog_results_presentation = underdog_results_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
+
+    st.write(underdog_results_presentation)
 
     home_underdog_all = underdog_df['home_underdog_all_result'].value_counts()
     away_underdog_all = underdog_df['away_underdog_all_result'].value_counts()
@@ -896,7 +916,11 @@ with st.expander('Underdog Analyis'):
         all_results.loc['% Winning'] = all_results.loc['1'] / all_results.loc['No. of Bets Made']
     cols_to_move=['underdog','favourite']
     all_results = all_results[ cols_to_move + [ col for col in all_results if col not in cols_to_move ] ]
-    st.write(all_results)
+
+    all_results_presentation = all_results.style.format("{:.0f}", na_rep='-')
+    all_results_presentation = all_results_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
+
+    st.write(all_results_presentation)
 
 # test
     
