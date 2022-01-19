@@ -11,7 +11,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataRe
 
 st.set_page_config(layout="wide")
 
-finished_week=18
+finished_week=19
 
 @st.cache
 def read_data(file):
