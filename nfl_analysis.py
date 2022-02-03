@@ -561,7 +561,7 @@ with st.expander('Power Ranking by Week'):
     # st.write('graphing?',pivot_df)
     power_pivot=pd.pivot_table(pivot_df,index='Team', columns='week')
     pivot_df_test = pivot_df.copy()
-    pivot_df_test=pivot_df_test[pivot_df_test['week']<20]
+    pivot_df_test=pivot_df_test[pivot_df_test['week']<finished_week+1]
     pivot_df_test['average']=pivot_df.groupby('Team')['final_power'].transform(np.mean)
     # st.write('graphing?',pivot_df_test)
     power_pivot.columns = power_pivot.columns.droplevel(0)
@@ -616,6 +616,8 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
     text=chart_power.mark_text(dy=-7).encode(text=alt.Text('number_of_games:N',format=",.0f"),color=alt.value('black'))
     st.altair_chart(chart_power + text,use_container_width=True)
     
+    
+
     totals_1=analysis.groupby([analysis['total_factor'].abs(),'result_all']).agg(winning=('result_all','count')).reset_index()
     totals_1['result_all']=totals_1['result_all'].replace({0:'tie',1:'win',-1:'lose'})
     # st.write('checking graph data',totals_1.dtypes)
@@ -657,7 +659,9 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
 
     reset_data=totals_1.copy()
     reset_data['result_all']=reset_data['result_all'].replace({'tie':0,'win':1,'lose':-1})
+    # st.write('test',reset_data)
     reset_data=reset_data.pivot(index='result_all',columns='total_factor',values='winning').fillna(0)
+    # st.write('look',reset_data)
     reset_data['betting_factor_total']=reset_data[3]+reset_data[4]+reset_data[5]
     reset_data=reset_data.sort_values(by='betting_factor_total',ascending=False)
 
@@ -679,6 +683,44 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
 
     st.write(reset_data)
     st.write('Broken down by the number of factors indicating the strength of the signal')
+
+with st.expander('Weekly Results'):
+    weekly_results=analysis.groupby(['Week','result']).agg(winning=('result','sum'),count=('result','count'))
+    # st.write(weekly_results)
+    weekly_test=analysis[analysis['total_factor'].abs()>2].loc[:,['Week','result']].copy()
+    # st.write(weekly_test)
+    # pivot_weekly=pd.pivot_table(weekly_test,index='result', columns='Week',aggfunc='count')
+    # pivot_weekly=weekly_test.pivot_table(index='result', columns='Week',aggfunc='count')
+    # pivot_weekly=pd.pivot_table(weekly_test,index='result', columns='Week')
+    # pivot_weekly=pivot_weekly.fillna(0)
+
+    df9 = weekly_test.groupby(['result','Week']).size().unstack(fill_value=0)
+    # st.write(df9)
+    df9=df9.reset_index()
+    # st.write('reset data', reset_data)
+    df9['result']=df9['result'].astype(int).astype(str)
+    df9=df9.set_index('result').sort_index(ascending=False)
+    df_slice=df9.loc[:,[13,14,15,16,17,18,19,20]]
+    df9['subtotal_week_13_on']=df_slice.sum(axis=1)
+    # st.write('slice', df9)
+    # st.write(df9.reset_index().loc[:,[2,3]])
+
+
+    df9.loc['Total']=df9.sum()
+    df9.loc['No. of Bets Made'] = df9.loc[['1','-1']].sum() 
+    df9=df9.apply(pd.to_numeric, downcast='integer')
+    df9.loc['% Winning'] = ((df9.loc['1'] / df9.loc['No. of Bets Made'])).replace({'<NA>':np.NaN})
+
+    # st.write(df9)
+
+    # https://stackoverflow.com/questions/64428836/use-pandas-style-to-format-index-rows-of-dataframe
+    df9 = df9.style.format("{:.0f}", na_rep='-')
+    df9 = df9.format(formatter="{:.0%}", subset=pd.IndexSlice[['% Winning'], :])
+    st.write(df9)
+    # pivot_weekly.columns = pivot_weekly.columns.droplevel(0)
+    # weekly_test=analysis.groupby([(analysis['total_factor'].abs()>2),'result_all']).agg(winning=('result_all','count'))
+    # st.write(pivot_weekly)
+    # st.write(weekly_test)
 
 with st.expander('Analysis of Factors'):
     analysis_factors = betting_matches.copy()
