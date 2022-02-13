@@ -11,6 +11,9 @@ from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataRe
 
 st.set_page_config(layout="wide")
 
+placeholder_1=st.empty()
+placeholder_2=st.empty()
+
 finished_week=21
 
 @st.cache
@@ -231,7 +234,7 @@ def season_cover_workings(data,home,away,name,week_start):
     season_cover=pd.concat([home_cover_df,away_cover_df],ignore_index=True)
     # season_cover_df = pd.melt(season_cover_df,id_vars=['Week', 'home_cover'],value_vars=['Home ID', 'Away ID']).set_index('Week').rename(columns={'value':'ID'}).\
     # drop('variable',axis=1).reset_index().sort_values(by=['Week','ID'],ascending=True)
-    return season_cover.sort_values(by=['Week','Date','ID'],ascending=['True','True','True'])
+    return season_cover.sort_values(by=['Week','Date','ID'],ascending=[True,True,True])
 
 def turnover_2(season_cover_df):    
     # https://stackoverflow.com/questions/53335567/use-pandas-shift-within-a-group
@@ -254,7 +257,7 @@ def turnover_workings(data,week_start):
     season_cover=pd.concat([home_turnover_df,away_turnover_df],ignore_index=True)
     # season_cover_df = pd.melt(season_cover_df,id_vars=['Week', 'home_cover'],value_vars=['Home ID', 'Away ID']).set_index('Week').rename(columns={'value':'ID'}).\
     # drop('variable',axis=1).reset_index().sort_values(by=['Week','ID'],ascending=True)
-    return season_cover.sort_values(by=['Week','Date','ID'],ascending=['True','True','True'])
+    return season_cover.sort_values(by=['Week','Date','ID'],ascending=[True,True,True])
 
 # with st.beta_expander('Last Game Turnover'):
 turnover=spread_workings(data)
@@ -408,6 +411,8 @@ updated_df['power_pick'] = np.where(updated_df['spread_working'] > 0, 1,
 np.where(updated_df['spread_working'] < 0,-1,0))
     # st.write(updated_df.sort_values(by='Week'))
 
+
+
 with st.expander('Season to Date Cover Graph'):
     st.write('Positive number means the number of games to date that you have covered the spread; in other words teams with a positive number have beaten expectations')
     st.write('Negative number means the number of games to date that you have not covered the spread; in other words teams with a negative number have performed below expectations')
@@ -479,7 +484,7 @@ with st.expander('Turnover Factor by Match Graph'):
     text_cover=chart_cover.mark_text().encode(text=alt.Text('turnover_sign:N'),color=alt.value('black'))
     st.altair_chart(chart_cover + text_cover,use_container_width=True)
 
-with st.expander('Betting Slip Matches'):
+with placeholder_2.expander('Betting Slip Matches'):
     betting_matches=updated_df.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
     'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick','home_cover_result']]
     betting_matches['total_factor']=betting_matches['home_turnover_sign']+betting_matches['away_turnover_sign']+betting_matches['home_cover_sign']+\
@@ -489,12 +494,12 @@ with st.expander('Betting Slip Matches'):
     betting_matches['bet_sign'] = betting_matches['bet_sign'].astype(float)
     betting_matches['home_cover'] = betting_matches['home_cover'].astype(float)
     betting_matches['result']=betting_matches['home_cover_result'] * betting_matches['bet_sign']
-    st.write('testing sum of betting result',betting_matches['result'].sum())
+    
 
     # this is for graphing anlaysis on spreadsheet
     betting_matches['bet_sign_all'] = (np.where(betting_matches['total_factor']>0,1,np.where(betting_matches['total_factor']<-0,-1,0)))
     betting_matches['result_all']=betting_matches['home_cover_result'] * betting_matches['bet_sign_all']
-    st.write('testing sum of betting all result',betting_matches['result_all'].sum())
+    # st.write('testing sum of betting all result',betting_matches['result_all'].sum())
     cols_to_move=['Week','Date','Home Team','Away Team','total_factor','bet_on','result','Spread','Home Points','Away Points','home_power','away_power']
     cols = cols_to_move + [col for col in betting_matches if col not in cols_to_move]
     betting_matches=betting_matches[cols]
@@ -684,39 +689,31 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
     st.write(reset_data)
     st.write('Broken down by the number of factors indicating the strength of the signal')
 
-with st.expander('Weekly Results'):
+with placeholder_1.expander('Weekly Results'):
     weekly_results=analysis.groupby(['Week','result']).agg(winning=('result','sum'),count=('result','count'))
-    # st.write(weekly_results)
     weekly_test=analysis[analysis['total_factor'].abs()>2].loc[:,['Week','result']].copy()
-    # st.write(weekly_test)
-    # pivot_weekly=pd.pivot_table(weekly_test,index='result', columns='Week',aggfunc='count')
-    # pivot_weekly=weekly_test.pivot_table(index='result', columns='Week',aggfunc='count')
-    # pivot_weekly=pd.pivot_table(weekly_test,index='result', columns='Week')
-    # pivot_weekly=pivot_weekly.fillna(0)
 
     df9 = weekly_test.groupby(['result','Week']).size().unstack(fill_value=0)
-    # st.write(df9)
     df9=df9.reset_index()
-    # st.write('reset data', reset_data)
     df9['result']=df9['result'].astype(int).astype(str)
     df9=df9.set_index('result').sort_index(ascending=False)
-    df_slice=df9.loc[:,[13,14,15,16,17,18,19,20]]
+    # df9.columns = df9.columns.astype(str)
+    df_slice=df9.loc[:,13:]
     df9['subtotal_week_13_on']=df_slice.sum(axis=1)
-    # st.write('slice', df9)
-    # st.write(df9.reset_index().loc[:,[2,3]])
-
-
+    df_all=df9.iloc[:,:-1]
+    # st.write('this is df all',df_all)
+    df9['grand_total']=df_all.sum(axis=1)
     df9.loc['Total']=df9.sum()
     df9.loc['No. of Bets Made'] = df9.loc[['1','-1']].sum() 
     df9=df9.apply(pd.to_numeric, downcast='integer')
     df9.loc['% Winning'] = ((df9.loc['1'] / df9.loc['No. of Bets Made'])).replace({'<NA>':np.NaN})
 
-    # st.write(df9)
-
     # https://stackoverflow.com/questions/64428836/use-pandas-style-to-format-index-rows-of-dataframe
     df9 = df9.style.format("{:.0f}", na_rep='-')
     df9 = df9.format(formatter="{:.0%}", subset=pd.IndexSlice[['% Winning'], :])
     st.write(df9)
+
+    st.write('Total betting result',betting_matches['result'].sum())
     # pivot_weekly.columns = pivot_weekly.columns.droplevel(0)
     # weekly_test=analysis.groupby([(analysis['total_factor'].abs()>2),'result_all']).agg(winning=('result_all','count'))
     # st.write(pivot_weekly)
