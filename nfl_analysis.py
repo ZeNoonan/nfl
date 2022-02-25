@@ -14,7 +14,7 @@ st.set_page_config(layout="wide")
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
-finished_week=21
+finished_week=22
 
 @st.cache
 def read_data(file):
@@ -51,13 +51,13 @@ def fbref_scraper_csv(url):
         # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
-# fbref_scraper_csv(url)
+fbref_scraper_csv(url)
 
 prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
 # prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
 
-data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
-# data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
+# data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
+data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
 # st.write('check data', data_2021)
 
 def clean_csv(x):
