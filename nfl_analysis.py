@@ -93,6 +93,7 @@ odds_data['Spread']=pd.to_numeric(odds_data['Spread'])
 
 # with st.beta_expander('Pro Football Function'):
 def clean_pro_football_pickle(nfl_data):
+    # sourcery skip: inline-immediately-returned-variable
     nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
     nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
     nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
@@ -121,6 +122,7 @@ def clean_pro_football_pickle(nfl_data):
     return season_pro
 
 def clean_pro_football_pickle_2021(nfl_data):
+    # sourcery skip: inline-immediately-returned-variable
     nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
     nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
     nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
@@ -171,10 +173,12 @@ def clean_prior_year(x):
     return x
 
 def concat_current_prior(x,y):
+    # sourcery skip: inline-immediately-returned-variable
     current_plus_prior = pd.concat([x,y],axis=0,ignore_index=True)
     return current_plus_prior
     
 def test_clean_pro_football_pickle(nfl_data):
+    # sourcery skip: inline-immediately-returned-variable
     nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
     nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
     nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
