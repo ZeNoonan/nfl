@@ -11,11 +11,25 @@ from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataRe
 
 st.set_page_config(layout="wide")
 
+season_picker = st.selectbox("Select a season to run",('season_2022','season_2021'),index=0)
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
 finished_week=22
+last_week=5 # what is this for?? its for graphing i think
 number_of_teams=32
+
+season_list={'season_2022': {
+    "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv",
+    "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023.csv",
+    "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2022_2023.csv",
+    "prior_year_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2021_2022.csv"},
+'season_2021' : {
+    "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2021_2022.csv",
+    "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2021_2022.csv",
+    "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2021_2022.csv",
+    "prior_year_file": 'C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2019_2020.csv'}}
+
 
 @st.cache
 def read_data(file):
@@ -26,39 +40,44 @@ def read_csv_data(file):
     return pd.read_csv(file)
 
 # Run this once below 
-# odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx')
+# odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
 def csv_save(x):
-    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv')
+    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv')
     return x
 # csv_save(odds_data_excel)
-odds_data = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_odds.csv').copy()
-# odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_current.xlsx').copy()
-# st.write(odds_data)
+
+odds_data = read_csv_data(season_list[season_picker]['odds_file']).copy()
+# odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_2021_2022.xlsx').copy()
+# odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx').copy()
 # odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds.csv').copy()
 
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 # team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
 # st.write(team_names_id)
-team_names_id=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.csv')
+# team_names_id=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.csv')
+team_names_id=pd.read_csv(season_list[season_picker]["team_id"])
 
 
-url='https://www.pro-football-reference.com/years/2021/games.htm'
+url='https://www.pro-football-reference.com/years/2022/games.htm'
 
 
 def fbref_scraper_csv(url):
         test = pd.read_html(url)[0]
-        # test.to_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2021_scores.xlsx')
-        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
+        # test.to_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2022_scores.xlsx')
+        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022.csv')
         # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
 # fbref_scraper_csv(url)
 
 # prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
-prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
+# prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
+prior_nfl_data=pd.read_csv(season_list[season_picker]["prior_year_file"])
 
 # data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
-data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
+# data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
+data_2022=pd.read_csv(season_list[season_picker]["scores_file"])
+
 # st.write('check data', data_2021)
 
 def clean_csv(x):
@@ -69,7 +88,29 @@ def clean_csv(x):
     x['Date'] = pd.to_datetime(x[['year','month','day']])
     return x
 
-nfl_data=data_2021.copy()
+# nfl_data=data_2021.copy()
+
+def pre_season(data_2021,start_year=2022, end_year=2023):
+    # not sure if this even works, think its for pre-season
+    data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
+    data_2021['month']=data_2021['Date'].str.split(' ').str[0]
+    data_2021['date_in_month']=data_2021['Date'].str.split(' ').str[1]
+    data_2021['year']=2022
+    data_2021['TOW']=0
+    data_2021['TOL']=0
+    data_2021['PtsW']=0
+    data_2021['PtsL']=0
+    data_2021=data_2021[~data_2021['Week'].isin(['Pre0','Pre1','Pre2','Pre3','Week'])]
+    # data_2021['Week']=pd.to_numeric(data_2021['Week'])
+    data_2021['year']=np.where(data_2021['Week']>16,end_year,start_year)
+    data_2021['Date']=pd.to_datetime(data_2021['year'].astype(str) + data_2021['month']+ data_2021['date_in_month'].astype(str),format='%Y%B%d')
+    data_2021.loc['Week','Week']='Week'
+    return data_2021
+
+st.write('wildcard', data_2022)
+data_2022=pre_season(data_2022)
+nfl_data=data_2022.copy()
+# st.write('nfl_data', nfl_data)
 # st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
 
 # with st.beta_expander('Historical odds function'):
@@ -165,8 +206,8 @@ def clean_pro_football_pickle_2021(nfl_data):
     return season_pro
 
 def clean_prior_year(x):
-    # x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:-1,16:-2,15:-3})
-    x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:0,16:-1,15:-2,14:-3})
+    x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:-1,16:-2,15:-3})
+    # x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:0,16:-1,15:-2,14:-3})
     x=x[x['Week'].between(-3,0)].copy()
     x=x.reset_index().drop('index',axis=1)
     # st.write('Check for errors',x[x['Away ID'].isna()])
@@ -204,6 +245,49 @@ def test_clean_pro_football_pickle(nfl_data):
     season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points', 'Home ID','Away ID'], how='left')
     return season_pro
 
+
+def clean_pro_football_pickle_work_on_this_cover_preseason_as_well(nfl_data):
+    # sourcery skip: inline-immediately-returned-variable
+    nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
+    nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
+    nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
+    nfl_data['Away Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Winner/tie'],nfl_data['Loser/tie'])
+    nfl_data['Home Points']=np.where(nfl_data['at_venue']=='@',nfl_data['PtsL'],nfl_data['PtsW'])
+    nfl_data['Away Points']=np.where(nfl_data['at_venue']=='@',nfl_data['PtsW'],nfl_data['PtsL'])
+    nfl_data['home_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOL'],nfl_data['TOW']))
+    nfl_data['away_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOW'],nfl_data['TOL']))
+    nfl_data=nfl_data[nfl_data['Week'].str.contains('Week',na=False)==False].copy()
+    nfl_data=nfl_data.dropna(subset=["Week"])
+    nfl_data['home_turnover']=pd.to_numeric(nfl_data['home_turnover'])
+    nfl_data['away_turnover']=pd.to_numeric(nfl_data['away_turnover'])
+    nfl_data['Home Points']=pd.to_numeric(nfl_data['Home Points'])
+    nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
+    nfl_data['Date']=pd.to_datetime(nfl_data['Date']).dt.normalize()
+    # nfl_data['Date'] = pd.to_datetime([dt.datetime.strftime(d, "%Y-%m-%d %H:%M") for d in nfl_data["Date"]])
+    # nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
+    nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':19,'Division':20,'ConfChamp':21,'SuperBowl':22})
+    nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
+    fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','home_turnover','away_turnover']]
+    fb_ref_2020['Turnover'] = fb_ref_2020['home_turnover'] - fb_ref_2020['away_turnover']
+    team_names_id_1=team_names_id.rename(columns={'Away Team':'Home Team'})
+    fb_ref_2020=pd.merge(fb_ref_2020,team_names_id_1,on='Home Team').rename(columns={'ID':'Home ID'})
+    fb_ref_2020=pd.merge(fb_ref_2020,team_names_id,on='Away Team').rename(columns={'ID':'Away ID'})
+
+    fb_ref_2020['year']=fb_ref_2020['Date'].dt.year
+    fb_ref_2020['month']=fb_ref_2020['Date'].dt.month
+    fb_ref_2020['day']=fb_ref_2020['Date'].dt.day
+
+    odds_data_updated=odds_data.drop(['Home Points', 'Away Points'], axis=1)
+    # st.write('odds data before merge', odds_data_updated)
+    # st.write(odds_data_updated.dtypes)
+    # st.write('fb before merge', fb_ref_2020)
+    # st.write('fbreft', fb_ref_2020.dtypes)
+    
+    # season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['Date','Home Team','Away Team', 'Home ID','Away ID'], how='left')
+    season_pro = pd.merge(fb_ref_2020,odds_data_updated,on=['Date','year','month','day','Home Team','Away Team', 'Home ID','Away ID'], how='left')
+    # st.write('after merge', season_pro)
+    # st.write(season_pro.dtypes)
+    return season_pro
 
 current=clean_pro_football_pickle_2021(nfl_data)
 # st.write('current line 201',current.sort_values(by='Week'))
@@ -342,7 +426,7 @@ test_df_away=test_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts
 test_df_2=pd.concat([test_df_home,test_df_away],ignore_index=True)
 test_df_2=test_df_2.sort_values(by=['ID','Week'],ascending=True)
 test_df_2['spread_with_home_adv']=test_df_2['spread']+test_df_2['home_pts_adv']
-    # st.write(test_df_2)
+# st.write('spread row 371',test_df_2)
 
 def test_4(matrix_df_1):
     weights = np.array([0.125, 0.25,0.5,1])
@@ -368,7 +452,8 @@ for name, group in grouped:
     update=test_4(df_seq_1)
     ranking_power.append(update)
 df_power = pd.concat(ranking_power, ignore_index=True)
-    # st.write('power ranking',df_power.sort_values(by=['ID','Week'],ascending=[True,True]))
+# st.write('power ranking',df_power[df_power['ID']==12])
+# st.write('power ranking',df_power.sort_values(by=['ID','Week'],ascending=[True,True]))
 
 
 
@@ -379,20 +464,30 @@ inverse_matrix=[]
 power_ranking=[]
 list_inverse_matrix=[]
 list_power_ranking=[]
+# st.write('power df', df_power)
 power_df=df_power.loc[:,['Week','ID','adj_spread']].copy()
 
 games_df=matrix_df_1.copy()
+# st.write('games df', games_df)
+
 # st.write('Checking the games df', games_df[((games_df['Home ID']==24)|(games_df['Away ID']==24))])
-first=list(range(-3,19))
-last=list(range(0,22))
+
+first=list(range(-3,last_week-3))
+last=list(range(0,last_week))
 for first,last in zip(first,last):
     first_section=games_df[games_df['Week'].between(first,last)]
+    # st.write('first section', first_section)
     full_game_matrix=games_matrix_workings(first_section)
+    # st.write('full game matrix', full_game_matrix)
     adjusted_matrix=full_game_matrix.loc[0:(number_of_teams-2),0:(number_of_teams-2)]
+    # st.write('adjusted matrix', adjusted_matrix)
     df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
+    # st.write('df inv', df_inv)
     power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID')\
     .drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:(number_of_teams-2),:]
+    # st.write('power_df_week', power_df_week,'first', first, 'last', last)
     result = df_inv.dot(pd.DataFrame(power_df_week))
+    # st.write('result', result)
     result.columns=['power']
     avg=(result['power'].sum())/number_of_teams
     result['avg_pwr_rank']=(result['power'].sum())/number_of_teams
@@ -403,7 +498,15 @@ for first,last in zip(first,last):
     power_ranking.append(result)
 power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
 # st.write('power ranking combined', power_ranking_combined)
-    
+
+# first=list(range(-3,19))
+# last=list(range(0,22))
+# for first,last in zip(first,last):
+#     power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID')
+#     st.write('power_df_week', power_df_week)
+
+
+
 # with st.beta_expander('Adding Power Ranking to Matches'):
 matches_df = spread.copy()
 home_power_rank_merge=power_ranking_combined.loc[:,['ID','week','final_power']].copy().rename(columns={'week':'Week','ID':'Home ID'})
@@ -1076,20 +1179,7 @@ with st.expander('Tests'):
     # test_prior=clean_pro_football_pickle(prior_nfl_data)
     # test_prior_data = test_clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
 
-    def pre_season(data_2021):
-        # not sure if this even works, think its for pre-season
-        data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
-        data_2021['month']=data_2021['Date'].str.split(' ').str[0]
-        data_2021['date_in_month']=data_2021['Date'].str.split(' ').str[1]
-        data_2021['year']=2021
-        data_2021['TOW']=0
-        data_2021['TOL']=0
-        data_2021=data_2021.set_index('Week').drop(['Pre0','Pre1','Pre2','Pre3','Week'],axis=0).reset_index()
-        data_2021['Week']=pd.to_numeric(data_2021['Week'])
-        data_2021['year']=np.where(data_2021['Week']>16,2022,2021)
-        data_2021['Date']=pd.to_datetime(data_2021['year'].astype(str) + data_2021['month']+ data_2021['date_in_month'].astype(str),format='%Y%B%d')
-        data_2021.loc['Week','Week']='Week'
-        return data_2021
+
     
     st.write('Check sum if True all good', full_stack.sum().sum()==0)
 
