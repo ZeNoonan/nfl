@@ -16,7 +16,7 @@ placeholder_1=st.empty()
 placeholder_2=st.empty()
 
 finished_week=22
-last_week=5 # what is this for?? its for graphing i think
+last_week=22 # what is this for?? its for graphing i think
 number_of_teams=32
 
 season_list={'season_2022': {
@@ -40,11 +40,13 @@ def read_csv_data(file):
     return pd.read_csv(file)
 
 # Run this once below 
-# odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
+# odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023_excel.xlsx')
+odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
 def csv_save(x):
     x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv')
+    # x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023_test.csv')
     return x
-# csv_save(odds_data_excel)
+csv_save(odds_data_excel)
 
 odds_data = read_csv_data(season_list[season_picker]['odds_file']).copy()
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_2021_2022.xlsx').copy()
@@ -107,8 +109,8 @@ def pre_season(data_2021,start_year=2022, end_year=2023):
     data_2021.loc['Week','Week']='Week'
     return data_2021
 
-st.write('wildcard', data_2022)
-data_2022=pre_season(data_2022)
+# st.write('wildcard', data_2022)
+# data_2022=pre_season(data_2022)
 nfl_data=data_2022.copy()
 # st.write('nfl_data', nfl_data)
 # st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
@@ -776,6 +778,7 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
     reset_data=reset_data.pivot(index='result_all',columns='total_factor',values='winning').fillna(0)
     # st.write('look',reset_data)
     reset_data['betting_factor_total']=reset_data[3]+reset_data[4]+reset_data[5]
+    # reset_data['betting_factor_total']=reset_data.iloc[:,:-3].sum()
     reset_data=reset_data.sort_values(by='betting_factor_total',ascending=False)
 
     reset_data=reset_data.reset_index()
@@ -806,11 +809,12 @@ with placeholder_1.expander('Weekly Results'):
     df9['result']=df9['result'].astype(int).astype(str)
     df9=df9.set_index('result').sort_index(ascending=False)
     # df9.columns = df9.columns.astype(str)
-    df_slice=df9.loc[:,13:]
-    df9['subtotal_week_13_on']=df_slice.sum(axis=1)
-    df_all=df9.iloc[:,:-1]
+    # df_slice=df9.loc[:,13:]
+    # df9['subtotal_week_13_on']=df_slice.sum(axis=1)
+    # df_all=df9.iloc[:,:-1]
     # st.write('this is df all',df_all)
-    df9['grand_total']=df_all.sum(axis=1)
+    # df9['grand_total']=df_all.sum(axis=1)
+    df9['grand_total']=df9.iloc[:,:-1].sum(axis=1)
     df9.loc['Total']=df9.sum()
     df9.loc['No. of Bets Made'] = df9.loc[['1','-1']].sum() 
     df9=df9.apply(pd.to_numeric, downcast='integer')
