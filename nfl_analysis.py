@@ -20,15 +20,28 @@ last_week=22 # what is this for?? its for graphing i think
 number_of_teams=32
 
 season_list={'season_2022': {
-    "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv",
-    "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023.csv",
-    "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2022_2023.csv",
-    "prior_year_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2021_2022.csv"},
+    "odds_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds_2022_2023.csv",
+    "scores_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2022_2023.csv",
+    "team_id": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams_2022_2023.csv",
+    "prior_year_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2021_2022.csv"},
 'season_2021' : {
-    "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2021_2022.csv",
-    "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2021_2022.csv",
-    "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2021_2022.csv",
-    "prior_year_file": 'C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2019_2020.csv'}}
+    "odds_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds_2021_2022.csv",
+    "scores_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2021_2022.csv",
+    "team_id": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams_2021_2022.csv",
+    "prior_year_file": 'https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2019_2020.csv'}}
+
+# season_list={'season_2022': {
+#     "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv",
+#     "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023.csv",
+#     "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2022_2023.csv",
+#     "prior_year_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2021_2022.csv"},
+# 'season_2021' : {
+#     "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2021_2022.csv",
+#     "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2021_2022.csv",
+#     "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2021_2022.csv",
+#     "prior_year_file": 'C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2019_2020.csv'}}
+
+
 
 
 @st.cache
@@ -39,14 +52,11 @@ def read_data(file):
 def read_csv_data(file):
     return pd.read_csv(file)
 
-# Run this once below 
-# odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023_excel.xlsx')
-odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
-def csv_save(x):
-    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv')
-    # x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023_test.csv')
-    return x
-csv_save(odds_data_excel)
+# odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
+# def csv_save(x):
+#     x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv')
+#     return x
+# csv_save(odds_data_excel)
 
 odds_data = read_csv_data(season_list[season_picker]['odds_file']).copy()
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_2021_2022.xlsx').copy()
@@ -801,35 +811,77 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
     st.write('Broken down by the number of factors indicating the strength of the signal')
 
 with placeholder_1.expander('Weekly Results'):
-    weekly_results=analysis.groupby(['Week','result']).agg(winning=('result','sum'),count=('result','count'))
-    weekly_test=analysis[analysis['total_factor'].abs()>2].loc[:,['Week','result']].copy()
+    # weekly_results=analysis.groupby(['Week','result']).agg(winning=('result','sum'),count=('result','count'))
+    # weekly_test=analysis[analysis['total_factor'].abs()>2].loc[:,['Week','result']].copy()
 
-    df9 = weekly_test.groupby(['result','Week']).size().unstack(fill_value=0)
-    df9=df9.reset_index()
-    df9['result']=df9['result'].astype(int).astype(str)
-    df9=df9.set_index('result').sort_index(ascending=False)
-    # df9.columns = df9.columns.astype(str)
-    # df_slice=df9.loc[:,13:]
-    # df9['subtotal_week_13_on']=df_slice.sum(axis=1)
-    # df_all=df9.iloc[:,:-1]
-    # st.write('this is df all',df_all)
-    # df9['grand_total']=df_all.sum(axis=1)
-    df9['grand_total']=df9.iloc[:,:-1].sum(axis=1)
-    df9.loc['Total']=df9.sum()
-    df9.loc['No. of Bets Made'] = df9.loc[['1','-1']].sum() 
-    df9=df9.apply(pd.to_numeric, downcast='integer')
-    df9.loc['% Winning'] = ((df9.loc['1'] / df9.loc['No. of Bets Made'])).replace({'<NA>':np.NaN})
+    # df9 = weekly_test.groupby(['result','Week']).size().unstack(fill_value=0)
+    # df9=df9.reset_index()
+    # df9['result']=df9['result'].astype(int).astype(str)
+    # df9=df9.set_index('result').sort_index(ascending=False)
+    # # df9.columns = df9.columns.astype(str)
+    # # df_slice=df9.loc[:,13:]
+    # # df9['subtotal_week_13_on']=df_slice.sum(axis=1)
+    # # df_all=df9.iloc[:,:-1]
+    # # st.write('this is df all',df_all)
+    # # df9['grand_total']=df_all.sum(axis=1)
+    # df9['grand_total']=df9.iloc[:,:-1].sum(axis=1)
+    # df9.loc['Total']=df9.sum()
+    # df9.loc['No. of Bets Made'] = df9.loc[['1','-1']].sum() 
+    # df9=df9.apply(pd.to_numeric, downcast='integer')
+    # df9.loc['% Winning'] = ((df9.loc['1'] / df9.loc['No. of Bets Made'])).replace({'<NA>':np.NaN})
 
-    # https://stackoverflow.com/questions/64428836/use-pandas-style-to-format-index-rows-of-dataframe
-    df9 = df9.style.format("{:.0f}", na_rep='-')
-    df9 = df9.format(formatter="{:.0%}", subset=pd.IndexSlice[['% Winning'], :])
-    st.write(df9)
+    # # https://stackoverflow.com/questions/64428836/use-pandas-style-to-format-index-rows-of-dataframe
+    # df9 = df9.style.format("{:.0f}", na_rep='-')
+    # df9 = df9.format(formatter="{:.0%}", subset=pd.IndexSlice[['% Winning'], :])
+    # st.write(df9)
 
-    st.write('Total betting result',betting_matches['result'].sum())
+    # st.write('Total betting result',betting_matches['result'].sum())
     # pivot_weekly.columns = pivot_weekly.columns.droplevel(0)
     # weekly_test=analysis.groupby([(analysis['total_factor'].abs()>2),'result_all']).agg(winning=('result_all','count'))
     # st.write(pivot_weekly)
     # st.write(weekly_test)
+    # --------------------------------------------------------------------------------------------------------------------------
+
+    weekly_results=analysis.groupby(['Week','result']).agg(winning=('result','sum'),count=('result','count'))
+    weekly_test=analysis[analysis['total_factor'].abs()>2].loc[:,['Week','result']].copy()
+    df9 = weekly_test.groupby(['result','Week']).size().unstack(fill_value=0)
+    df9=df9.reset_index()
+    df9['result']=df9['result'].round(1).astype(str)
+    df9=df9.set_index('result').sort_index(ascending=False)
+    df9['grand_total']=df9.sum(axis=1)
+    df9.loc['Winning_Bets']=(df9.loc['1.0'])
+    df9.loc['Losing_Bets']=(df9.loc['-1.0'])
+    df9.loc['No. of Bets Made'] = df9.loc['1.0']+ df9.loc['-1.0']
+    df9.loc['PL_Bets']=df9.loc['Winning_Bets'] - df9.loc['Losing_Bets']
+    df9=df9.apply(pd.to_numeric, downcast='float')
+    graph_pl_data=df9.loc[['PL_Bets'],:].drop('grand_total',axis=1)
+    graph_pl_data=graph_pl_data.stack().reset_index().drop('result',axis=1).rename(columns={0:'week_result'})
+    graph_pl_data['Week']=graph_pl_data['Week'].astype(int)
+    graph_pl_data['total_result']=graph_pl_data['week_result'].cumsum()
+    graph_pl_data=graph_pl_data.melt(id_vars='Week',var_name='category',value_name='result')
+    df9.loc['% Winning'] = ((df9.loc['1.0']) / (df9.loc['1.0'] + df9.loc['-1.0']) ).replace({'<NA>':np.NaN})
+    table_test=df9.copy()
+    # https://stackoverflow.com/questions/64428836/use-pandas-style-to-format-index-rows-of-dataframe
+    df9 = df9.style.format("{:.1f}", na_rep='-')
+    df9 = df9.format(formatter="{:.0%}", subset=pd.IndexSlice[['% Winning'], :]).format(formatter="{:.0f}", subset=pd.IndexSlice[['1.0'], :]) \
+        .format(formatter="{:.0f}", subset=pd.IndexSlice[['-1.0'], :])
+        # .format(formatter="{:.0f}", subset=pd.IndexSlice[['-0.0'], :]) \
+
+    def graph_pl(decile_df_abs_home_1,column):
+        line_cover= alt.Chart(decile_df_abs_home_1).mark_line().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
+        alt.Y(column),color=alt.Color('category'))
+        text_cover=line_cover.mark_text(baseline='middle',dx=0,dy=-15).encode(text=alt.Text(column),color=alt.value('black'))
+        overlay = pd.DataFrame({column: [0]})
+        vline = alt.Chart(overlay).mark_rule(color='black', strokeWidth=1).encode(y=column)
+        return st.altair_chart(line_cover + text_cover + vline,use_container_width=True)
+
+    graph_pl(graph_pl_data,column='result')
+
+    st.write('Total betting result per Betting Table',betting_matches['result'].sum())
+    st.write('Total betting result per Above Table',table_test.loc['PL_Bets','grand_total'])
+    st.write(df9)
+
+
 
 with st.expander('Analysis of Factors'):
     analysis_factors = betting_matches.copy()
