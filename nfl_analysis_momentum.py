@@ -874,9 +874,9 @@ with placeholder_1.expander('Weekly Results'):
     df9['result']=df9['result'].round(1).astype(str)
     df9=df9.set_index('result').sort_index(ascending=False)
     df9['grand_total']=df9.sum(axis=1)
-    df9.loc['Winning_Bets']=(df9.loc['1.0'])
-    df9.loc['Losing_Bets']=(df9.loc['-1.0'])
-    df9.loc['No. of Bets Made'] = df9.loc['1.0']+ df9.loc['-1.0']
+    df9.loc['Winning_Bets']=(df9.loc[df9.index.isin({'1'})].sum(axis=0))
+    df9.loc['Losing_Bets']=(df9.loc[df9.index.isin({'-1'})].sum(axis=0))
+    df9.loc['No. of Bets Made'] = df9.loc['Winning_Bets']+ df9.loc['Losing_Bets']
     df9.loc['PL_Bets']=df9.loc['Winning_Bets'] - df9.loc['Losing_Bets']
     df9=df9.apply(pd.to_numeric, downcast='float')
     graph_pl_data=df9.loc[['PL_Bets'],:].drop('grand_total',axis=1)
@@ -884,12 +884,12 @@ with placeholder_1.expander('Weekly Results'):
     graph_pl_data['Week']=graph_pl_data['Week'].astype(int)
     graph_pl_data['total_result']=graph_pl_data['week_result'].cumsum()
     graph_pl_data=graph_pl_data.melt(id_vars='Week',var_name='category',value_name='result')
-    df9.loc['% Winning'] = ((df9.loc['1.0']) / (df9.loc['1.0'] + df9.loc['-1.0']) ).replace({'<NA>':np.NaN})
+    df9.loc['% Winning'] = (df9.loc['Winning_Bets'] / (df9.loc['Winning_Bets']+df9.loc['Losing_Bets'])  ).replace({'<NA>':np.NaN})
     table_test=df9.copy()
     # https://stackoverflow.com/questions/64428836/use-pandas-style-to-format-index-rows-of-dataframe
     df9 = df9.style.format("{:.1f}", na_rep='-')
-    df9 = df9.format(formatter="{:.0%}", subset=pd.IndexSlice[['% Winning'], :]).format(formatter="{:.0f}", subset=pd.IndexSlice[['1.0'], :]) \
-        .format(formatter="{:.0f}", subset=pd.IndexSlice[['-1.0'], :])
+    # df9 = df9.format(formatter="{:.0%}", subset=pd.IndexSlice[['% Winning'], :]).format(formatter="{:.0f}", subset=pd.IndexSlice[['1.0'], :]) \
+    #     .format(formatter="{:.0f}", subset=pd.IndexSlice[['-1.0'], :])
         # .format(formatter="{:.0f}", subset=pd.IndexSlice[['-0.0'], :]) \
 
     def graph_pl(decile_df_abs_home_1,column):
@@ -965,8 +965,10 @@ with st.expander('Analysis of Factors'):
     bets_made_factor_table = bets_made_factor_table[ cols_to_move + [ col for col in bets_made_factor_table if col not in cols_to_move ] ]
     bets_made_factor_table=bets_made_factor_table.loc[:,['total_turnover','total_season_cover','power_ranking_success?']]
     st.write('This is the matches BET ON broken down by Factor result')
-    bets_made_factor_table_presentation = bets_made_factor_table.style.format("{:.0f}", na_rep='-')
-    bets_made_factor_table_presentation = bets_made_factor_table_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
+    
+    bets_made_factor_table_presentation = bets_made_factor_table.style.format("{:.2f}", na_rep='-')
+    # st.write(bets_made_factor_table_presentation)
+    # bets_made_factor_table_presentation = bets_made_factor_table_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
     st.write(bets_made_factor_table_presentation)
 
     # st.write('graph work below')
@@ -1056,10 +1058,12 @@ with st.expander('Checking Performance where Total Factor = 2 or 3:  Additional 
 
     df_factor_table_1.loc['Total']=df_factor_table_1.sum()
     # st.write('latest', df_factor_table_1)
+    # st.write('latest', df_factor_table_1.query('index=="1" | index=="-1"' ).sum())
     # st.write('latest', df_factor_table_1.shape)
 
     if df_factor_table_1.shape > (2,7):
-        df_factor_table_1.loc['No. of Bets Made'] = df_factor_table_1.loc[['1','-1']].sum() 
+        # df_factor_table_1.loc['No. of Bets Made'] = df_factor_table_1.loc[['1','-1']].sum()
+        df_factor_table_1.loc['No. of Bets Made'] = df_factor_table_1.query('index=="1" | index=="-1"' ).sum()
         df_factor_table_1.loc['% Winning'] = ((df_factor_table_1.loc['1'] / df_factor_table_1.loc['No. of Bets Made']))
     # else:
     #     # st.write('Returning df with no anal')
@@ -1115,8 +1119,8 @@ with st.expander('Underdog Analyis'):
     st.write('This shows the total number of BETS made and whether it was an underdog or favourite that covered')
     st.write('not sure if this has value or not')
 
-    underdog_results_presentation = underdog_results.style.format("{:.0f}", na_rep='-')
-    underdog_results_presentation = underdog_results_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
+    underdog_results_presentation = underdog_results.style.format("{:.2f}", na_rep='-')
+    # underdog_results_presentation = underdog_results_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
 
     st.write(underdog_results_presentation)
 
