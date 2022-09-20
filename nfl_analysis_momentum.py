@@ -76,11 +76,11 @@ url='https://www.pro-football-reference.com/years/2022/games.htm'
 def fbref_scraper_csv(url):
         test = pd.read_html(url)[0]
         # test.to_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2022_scores.xlsx')
-        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022.csv')
+        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023.csv')
         # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
-# fbref_scraper_csv(url)
+fbref_scraper_csv(url)
 
 # prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
 # prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
@@ -641,7 +641,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     # st.write('testing sum of betting all result',betting_matches['result_all'].sum())
     betting_matches['my_spread']=betting_matches['away_power']-betting_matches['home_power']
     betting_matches['spread_diff']=betting_matches['Spread']-betting_matches['my_spread']
-    cols_to_move=['Week','Date','Home Team','Away Team','total_factor','bet_on','result','Spread','my_spread','spread_diff','power_pick','Home Points','Away Points','home_power','away_power']
+    cols_to_move=['Week','Date','Home Team','Away Team','total_factor','bet_on','result','Spread','Home Points','Away Points','my_spread','spread_diff','power_pick','home_power','away_power']
     cols = cols_to_move + [col for col in betting_matches if col not in cols_to_move]
     betting_matches=betting_matches[cols]
     betting_matches=betting_matches.sort_values(['Week','Date'],ascending=[True,True])
@@ -649,7 +649,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     presentation_betting_matches=betting_matches.copy()
 
     # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
-    grid_height = st.number_input("Grid height", min_value=400, value=1550, step=100)
+    grid_height = st.number_input("Grid height", min_value=400, value=3550, step=100)
     gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
     gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
     gb.configure_column("my_spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
@@ -799,7 +799,7 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
     text=alt.Text('winning:Q', format='.0f'))
     updated_test_chart=chart_power+vline+text
     
-    st.altair_chart(updated_test_chart,use_container_width=True)
+    # st.altair_chart(updated_test_chart,use_container_width=True)
 
     # st.write('shows the number of games at each factor level')
     # st.write(totals.rename(columns={'winning':'number_of_games'}))
@@ -812,7 +812,9 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
     # st.write('test',reset_data)
     reset_data=reset_data.pivot(index='result_all',columns='total_factor',values='winning').fillna(0)
     # st.write('look',reset_data)
-    reset_data['betting_factor_total']=reset_data[3]+reset_data[4]+reset_data[5]
+    # reset_data['betting_factor_total']=reset_data[3]+reset_data[4]+reset_data[5]
+    dfBool=pd.Series(reset_data.columns.isin([3,4,5,6,7,8]) )
+    reset_data['betting_factor_total']=reset_data[reset_data.columns[dfBool]].sum(axis=1)
     # reset_data['betting_factor_total']=reset_data.iloc[:,:-3].sum()
     reset_data=reset_data.sort_values(by='betting_factor_total',ascending=False)
 
@@ -822,7 +824,10 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
     reset_data=reset_data.set_index('result_all')
 
     reset_data.loc['Total']=reset_data.sum()
-    reset_data.loc['No. of Bets Made'] = reset_data.loc[['1','-1']].sum() 
+    reset_data.loc['Winning_Bets']=(reset_data.loc[reset_data.index.isin({'1'})].sum(axis=0))
+    reset_data.loc['Losing_Bets']=(reset_data.loc[reset_data.index.isin({'-1'})].sum(axis=0))
+    reset_data.loc['No. of Bets Made']=(reset_data.loc[reset_data.index.isin({'1'})].sum(axis=0))+(reset_data.loc[reset_data.index.isin({'-1'})].sum(axis=0)) 
+    reset_data.loc['PL_Bets']=reset_data.loc['Winning_Bets'] - reset_data.loc['Losing_Bets']    
     reset_data=reset_data.apply(pd.to_numeric, downcast='integer')
     reset_data.loc['% Winning'] = ((reset_data.loc['1'] / reset_data.loc['No. of Bets Made'])).replace({'<NA>':np.NaN})
     st.write('This shows the betting result')
@@ -874,8 +879,8 @@ with placeholder_1.expander('Weekly Results'):
     df9['result']=df9['result'].round(1).astype(str)
     df9=df9.set_index('result').sort_index(ascending=False)
     df9['grand_total']=df9.sum(axis=1)
-    df9.loc['Winning_Bets']=(df9.loc[df9.index.isin({'1'})].sum(axis=0))
-    df9.loc['Losing_Bets']=(df9.loc[df9.index.isin({'-1'})].sum(axis=0))
+    df9.loc['Winning_Bets']=(df9.loc[df9.index.isin({'1.0','1'})].sum(axis=0))
+    df9.loc['Losing_Bets']=(df9.loc[df9.index.isin({'-1','-1.0'})].sum(axis=0))
     df9.loc['No. of Bets Made'] = df9.loc['Winning_Bets']+ df9.loc['Losing_Bets']
     df9.loc['PL_Bets']=df9.loc['Winning_Bets'] - df9.loc['Losing_Bets']
     df9=df9.apply(pd.to_numeric, downcast='float')
@@ -887,8 +892,9 @@ with placeholder_1.expander('Weekly Results'):
     df9.loc['% Winning'] = (df9.loc['Winning_Bets'] / (df9.loc['Winning_Bets']+df9.loc['Losing_Bets'])  ).replace({'<NA>':np.NaN})
     table_test=df9.copy()
     # https://stackoverflow.com/questions/64428836/use-pandas-style-to-format-index-rows-of-dataframe
-    df9 = df9.style.format("{:.1f}", na_rep='-')
-    # df9 = df9.format(formatter="{:.0%}", subset=pd.IndexSlice[['% Winning'], :]).format(formatter="{:.0f}", subset=pd.IndexSlice[['1.0'], :]) \
+    df9 = df9.style.format("{:.0f}", na_rep='-')
+    df9 = df9.format(formatter="{:.0%}", subset=pd.IndexSlice[['% Winning'], :])
+    # .format(formatter="{:.0f}", subset=pd.IndexSlice[['1.0'], :]) \
     #     .format(formatter="{:.0f}", subset=pd.IndexSlice[['-1.0'], :])
         # .format(formatter="{:.0f}", subset=pd.IndexSlice[['-0.0'], :]) \
 
@@ -912,17 +918,20 @@ with st.expander('Analysis of Factors'):
     analysis_factors = betting_matches.copy()
     analysis_factors=analysis_factors[analysis_factors['Week']<finished_week+1]
     def analysis_factor_function(analysis_factors):
+        # sourcery skip: remove-unnecessary-else, swap-if-else-branches
         analysis_factors['home_turnover_success?'] = analysis_factors['home_turnover_sign'] * analysis_factors['home_cover_result']
         analysis_factors['away_turnover_success?'] = analysis_factors['away_turnover_sign'] * analysis_factors['home_cover_result']
         analysis_factors['home_cover_season_success?'] = analysis_factors['home_cover_sign'] * analysis_factors['home_cover_result']  
         analysis_factors['away_cover_season_success?'] = analysis_factors['away_cover_sign'] * analysis_factors['home_cover_result']
         analysis_factors['power_ranking_success?'] = analysis_factors['power_pick'] * analysis_factors['home_cover_result']
+        analysis_factors['momentum_ranking_success?'] = analysis_factors['momentum_pick'] * analysis_factors['home_cover_result']
         df_table = analysis_factors['home_turnover_success?'].value_counts()
         away_turnover=analysis_factors['away_turnover_success?'].value_counts()
         home_cover=analysis_factors['home_cover_season_success?'].value_counts()
         away_cover=analysis_factors['away_cover_season_success?'].value_counts()
         power=analysis_factors['power_ranking_success?'].value_counts()
-        df_table_1=pd.concat([df_table,away_turnover,home_cover,away_cover,power],axis=1)
+        momentum=analysis_factors['momentum_ranking_success?'].value_counts()
+        df_table_1=pd.concat([df_table,away_turnover,home_cover,away_cover,power,momentum],axis=1)
         # df_table_1=pd.concat([df_table,away_turnover,home_cover,away_cover,power],axis=1).reset_index().drop('index',axis=1)
         # st.write('df table', df_table_1)
         # test=df_table_1.reset_index()
@@ -942,9 +951,20 @@ with st.expander('Analysis of Factors'):
         # st.write('latest', df_table_1)
         # st.write('latest', df_table_1.shape)
         if df_table_1.shape > (2,7):
+            # df_table_1.loc['Winning_Bets']=(df_table_1.loc['1.0']+(df_table_1.loc['0.5']/2))
+            df_table_1.loc['Winning_Bets']=(df_table_1.loc[df_table_1.index.isin({'1'})].sum(axis=0))
+            # df_table_1.loc['Losing_Bets']=(df_table_1.loc['-1.0']+(df_table_1.loc['-0.5']/2))
+            df_table_1.loc['Losing_Bets']=(df_table_1.loc[df_table_1.index.isin({'-1'})].sum(axis=0))
+            # df_table_1.loc['No. of Bets Made'] = df_table_1.loc['1.0']+(df_table_1.loc['0.5']/2)+(df_table_1.loc['-0.5']/2) + df_table_1.loc['-1.0']
+            df_table_1.loc['No. of Bets Made'] = df_table_1.loc['Winning_Bets']+df_table_1.loc['Losing_Bets']   
+            df_table_1.loc['PL_Bets']=df_table_1.loc['Winning_Bets'] - df_table_1.loc['Losing_Bets']
+            df_table_1=df_table_1.apply(pd.to_numeric, downcast='float')
+            # df_table_1.loc['% Winning'] = ((df_table_1.loc['1.0']+(df_table_1.loc['0.5']/2)) /
+            # (df_table_1.loc['1.0']+(df_table_1.loc['0.5']/2)+(df_table_1.loc['-0.5']/2) + df_table_1.loc['-1.0']) ).replace({'<NA>':np.NaN})
+            df_table_1.loc['% Winning'] = (df_table_1.loc['Winning_Bets'] / (df_table_1.loc['Winning_Bets']+df_table_1.loc['Losing_Bets'])  ).replace({'<NA>':np.NaN})
             # st.write('Returning df with analysis')
-            df_table_1.loc['No. of Bets Made'] = df_table_1.loc[['1','-1']].sum() # No losing bets so far!!!
-            df_table_1.loc['% Winning'] = ((df_table_1.loc['1'] / df_table_1.loc['No. of Bets Made']))
+            # df_table_1.loc['No. of Bets Made'] = df_table_1.loc[['1.0','-1.0']].sum() # No losing bets so far!!!
+            # df_table_1.loc['% Winning'] = ((df_table_1.loc['1.0'] / df_table_1.loc['No. of Bets Made']))
         else:
             # st.write('Returning df with no analysis')
             return df_table_1
@@ -953,27 +973,33 @@ with st.expander('Analysis of Factors'):
     st.write('This is the total number of matches broken down by Factor result')
     cols_to_move=['total_turnover','total_season_cover','power_ranking_success?']
     total_factor_table = total_factor_table[ cols_to_move + [ col for col in total_factor_table if col not in cols_to_move ] ]
-    total_factor_table=total_factor_table.loc[:,['total_turnover','total_season_cover','power_ranking_success?']]
+    total_factor_table=total_factor_table.loc[:,['total_turnover','total_season_cover','power_ranking_success?','momentum_ranking_success?']]
     
     total_factor_table_presentation = total_factor_table.style.format("{:.0f}", na_rep='-')
     total_factor_table_presentation = total_factor_table_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
+    # .format(formatter="{:.0f}", subset=pd.IndexSlice[['1.0'], :]) \
+    #     .format(formatter="{:.0f}", subset=pd.IndexSlice[['-0.0'], :]).format(formatter="{:.0f}", subset=pd.IndexSlice[['0.5'], :]) \
+    #         .format(formatter="{:.0f}", subset=pd.IndexSlice[['-0.5'], :]).format(formatter="{:.0f}", subset=pd.IndexSlice[['-1.0'], :])
     
     st.write(total_factor_table_presentation)
     factor_bets = (analysis_factors[analysis_factors['bet_sign']!=0]).copy()
     bets_made_factor_table = analysis_factor_function(factor_bets)
     # cols_to_move=['total_turnover','total_season_cover','power_ranking_success?']
     bets_made_factor_table = bets_made_factor_table[ cols_to_move + [ col for col in bets_made_factor_table if col not in cols_to_move ] ]
-    bets_made_factor_table=bets_made_factor_table.loc[:,['total_turnover','total_season_cover','power_ranking_success?']]
+    bets_made_factor_table=bets_made_factor_table.loc[:,['total_turnover','total_season_cover','power_ranking_success?','momentum_ranking_success?']]
     st.write('This is the matches BET ON broken down by Factor result')
-    
-    bets_made_factor_table_presentation = bets_made_factor_table.style.format("{:.2f}", na_rep='-')
-    # st.write(bets_made_factor_table_presentation)
-    # bets_made_factor_table_presentation = bets_made_factor_table_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
+    bets_made_factor_table_presentation = bets_made_factor_table.style.format("{:.1f}", na_rep='-')
+    bets_made_factor_table_presentation = bets_made_factor_table_presentation.format(formatter="{:.1%}", subset=pd.IndexSlice[['% Winning'], :])
     st.write(bets_made_factor_table_presentation)
 
-    # st.write('graph work below')
-    graph_factor_table = total_factor_table.copy().loc[['-1','0','1'],:].reset_index().rename(columns={'index':'result_all'})
-    graph_factor_table['result_all']=graph_factor_table['result_all'].replace({'0':'tie','1':'win','-1':'lose'})
+    transposed_df=total_factor_table.transpose().reset_index().set_index('index')
+    dfBool=pd.Series(transposed_df.columns.isin(['1.0','-1.0','-0','0','1','-1']) )
+    test_bool=transposed_df[transposed_df.columns[dfBool]].fillna(0).transpose()
+    # st.write('test bool', test_bool)
+
+    graph_factor_table = test_bool.reset_index().rename(columns={'index':'result_all'})
+    # graph_factor_table = total_factor_table.copy().loc[['-1.0','0.0','1.0'],:].reset_index().rename(columns={'index':'result_all'})
+    graph_factor_table['result_all']=graph_factor_table['result_all'].replace({'-0':'tie','0':'tie','1':'win','-1':'lose','0.5':'half_win','-0.5':'half_lose'})
     graph_factor_table=graph_factor_table.melt(id_vars='result_all',var_name='total_factor',value_name='winning')
     chart_power= alt.Chart(graph_factor_table).mark_bar().encode(alt.X('total_factor:O',axis=alt.Axis(title='factor',labelAngle=0)),
     alt.Y('winning'),color=alt.Color('result_all',scale=color_scale))
@@ -1002,7 +1028,7 @@ with st.expander('Analysis of Factors'):
     # updated_test_chart = alt.layer(chart_power,vline)
     updated_test_chart=chart_power+vline+text
     
-    st.altair_chart(updated_test_chart,use_container_width=True)
+    # st.altair_chart(updated_test_chart,use_container_width=True)
 
 
     # st.write(graph_factor_table)
