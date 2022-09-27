@@ -23,11 +23,13 @@ season_list={'season_2022': {
     "odds_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds_2022_2023.csv",
     "scores_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2022_2023.csv",
     "team_id": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams_2022_2023.csv",
+    "year":'2022_2023',
     "prior_year_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2021_2022.csv"},
 'season_2021' : {
     "odds_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds_2021_2022.csv",
     "scores_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2021_2022.csv",
     "team_id": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams_2021_2022.csv",
+    "year":'2021',
     "prior_year_file": 'https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2019_2020.csv'}}
 
 # season_list={'season_2022': {
@@ -52,10 +54,10 @@ def read_data(file):
 def read_csv_data(file):
     return pd.read_csv(file)
 
-# odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
-# def csv_save(x):
-#     x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv')
-#     return x
+odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
+def csv_save(x):
+    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv')
+    return x
 # csv_save(odds_data_excel)
 
 odds_data = read_csv_data(season_list[season_picker]['odds_file']).copy()
@@ -69,14 +71,14 @@ odds_data = read_csv_data(season_list[season_picker]['odds_file']).copy()
 # team_names_id=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.csv')
 team_names_id=pd.read_csv(season_list[season_picker]["team_id"])
 
-
-url='https://www.pro-football-reference.com/years/2022/games.htm'
-
+year=season_list[season_picker]['year']
+url=f'https://www.pro-football-reference.com/years/{year}/games.htm'
+# st.write('url', url)
 
 def fbref_scraper_csv(url):
         test = pd.read_html(url)[0]
         # test.to_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2022_scores.xlsx')
-        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022.csv')
+        test.to_csv(f'C:/Users/Darragh/Documents/Python/NFL/nfl_scores_{year}.csv')
         # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
@@ -605,6 +607,7 @@ with st.expander('Turnover Factor by Match Graph'):
     st.altair_chart(chart_cover + text_cover,use_container_width=True)
 
 with placeholder_2.expander('Betting Slip Matches'):
+    # st.write('updated df', updated_df)
     betting_matches=updated_df.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
     'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick','home_cover_result']]
     betting_matches['total_factor']=betting_matches['home_turnover_sign']+betting_matches['away_turnover_sign']+betting_matches['home_cover_sign']+\
@@ -619,6 +622,13 @@ with placeholder_2.expander('Betting Slip Matches'):
     # this is for graphing anlaysis on spreadsheet
     betting_matches['bet_sign_all'] = (np.where(betting_matches['total_factor']>0,1,np.where(betting_matches['total_factor']<-0,-1,0)))
     betting_matches['result_all']=betting_matches['home_cover_result'] * betting_matches['bet_sign_all']
+    filt=betting_matches['bet_sign']!=0
+    betting_matches['filtered_bets_made']=betting_matches['bet_sign'].where(filt)
+    betting_matches['tease_spread']=betting_matches['filtered_bets_made']*6+betting_matches['Spread']
+    betting_matches['tease_home_cover']=(np.where(((betting_matches['Home Points'] + betting_matches['tease_spread']) > betting_matches['Away Points']), 1,
+    np.where(((betting_matches['Home Points']+ betting_matches['tease_spread']) < betting_matches['Away Points']),-1,0)))
+    betting_matches['tease_result']=betting_matches['tease_home_cover'] * betting_matches['bet_sign']
+
     # st.write('testing sum of betting all result',betting_matches['result_all'].sum())
     cols_to_move=['Week','Date','Home Team','Away Team','total_factor','bet_on','result','Spread','Home Points','Away Points','home_power','away_power']
     cols = cols_to_move + [col for col in betting_matches if col not in cols_to_move]
@@ -627,7 +637,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     presentation_betting_matches=betting_matches.copy()
 
     # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
-    grid_height = st.number_input("Grid height", min_value=400, value=550, step=100)
+    grid_height = st.number_input("Grid height", min_value=400, value=3550, step=100)
     gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
     gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
     gb.configure_column("home_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
@@ -800,7 +810,10 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
 
     reset_data.loc['Total']=reset_data.sum()
     # reset_data.loc['No. of Bets Made'] = reset_data.loc[['1','-1']].sum()
+    reset_data.loc['Winning_Bets']=(reset_data.loc[reset_data.index.isin({'1'})].sum(axis=0))
+    reset_data.loc['Losing_Bets']=(reset_data.loc[reset_data.index.isin({'-1'})].sum(axis=0))
     reset_data.loc['No. of Bets Made']=(reset_data.loc[reset_data.index.isin({'1'})].sum(axis=0))+(reset_data.loc[reset_data.index.isin({'-1'})].sum(axis=0)) 
+    reset_data.loc['PL_Bets']=reset_data.loc['Winning_Bets'] - reset_data.loc['Losing_Bets']
     reset_data=reset_data.apply(pd.to_numeric, downcast='integer')
     reset_data.loc['% Winning'] = ((reset_data.loc[reset_data.index.isin({'1'})].sum(axis=0) / reset_data.loc['No. of Bets Made'])).replace({'<NA>':np.NaN})
     st.write('This shows the betting result')
@@ -852,8 +865,8 @@ with placeholder_1.expander('Weekly Results'):
     df9['result']=df9['result'].round(1).astype(str)
     df9=df9.set_index('result').sort_index(ascending=False)
     df9['grand_total']=df9.sum(axis=1)
-    df9.loc['Winning_Bets']=(df9.loc[df9.index.isin({'1'})].sum(axis=0))
-    df9.loc['Losing_Bets']=(df9.loc[df9.index.isin({'-1'})].sum(axis=0))
+    df9.loc['Winning_Bets']=(df9.loc[df9.index.isin({'1.0','1'})].sum(axis=0))
+    df9.loc['Losing_Bets']=(df9.loc[df9.index.isin({'-1','-1.0'})].sum(axis=0))
     df9.loc['No. of Bets Made'] = df9.loc['Winning_Bets']+ df9.loc['Losing_Bets']
     df9.loc['PL_Bets']=df9.loc['Winning_Bets'] - df9.loc['Losing_Bets']
     df9=df9.apply(pd.to_numeric, downcast='float')
@@ -1058,6 +1071,8 @@ with st.expander('Checking Performance where Total Factor = 2 or 3:  Additional 
     st.write(df_factor_table_1_presentation)
 
 
+
+
 with st.expander('Underdog Analyis'):
     underdog_df = betting_matches.copy()
     filter_bets_underdog=(underdog_df['Spread']>0.1) &(underdog_df['bet_sign']!=0)
@@ -1225,6 +1240,29 @@ with st.expander('Deep Dive on Power Factor'):
     overlay = pd.DataFrame({'power_ranking_success?': [0]})
     vline = alt.Chart(overlay).mark_rule(color='red', strokeWidth=1).encode(y='power_ranking_success?:Q')
     st.altair_chart(line_cover + vline,use_container_width=True)
+
+with st.expander('Teaser Analyis'):
+    teaser_df = betting_matches.copy()
+    group_teaser=teaser_df.groupby(['Week','tease_result']).agg(count=('tease_spread','count')).reset_index()
+    # group_teaser_1=teaser_df.groupby(['Week']).agg(count=('tease_spread','count'),sum=('tease_result','sum'))
+    group_teaser=(pd.pivot_table(group_teaser,index='Week', columns='tease_result').fillna(0))
+    group_teaser.columns=group_teaser.columns.get_level_values(1)
+    group_teaser.columns=['lose','no_result','win']
+    # group_teaser=group_teaser.reset_index()
+    # st.write(group_teaser.columns)
+    st.write(group_teaser)
+    filt=group_teaser['lose']==0
+    group_teaser['success_week']=group_teaser['win'].where(filt)
+    st.write(group_teaser)
+    odds_df=pd.DataFrame.from_dict({1:2,2:2,3:2.5,4:3.25,5:4.5,6:6,7:8,8:11,9:15},orient='index').reset_index().rename(columns={'index':'success_week',0:'odds'})
+    st.write('odds', odds_df)
+    test_merge_odds=pd.merge(group_teaser,odds_df,how='left')
+    test_merge_odds['stake']=-10
+    test_merge_odds['payout']=test_merge_odds['odds'] * 10
+    test_merge_odds['net_winnings']=test_merge_odds['stake']+test_merge_odds['payout'].fillna(0)
+    st.write('after merge', test_merge_odds)
+    st.write('total staked',test_merge_odds['stake'].sum())
+    st.write('total returned',test_merge_odds['payout'].sum())
 
 
 with st.expander('Tests'):
