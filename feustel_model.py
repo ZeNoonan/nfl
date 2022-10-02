@@ -37,7 +37,7 @@ st.write(df)
 
 df_offensive_home=df.loc[:,['Date','Home Team', 'Home Score', 'season_year']].rename(columns={'Home Team':'team','Home Score':'score'})
 df_offensive_away=df.loc[:,['Date','Away Team','Away Score', 'season_year']].rename(columns={'Away Team':'team','Away Score':'score'})
-df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values(by=['team','Date'],ascending=True)
+df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
 st.write('dataframe after concat',df_offensive)
 st.write(df_offensive.shape)
 df_groupby_scores=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
