@@ -43,8 +43,11 @@ st.write(df_offensive.shape)
 df_groupby_scores=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
 st.write('doing a seperate groupby')
 st.dataframe(df_groupby_scores, use_container_width=True)
-df_offensive['test']=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum()\
+df_offensive['sum_score']=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum()\
     .reset_index().drop(['level_2','team','season_year'],axis=1)
+df_offensive['mean_score']=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).mean()\
+    .reset_index().drop(['level_2','team','season_year'],axis=1)
+
 st.write(df_offensive.sort_values(by=['team','Date']))
 # df_groupby_scores=df_offensive.groupby(['team','season_year','Date'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index()
 
