@@ -36,18 +36,36 @@ st.write(df)
 #     pass
 
 df_offensive_home=df.loc[:,['Date','Home Team', 'Home Score', 'season_year']].rename(columns={'Home Team':'team','Home Score':'score'})
+df_offensive_home['home_away']=1
 df_offensive_away=df.loc[:,['Date','Away Team','Away Score', 'season_year']].rename(columns={'Away Team':'team','Away Score':'score'})
+df_offensive_away['home_away']=-1
 df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
-st.write('dataframe after concat',df_offensive)
-st.write(df_offensive.shape)
+# st.write('dataframe after concat',df_offensive)
+# st.write(df_offensive.shape)
 df_groupby_scores=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
-st.write('doing a seperate groupby')
-st.dataframe(df_groupby_scores, use_container_width=True)
+# st.write('doing a seperate groupby')
+# st.dataframe(df_groupby_scores, use_container_width=True)
 df_offensive['sum_score']=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum()\
     .reset_index().drop(['level_2','team','season_year'],axis=1)
 df_offensive['mean_score']=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).mean()\
     .reset_index().drop(['level_2','team','season_year'],axis=1)
-
-st.write(df_offensive.sort_values(by=['team','Date']))
+df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date']).drop('sum_score',axis=1)
+st.write(df_offensive)
 # df_groupby_scores=df_offensive.groupby(['team','season_year','Date'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index()
 
+df_defensive_home=df.loc[:,['Date','Home Team', 'Away Score', 'season_year']].rename(columns={'Home Team':'team','Away Score':'score'})
+df_defensive_away=df.loc[:,['Date','Away Team','Home Score', 'season_year']].rename(columns={'Away Team':'team','Home Score':'score'})
+df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
+# st.write('dataframe after concat',df_defensive)
+# st.write(df_defensive.shape)
+df_groupby_scores=df_defensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
+# st.write('doing a seperate groupby')
+# st.dataframe(df_groupby_scores, use_container_width=True)
+df_defensive['sum_score']=df_defensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum()\
+    .reset_index().drop(['level_2','team','season_year'],axis=1)
+df_defensive['mean_score']=df_defensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).mean()\
+    .reset_index().drop(['level_2','team','season_year'],axis=1)
+df_defensive=df_defensive.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['team','Date']).drop('sum_score',axis=1)
+st.write(df_defensive)
+df_new=pd.merge(df_offensive,df_defensive,how='outer')
+st.write(df_new)
