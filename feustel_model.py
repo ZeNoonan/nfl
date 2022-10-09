@@ -22,6 +22,7 @@ def read_data(file):
 
 df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_24_09_22.xlsx')
 df=df.copy()
+df['Home Line Close']=df['Home Line Close'].fillna(df['Home Line Open'])
 df['year'] = pd.DatetimeIndex(df['Date']).year
 df['month'] = pd.DatetimeIndex(df['Date']).month
 df['season_month'] = df['month'].map({9:1,10:2,11:3,12:4,1:5,2:6})
@@ -54,9 +55,9 @@ st.write('df data', df)
 # for _ in df.groupby('season_year'):
 #     pass
 
-df_offensive_home=df.loc[:,['Date','Home Team', 'Home Score', 'season_year','unique_id','avg_home_score','avg_away_score']].rename(columns={'Home Team':'team','Home Score':'score'})
+df_offensive_home=df.loc[:,['Date','Home Team', 'Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']].rename(columns={'Home Team':'team','Home Score':'score'})
 df_offensive_home['home_away']=1
-df_offensive_away=df.loc[:,['Date','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score']].rename(columns={'Away Team':'team','Away Score':'score'})
+df_offensive_away=df.loc[:,['Date','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']].rename(columns={'Away Team':'team','Away Score':'score'})
 df_offensive_away['home_away']=-1
 df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
 # df_groupby_scores=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
@@ -68,9 +69,9 @@ df_offensive['avg_pts_scored_team_season']=df_offensive.groupby(['team','season_
     .reset_index().drop(['level_2','team','season_year'],axis=1)
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
 
-df_defensive_home=df.loc[:,['Date','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score']].rename(columns={'Home Team':'team','Away Score':'score'})
+df_defensive_home=df.loc[:,['Date','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']].rename(columns={'Home Team':'team','Away Score':'score'})
 df_defensive_home['home_away']=1
-df_defensive_away=df.loc[:,['Date','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score']].rename(columns={'Away Team':'team','Home Score':'score'})
+df_defensive_away=df.loc[:,['Date','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']].rename(columns={'Away Team':'team','Home Score':'score'})
 df_defensive_away['home_away']=-1
 df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
 # df_groupby_scores=df_defensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
@@ -91,6 +92,7 @@ df_new['team_cum_sum_games']=df_new.groupby(['team'])['pts_scored'].cumcount()+1
 df_new['rolling_avg_team_pts_scored']=df_new['team_cum_sum_pts'] / df_new['team_cum_sum_games']
 df_new=df_new.sort_values(by=['Date','unique_id','team'])
 df_new['date_avg_pts_rolling']=df_new['pts_scored'].expanding().mean()
+# st.write('just checking the average pts scored in every match', df_new)
 # st.write('sorted by date avg score by date',df_new)
 df_new=df_new.sort_values(by=['team','Date'],ascending=True)
 
@@ -112,11 +114,11 @@ df_new=df_new.sort_values(by=['unique_id','home_away'],ascending=[True,False])
 df_new['avg_away_score']=df_new['avg_away_score'].fillna(method='ffill')
 df_new['avg_home_score']=df_new['avg_home_score'].fillna(method='ffill')
 df_new['home_adv']=df_new['avg_home_score']-df_new['avg_away_score']
-cols_to_move=['Date','team','season_year','unique_id','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
+cols_to_move=['Date','team','season_year','Home Line Close','unique_id','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
 'avg_pts_conceded_team_season','home_pts_avg','away_pts_avg','avg_home_score','avg_away_score','home_away']
 cols = cols_to_move + [col for col in df_new if col not in cols_to_move]
 df_new=df_new[cols]
-df_new=df_new.loc[:,['Date','team','season_year','unique_id','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
+df_new=df_new.loc[:,['Date','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
 'avg_pts_conceded_team_season','home_away']]
 # st.write('df update', df_new)
 
@@ -126,12 +128,22 @@ df_new=df_new.loc[:,['Date','team','season_year','unique_id','pts_scored','pts_c
 st.write('checking rolling team scores', df_new.sort_values(by=['team','Date']))
 st.write('just checking the home adv calc keep it there to sense check', df_new.sort_values(by=['Date','unique_id','team']))
 df_home_1=df_new[df_new['home_away']==1].rename(columns={'pts_scored':'home_pts_scored','pts_conceded':'home_pts_conceded','team':'home_team',
-'avg_pts_scored_team_season':'home_avg_pts_scored_team_season','avg_pts_conceded_team_season':'home_avg_pts_conceded_team_season'})\
-    .set_index(['unique_id','Date','season_year']).drop('home_away',axis=1).copy()
+'avg_pts_scored_team_season':'home_avg_pts_scored_team_season','avg_pts_conceded_team_season':'home_avg_pts_conceded_team_season','date_avg_pts_rolling':'home_date_avg_pts_rolling'})\
+    .set_index(['unique_id']).drop('home_away',axis=1).copy()
 df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts_scored','pts_conceded':'away_pts_conceded','team':'away_team',
-'avg_pts_scored_team_season':'away_avg_pts_scored_team_season','avg_pts_conceded_team_season':'away_avg_pts_conceded_team_season'})\
-    .set_index(['unique_id','Date','season_year']).drop(['home_adv','home_away'],axis=1).copy()
-st.write('df home', df_home_1, 'away', df_away_1)
-df_combined=pd.concat([df_home_1,df_away_1],axis=1)
-# df_combined=pd.merge()
+'avg_pts_scored_team_season':'away_avg_pts_scored_team_season','avg_pts_conceded_team_season':'away_avg_pts_conceded_team_season','date_avg_pts_rolling':'away_date_avg_pts_rolling'})\
+    .set_index(['unique_id']).drop(['home_adv','home_away'],axis=1).copy()
+# st.write('df home', df_home_1, 'away', df_away_1)
+# df_combined=pd.concat([df_home_1,df_away_1],axis=0)
+df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year'],how='outer')
+
+df_combined['away_defensive_rating']=df_combined['away_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
+df_combined['projected_team_a_pts']= df_combined['home_avg_pts_scored_team_season'] * df_combined['away_defensive_rating']
+df_combined['home_defensive_rating']=df_combined['home_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
+df_combined['projected_team_b_pts']= df_combined['away_avg_pts_scored_team_season'] * df_combined['home_defensive_rating']
+df_combined['projected_team_a_pts']= df_combined['projected_team_a_pts'] + (df_combined['home_adv']/2)
+df_combined['projected_team_b_pts']= df_combined['projected_team_b_pts'] - (df_combined['home_adv']/2)
+df_combined['proj_spread'] = df_combined['projected_team_b_pts'] - df_combined['projected_team_a_pts']
+
 st.write('df_comb', df_combined)
+st.write('The home-away date avg pts rolling is the average points scored in every match so we can see what the avg pts scored and conceded is both will be same')
