@@ -20,7 +20,8 @@ def read_csv_data(file):
 def read_data(file):
     return pd.read_excel(file)
 
-df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_24_09_22.xlsx')
+# df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_24_09_22.xlsx')
+df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_09_10_22.xlsx')
 df=df.copy()
 df['Home Line Close']=df['Home Line Close'].fillna(df['Home Line Open'])
 df['year'] = pd.DatetimeIndex(df['Date']).year
@@ -135,7 +136,7 @@ df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts
     .set_index(['unique_id']).drop(['home_adv','home_away'],axis=1).copy()
 # st.write('df home', df_home_1, 'away', df_away_1)
 # df_combined=pd.concat([df_home_1,df_away_1],axis=0)
-df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year'],how='outer')
+df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year', 'Home Line Close'],how='outer')
 
 df_combined['away_defensive_rating']=df_combined['away_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
 df_combined['projected_team_a_pts']= df_combined['home_avg_pts_scored_team_season'] * df_combined['away_defensive_rating']
@@ -144,6 +145,30 @@ df_combined['projected_team_b_pts']= df_combined['away_avg_pts_scored_team_seaso
 df_combined['projected_team_a_pts']= df_combined['projected_team_a_pts'] + (df_combined['home_adv']/2)
 df_combined['projected_team_b_pts']= df_combined['projected_team_b_pts'] - (df_combined['home_adv']/2)
 df_combined['proj_spread'] = df_combined['projected_team_b_pts'] - df_combined['projected_team_a_pts']
+df_combined['bet_sign']=np.where(df_combined['proj_spread']>df_combined['Home Line Close'],-1,np.where(df_combined['proj_spread']<df_combined['Home Line Close'],1,0))
+df_combined['home_win']=df_combined['home_pts_scored'] - df_combined['away_pts_scored']
+df_combined['home_win'] = np.where((df_combined['home_pts_scored'] > df_combined['away_pts_scored']), 1, np.where((df_combined['home_pts_scored'] < df_combined['away_pts_scored']),-1,0))
+df_combined['home_cover']=(np.where(((df_combined['home_pts_scored'] + df_combined['Home Line Close']) > df_combined['away_pts_scored']), 1,
+np.where(((df_combined['home_pts_scored']+ df_combined['Home Line Close']) < df_combined['away_pts_scored']),-1,0)))
+df_combined['home_cover_result']=df_combined['home_cover'].astype(int)
+df_combined['away_cover'] = -df_combined['home_cover']
+df_combined['result']=df_combined['home_cover_result'] * df_combined['bet_sign']
 
-st.write('df_comb', df_combined)
+cols_to_move=['Date','season_year','unique_id','home_team','away_team','home_pts_scored','away_pts_scored','Home Line Close','proj_spread',
+'bet_sign','home_cover_result','result']
+cols = cols_to_move + [col for col in df_combined if col not in cols_to_move]
+df_combined=df_combined[cols]
+
+st.write('df_comb', df_combined[df_combined['season_year']==2022].set_index('Date'))
+st.download_button(label="Download data as CSV",data=df_combined[df_combined['season_year']==2021].to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
+
 st.write('The home-away date avg pts rolling is the average points scored in every match so we can see what the avg pts scored and conceded is both will be same')
+
+result_count=df_combined.groupby(['season_year'])['result'].value_counts()
+clean_df_for_pivot=df_combined.loc[:,['season_year','result','bet_sign']]
+result_pivot=pd.pivot_table(clean_df_for_pivot, index='result', columns='season_year', aggfunc='count')
+result_pivot.loc[2]=result_pivot.sum(axis=0)
+# st.write(result_count.columns)
+# result_count=result_count.reset_index()
+st.dataframe(result_count)
+st.dataframe(result_pivot)
