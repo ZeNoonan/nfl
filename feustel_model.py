@@ -1,3 +1,4 @@
+from operator import is_
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -68,9 +69,19 @@ df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values
 #     .reset_index().drop(['level_2','team','season_year'],axis=1)
 df_offensive['avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
     .reset_index().drop(['level_2','team','season_year'],axis=1)
+
+st.write(df_offensive.groupby(['team','season_year'])['score'].shift().expanding(min_periods=4).mean().shift()\
+    .reset_index())
+df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+    .reset_index().drop(['level_2','team','season_year'],axis=1)
+df_offensive['test_col']=np.where(df_offensive['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_offensive['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
+df_offensive['avg_pts_scored_team_season']=df_offensive['SHIFT avg_pts_scored_team_season']*df_offensive['test_col']
+# st.write('df off', df_offensive)
+st.write('check to see if shift worked',df_offensive[(df_offensive['team']=='Arizona Cardinals') | (df_offensive['team']=='Arizona Cardinals')])
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
 
-df_defensive_home=df.loc[:,['Date','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']].rename(columns={'Home Team':'team','Away Score':'score'})
+df_defensive_home=df.loc[:,['Date','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']]\
+    .rename(columns={'Home Team':'team','Away Score':'score'})
 df_defensive_home['home_away']=1
 df_defensive_away=df.loc[:,['Date','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']].rename(columns={'Away Team':'team','Home Score':'score'})
 df_defensive_away['home_away']=-1
@@ -82,6 +93,13 @@ df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values
 #     .reset_index().drop(['level_2','team','season_year'],axis=1)
 df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
     .reset_index().drop(['level_2','team','season_year'],axis=1)
+
+df_defensive['SHIFT avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+    .reset_index().drop(['level_2','team','season_year'],axis=1)
+df_defensive['test_col']=np.where(df_defensive['avg_pts_conceded_team_season'].isna(),np.NaN,np.where(df_defensive['SHIFT avg_pts_conceded_team_season'].isna(),np.NaN,1))
+df_defensive['avg_pts_conceded_team_season']=df_defensive['SHIFT avg_pts_conceded_team_season']*df_defensive['test_col']
+
+
 df_defensive=df_defensive.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['team','Date'])
 
 # st.write('df offensive 1', df_offensive)
@@ -137,7 +155,7 @@ df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts
 # st.write('df home', df_home_1, 'away', df_away_1)
 # df_combined=pd.concat([df_home_1,df_away_1],axis=0)
 df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year', 'Home Line Close'],how='outer')
-
+st.write('before calcs are done', df_combined)
 df_combined['away_defensive_rating']=df_combined['away_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
 df_combined['projected_team_a_pts']= df_combined['home_avg_pts_scored_team_season'] * df_combined['away_defensive_rating']
 df_combined['home_defensive_rating']=df_combined['home_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
