@@ -70,14 +70,20 @@ df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values
 df_offensive['avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
     .reset_index().drop(['level_2','team','season_year'],axis=1)
 
-st.write(df_offensive.groupby(['team','season_year'])['score'].shift().expanding(min_periods=4).mean().shift()\
-    .reset_index())
-df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
-    .reset_index().drop(['level_2','team','season_year'],axis=1)
-df_offensive['test_col']=np.where(df_offensive['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_offensive['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
-df_offensive['avg_pts_scored_team_season']=df_offensive['SHIFT avg_pts_scored_team_season']*df_offensive['test_col']
+# st.write(df_offensive.groupby(['team','season_year'])['score'].shift().expanding(min_periods=4).mean().shift()\
+#     .reset_index())
+
+def col_correction(df_offensive,col='avg_pts_scored_team_season'):
+    df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+        .reset_index().drop(['level_2','team','season_year'],axis=1)
+    df_offensive['test_col']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
+    df_offensive[col]=df_offensive['SHIFT avg_pts_scored_team_season']*df_offensive['test_col']
+    df_offensive=df_offensive.drop(['test_col','SHIFT avg_pts_scored_team_season'],axis=1)
+    return df_offensive
+
+df_offensive=col_correction(df_offensive,col='avg_pts_scored_team_season')
 # st.write('df off', df_offensive)
-st.write('check to see if shift worked',df_offensive[(df_offensive['team']=='Arizona Cardinals') | (df_offensive['team']=='Arizona Cardinals')])
+# st.write('check to see if shift worked',df_offensive[(df_offensive['team']=='Arizona Cardinals') | (df_offensive['team']=='Arizona Cardinals')])
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
 
 df_defensive_home=df.loc[:,['Date','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']]\
@@ -94,10 +100,12 @@ df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values
 df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
     .reset_index().drop(['level_2','team','season_year'],axis=1)
 
-df_defensive['SHIFT avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
-    .reset_index().drop(['level_2','team','season_year'],axis=1)
-df_defensive['test_col']=np.where(df_defensive['avg_pts_conceded_team_season'].isna(),np.NaN,np.where(df_defensive['SHIFT avg_pts_conceded_team_season'].isna(),np.NaN,1))
-df_defensive['avg_pts_conceded_team_season']=df_defensive['SHIFT avg_pts_conceded_team_season']*df_defensive['test_col']
+df_defensive=col_correction(df_defensive,col='avg_pts_conceded_team_season')
+# st.write('check to see if shift worked defensive',df_defensive[(df_defensive['team']=='Arizona Cardinals') | (df_defensive['team']=='Arizona Cardinals')])
+# df_defensive['SHIFT avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+#     .reset_index().drop(['level_2','team','season_year'],axis=1)
+# df_defensive['test_col']=np.where(df_defensive['avg_pts_conceded_team_season'].isna(),np.NaN,np.where(df_defensive['SHIFT avg_pts_conceded_team_season'].isna(),np.NaN,1))
+# df_defensive['avg_pts_conceded_team_season']=df_defensive['SHIFT avg_pts_conceded_team_season']*df_defensive['test_col']
 
 
 df_defensive=df_defensive.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['team','Date'])
@@ -110,7 +118,10 @@ df_new['team_cum_sum_pts']=df_new.groupby(['team'])['pts_scored'].cumsum()
 df_new['team_cum_sum_games']=df_new.groupby(['team'])['pts_scored'].cumcount()+1
 df_new['rolling_avg_team_pts_scored']=df_new['team_cum_sum_pts'] / df_new['team_cum_sum_games']
 df_new=df_new.sort_values(by=['Date','unique_id','team'])
-df_new['date_avg_pts_rolling']=df_new['pts_scored'].expanding().mean()
+# st.write('before rolling avg date', df_new)
+df_new['date_avg_pts_rolling']=df_new['pts_scored'].expanding().mean().shift(32) # 16 teams by 2, want the previous week numbers
+# df_new['date_avg_pts_rolling_test']=df_new['pts_scored'].expanding().mean().shift(32)
+# st.write('df new after date avg pts rolling', df_new)
 # st.write('just checking the average pts scored in every match', df_new)
 # st.write('sorted by date avg score by date',df_new)
 df_new=df_new.sort_values(by=['team','Date'],ascending=True)
@@ -118,9 +129,10 @@ df_new=df_new.sort_values(by=['team','Date'],ascending=True)
 df_new=df_new.sort_values(by=['home_away','Date','unique_id','team'],ascending=True)
 # st.write('after sorting CHECK THIS OUT',df_new)
 df_home=df_new[df_new['home_away']==1].sort_values(by=['Date','unique_id'],ascending=True)
-df_home['home_pts_avg']=df_home['pts_scored'].expanding().mean()
+df_home['home_pts_avg']=df_home['pts_scored'].expanding().mean().shift(16) # want to get previous week points
+# st.write('home avg points', df_home)
 df_away=df_new[df_new['home_away']==-1].sort_values(by=['Date','unique_id'],ascending=True)
-df_away['away_pts_avg']=df_away['pts_scored'].expanding().mean()
+df_away['away_pts_avg']=df_away['pts_scored'].expanding().mean().shift(16)
 df_new=pd.concat([df_home,df_away],ignore_index=True)
 # df_new['home_pts_avg_']=df_new['pts_scored'].expanding().mean()
 # df_new['away_pts_avg_']=df_new['pts_scored'].expanding().mean()
@@ -144,8 +156,8 @@ df_new=df_new.loc[:,['Date','team','season_year','unique_id','Home Line Close','
 # st.write('df after concat', df_new.sort_values(by=['home_away','Date'],ascending=True))
 
 # st.write('sort out team names', df_new['team'].unique())
-st.write('checking rolling team scores', df_new.sort_values(by=['team','Date']))
-st.write('just checking the home adv calc keep it there to sense check', df_new.sort_values(by=['Date','unique_id','team']))
+# st.write('checking rolling team scores', df_new.sort_values(by=['team','Date']))
+# st.write('just checking the home adv calc keep it there to sense check', df_new.sort_values(by=['Date','unique_id','team']))
 df_home_1=df_new[df_new['home_away']==1].rename(columns={'pts_scored':'home_pts_scored','pts_conceded':'home_pts_conceded','team':'home_team',
 'avg_pts_scored_team_season':'home_avg_pts_scored_team_season','avg_pts_conceded_team_season':'home_avg_pts_conceded_team_season','date_avg_pts_rolling':'home_date_avg_pts_rolling'})\
     .set_index(['unique_id']).drop('home_away',axis=1).copy()
@@ -154,6 +166,7 @@ df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts
     .set_index(['unique_id']).drop(['home_adv','home_away'],axis=1).copy()
 # st.write('df home', df_home_1, 'away', df_away_1)
 # df_combined=pd.concat([df_home_1,df_away_1],axis=0)
+st.write('before home and away are combined', df_home_1, 'away', df_away_1)
 df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year', 'Home Line Close'],how='outer')
 st.write('before calcs are done', df_combined)
 df_combined['away_defensive_rating']=df_combined['away_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
@@ -185,7 +198,10 @@ st.write('The home-away date avg pts rolling is the average points scored in eve
 result_count=df_combined.groupby(['season_year'])['result'].value_counts()
 clean_df_for_pivot=df_combined.loc[:,['season_year','result','bet_sign']]
 result_pivot=pd.pivot_table(clean_df_for_pivot, index='result', columns='season_year', aggfunc='count')
-result_pivot.loc[2]=result_pivot.sum(axis=0)
+result_pivot.index=result_pivot.index.astype('str')
+result_pivot.loc['total_games']=result_pivot.sum(axis=0)
+result_pivot.loc['winning_%']=result_pivot.loc['1']/(result_pivot.loc['1']+result_pivot.loc['-1'])
+result_pivot.loc['cum_winning_%']=result_pivot.loc['1'].cumsum() / (result_pivot.loc['1'].cumsum()+result_pivot.loc['-1'].cumsum())
 # st.write(result_count.columns)
 # result_count=result_count.reset_index()
 st.dataframe(result_count)
