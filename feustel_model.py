@@ -22,7 +22,7 @@ def read_data(file):
     return pd.read_excel(file)
 
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_24_09_22.xlsx')
-df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_09_10_22.xlsx')
+df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_14_10_22.xlsx')
 df=df.copy()
 df['Home Line Close']=df['Home Line Close'].fillna(df['Home Line Open'])
 df['year'] = pd.DatetimeIndex(df['Date']).year
@@ -166,9 +166,9 @@ df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts
     .set_index(['unique_id']).drop(['home_adv','home_away'],axis=1).copy()
 # st.write('df home', df_home_1, 'away', df_away_1)
 # df_combined=pd.concat([df_home_1,df_away_1],axis=0)
-st.write('before home and away are combined', df_home_1, 'away', df_away_1)
+# st.write('before home and away are combined', df_home_1, 'away', df_away_1)
 df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year', 'Home Line Close'],how='outer')
-st.write('before calcs are done', df_combined)
+# st.write('before calcs are done', df_combined)
 df_combined['away_defensive_rating']=df_combined['away_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
 df_combined['projected_team_a_pts']= df_combined['home_avg_pts_scored_team_season'] * df_combined['away_defensive_rating']
 df_combined['home_defensive_rating']=df_combined['home_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
@@ -190,11 +190,11 @@ cols_to_move=['Date','season_year','unique_id','home_team','away_team','home_pts
 cols = cols_to_move + [col for col in df_combined if col not in cols_to_move]
 df_combined=df_combined[cols]
 
-st.write('df_comb', df_combined[df_combined['season_year']==2022].set_index('Date'))
-st.download_button(label="Download data as CSV",data=df_combined[df_combined['season_year']==2021].to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
+# st.write('df_comb', df_combined[df_combined['season_year']==2022].set_index('Date'))
+# st.download_button(label="Download data as CSV",data=df_combined[df_combined['season_year']==2021].to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
 
 st.write('The home-away date avg pts rolling is the average points scored in every match so we can see what the avg pts scored and conceded is both will be same')
-
+st.write('Database', df_combined)
 result_count=df_combined.groupby(['season_year'])['result'].value_counts()
 clean_df_for_pivot=df_combined.loc[:,['season_year','result','bet_sign']]
 result_pivot=pd.pivot_table(clean_df_for_pivot, index='result', columns='season_year', aggfunc='count')
@@ -204,5 +204,24 @@ result_pivot.loc['winning_%']=result_pivot.loc['1']/(result_pivot.loc['1']+resul
 result_pivot.loc['cum_winning_%']=result_pivot.loc['1'].cumsum() / (result_pivot.loc['1'].cumsum()+result_pivot.loc['-1'].cumsum())
 # st.write(result_count.columns)
 # result_count=result_count.reset_index()
-st.dataframe(result_count)
+# st.dataframe(result_count)
 st.dataframe(result_pivot)
+
+with st.expander('Average Error Calcs'):
+    avg_error_data=df_combined.copy()
+    avg_error_data=avg_error_data[avg_error_data['proj_spread'].notna()]
+    # st.write('avg error df', avg_error_data)
+    # avg_error_data['test']=avg_error_data['home_team']-avg_error_data['away_team']
+    avg_error_data.insert(loc=8,column='betting_odds_error',value=(abs(avg_error_data['home_pts_scored']+avg_error_data['Home Line Close']-avg_error_data['away_pts_scored'])))
+    avg_error_data.insert(loc=9,column='proj_odds_error',value=(abs(avg_error_data['home_pts_scored']+avg_error_data['proj_spread']-avg_error_data['away_pts_scored'])))
+    # avg_error_data['avg_err_betting']=avg_error_data['betting_odds_error'].expanding().mean()
+    avg_error_data_groupby=avg_error_data.groupby(['season_year'])['betting_odds_error','proj_odds_error'].mean()
+    st.write('avg error df data', avg_error_data)
+    st.write('avg error df groupby comparing the average error on bookies odds versus our internal projections', avg_error_data_groupby)
+
+with st.expander('Splitting the Spread up to analyse'):
+    avg_error_data_spread=avg_error_data.copy()
+    st.write('d',avg_error_data_spread)
+    decile_df=avg_error_data_spread.groupby(pd.qcut(avg_error_data_spread['Home Line Close'], 10))['result'].sum().reset_index()
+    st.write(decile_df)
+    # avg_error_data=avg_error_data[avg_error_data['proj_spread'].notna()]
