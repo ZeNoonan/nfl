@@ -24,6 +24,79 @@ def read_data(file):
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_24_09_22.xlsx')
 df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_14_10_22.xlsx')
 df=df.copy()
+
+with st.expander('pro football workings'):
+    year=2006
+    url=f'https://www.pro-football-reference.com/years/{year}/games.htm'
+    # st.write('url', url)
+
+    def fbref_scraper_csv(url):
+            test = pd.read_html(url)[0]
+            # test.to_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2022_scores.xlsx')
+            test.to_csv(f'C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_{year}.csv')
+            # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
+            return test
+
+    # def read_csv_data(file):
+    # file_2006 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2006.csv')
+    # file_2007 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2007.csv')
+    # file_2008 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2008.csv')
+    # file_2009 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2009.csv')
+    # file_2010 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2010.csv')
+    # file_2011 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2011.csv')
+    # file_2012 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2012.csv')
+    # file_2013 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2013.csv')
+    # file_2014 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2014.csv')
+    # file_2015 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2015.csv')
+    # file_2016 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2016.csv')
+    # file_2017 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2017.csv')
+    # file_2018 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2018.csv')
+    # file_2019 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2019.csv')
+    # file_2020 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2020.csv')
+    # file_2021 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2021.csv')
+    # file_2022 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2022.csv')
+    # combined_file = pd.concat([file_2006,file_2007,file_2008,file_2009,file_2010,file_2011,file_2012,file_2013,
+    # file_2014,file_2015,file_2016,file_2017,file_2018,file_2019,file_2020,file_2021])
+    # combined_file.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2006_2021.csv')
+    combined_file=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2006_2021.csv')
+    st.write('comb files', combined_file)
+
+    def clean_pro_football_pickle_2021(nfl_data):
+    # sourcery skip: inline-immediately-returned-variable
+        nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
+        nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
+        nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
+        nfl_data['Away Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Winner/tie'],nfl_data['Loser/tie'])
+        nfl_data['Home Points']=np.where(nfl_data['at_venue']=='@',nfl_data['PtsL'],nfl_data['PtsW'])
+        nfl_data['Away Points']=np.where(nfl_data['at_venue']=='@',nfl_data['PtsW'],nfl_data['PtsL'])
+        nfl_data['home_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOL'],nfl_data['TOW']))
+        nfl_data['away_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOW'],nfl_data['TOL']))
+        
+        nfl_data=nfl_data[nfl_data['Week'].str.contains('Week',na=False)==False].copy()
+        nfl_data=nfl_data.dropna(subset=["Week"])
+        nfl_data['home_turnover']=pd.to_numeric(nfl_data['home_turnover'])
+        nfl_data['away_turnover']=pd.to_numeric(nfl_data['away_turnover'])
+        nfl_data['Home Points']=pd.to_numeric(nfl_data['Home Points'])
+        nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
+        nfl_data['Date']=pd.to_datetime(nfl_data['Date']).dt.normalize()
+        # nfl_data['Date'] = pd.to_datetime([dt.datetime.strftime(d, "%Y-%m-%d %H:%M") for d in nfl_data["Date"]])
+        # nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
+        nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':19,'Division':20,'ConfChamp':21,'SuperBowl':22})
+        nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
+        nfl_data['year'] = pd.DatetimeIndex(nfl_data['Date']).year
+        nfl_data['month'] = pd.DatetimeIndex(nfl_data['Date']).month
+        nfl_data['season_month'] = nfl_data['month'].map({9:1,10:2,11:3,12:4,1:5,2:6})
+        # NL_Raw_Clean['calendar_month']=NL_Raw_Clean['Per.'].map({1:9,2:10,3:11,4:12,5:1,6:2,7:3,8:4,9:5,10:6,11:7,12:8,19:8})
+        nfl_data['season_year'] = np.where((nfl_data['season_month'] < 5), nfl_data['year'], nfl_data['year']-1)
+        nfl_data['turnover']=nfl_data['home_turnover']-nfl_data['away_turnover']
+        return nfl_data
+
+    cleaned_pro_football_file=clean_pro_football_pickle_2021(combined_file)
+    st.write('cleaned file', cleaned_pro_football_file)
+
+
+
+
 df['Home Line Close']=df['Home Line Close'].fillna(df['Home Line Open'])
 df['year'] = pd.DatetimeIndex(df['Date']).year
 df['month'] = pd.DatetimeIndex(df['Date']).month
@@ -47,8 +120,8 @@ cols_to_move=['Date','Home Team','Away Team','unique_id','Home Score','Away Scor
 cols = cols_to_move + [col for col in df if col not in cols_to_move]
 df=df[cols]
 
-
-st.write('df data', df)
+with st.expander('raw data'):
+    st.write(df)
 # NL_Raw_Clean['calendar_year']=NL_Raw_Clean['calendar_year']+2000
 # NL_Raw_Clean=NL_Raw_Clean.rename(columns={'calendar_year':'year', 'calendar_month':'month'})
 
