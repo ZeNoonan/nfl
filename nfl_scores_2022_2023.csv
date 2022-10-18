@@ -52,52 +52,52 @@
 50,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 51,4,Thu,2022-09-29,8:15PM,Cincinnati Bengals,,Miami Dolphins,boxscore,27,15,371,0,378,2
 52,4,Sun,2022-10-02,9:30AM,Minnesota Vikings,@,New Orleans Saints,boxscore,28,25,344,1,338,2
-53,4,Sun,2022-10-02,1:00PM,New York Giants,,Chicago Bears,boxscore,20,12,333,2,304,3
-54,4,Sun,2022-10-02,1:00PM,New York Jets,@,Pittsburgh Steelers,boxscore,24,20,348,2,297,4
-55,4,Sun,2022-10-02,1:00PM,Philadelphia Eagles,,Jacksonville Jaguars,boxscore,29,21,401,1,219,5
-56,4,Sun,2022-10-02,1:00PM,Los Angeles Chargers,@,Houston Texans,boxscore,34,24,419,1,346,2
-57,4,Sun,2022-10-02,1:00PM,Buffalo Bills,@,Baltimore Ravens,boxscore,23,20,326,2,296,2
+53,4,Sun,2022-10-02,1:00PM,Tennessee Titans,@,Indianapolis Colts,boxscore,24,17,243,0,365,3
+54,4,Sun,2022-10-02,1:00PM,Dallas Cowboys,,Washington Commanders,boxscore,25,10,279,0,297,2
+55,4,Sun,2022-10-02,1:00PM,Atlanta Falcons,,Cleveland Browns,boxscore,23,20,333,1,403,2
+56,4,Sun,2022-10-02,1:00PM,Buffalo Bills,@,Baltimore Ravens,boxscore,23,20,326,2,296,2
+57,4,Sun,2022-10-02,1:00PM,New York Jets,@,Pittsburgh Steelers,boxscore,24,20,348,2,297,4
 58,4,Sun,2022-10-02,1:00PM,Seattle Seahawks,@,Detroit Lions,boxscore,48,45,555,1,520,2
-59,4,Sun,2022-10-02,1:00PM,Tennessee Titans,@,Indianapolis Colts,boxscore,24,17,243,0,365,3
-60,4,Sun,2022-10-02,1:00PM,Atlanta Falcons,,Cleveland Browns,boxscore,23,20,333,1,403,2
-61,4,Sun,2022-10-02,1:00PM,Dallas Cowboys,,Washington Commanders,boxscore,25,10,279,0,297,2
+59,4,Sun,2022-10-02,1:00PM,Philadelphia Eagles,,Jacksonville Jaguars,boxscore,29,21,401,1,219,5
+60,4,Sun,2022-10-02,1:00PM,New York Giants,,Chicago Bears,boxscore,20,12,333,2,304,3
+61,4,Sun,2022-10-02,1:00PM,Los Angeles Chargers,@,Houston Texans,boxscore,34,24,419,1,346,2
 62,4,Sun,2022-10-02,4:05PM,Arizona Cardinals,@,Carolina Panthers,boxscore,26,16,338,1,220,3
-63,4,Sun,2022-10-02,4:25PM,Green Bay Packers,,New England Patriots,boxscore,27,24,443,2,271,1
-64,4,Sun,2022-10-02,4:25PM,Las Vegas Raiders,,Denver Broncos,boxscore,32,23,385,0,299,1
+63,4,Sun,2022-10-02,4:25PM,Las Vegas Raiders,,Denver Broncos,boxscore,32,23,385,0,299,1
+64,4,Sun,2022-10-02,4:25PM,Green Bay Packers,,New England Patriots,boxscore,27,24,443,2,271,1
 65,4,Sun,2022-10-02,8:20PM,Kansas City Chiefs,@,Tampa Bay Buccaneers,boxscore,41,31,417,1,376,2
 66,4,Mon,2022-10-03,8:15PM,San Francisco 49ers,,Los Angeles Rams,boxscore,24,9,327,0,257,2
 67,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 68,5,Thu,2022-10-06,8:15PM,Indianapolis Colts,@,Denver Broncos,boxscore,12,9,306,2,375,2
 69,5,Sun,2022-10-09,9:30AM,New York Giants,@,Green Bay Packers,boxscore,27,22,338,0,301,0
-70,5,Sun,2022-10-09,1:00PM,New Orleans Saints,,Seattle Seahawks,boxscore,39,32,438,2,396,1
-71,5,Sun,2022-10-09,1:00PM,New York Jets,,Miami Dolphins,boxscore,40,17,322,0,295,2
-72,5,Sun,2022-10-09,1:00PM,Minnesota Vikings,,Chicago Bears,boxscore,29,22,429,1,271,1
-73,5,Sun,2022-10-09,1:00PM,Buffalo Bills,,Pittsburgh Steelers,boxscore,38,3,552,2,364,2
-74,5,Sun,2022-10-09,1:00PM,Tampa Bay Buccaneers,,Atlanta Falcons,boxscore,21,15,420,0,261,0
+70,5,Sun,2022-10-09,1:00PM,Tampa Bay Buccaneers,,Atlanta Falcons,boxscore,21,15,420,0,261,0
+71,5,Sun,2022-10-09,1:00PM,Houston Texans,@,Jacksonville Jaguars,boxscore,13,6,248,0,422,2
+72,5,Sun,2022-10-09,1:00PM,New Orleans Saints,,Seattle Seahawks,boxscore,39,32,438,2,396,1
+73,5,Sun,2022-10-09,1:00PM,New England Patriots,,Detroit Lions,boxscore,29,0,364,1,312,2
+74,5,Sun,2022-10-09,1:00PM,Minnesota Vikings,,Chicago Bears,boxscore,29,22,429,1,271,1
 75,5,Sun,2022-10-09,1:00PM,Los Angeles Chargers,@,Cleveland Browns,boxscore,30,28,465,0,443,1
-76,5,Sun,2022-10-09,1:00PM,Houston Texans,@,Jacksonville Jaguars,boxscore,13,6,248,0,422,2
+76,5,Sun,2022-10-09,1:00PM,Buffalo Bills,,Pittsburgh Steelers,boxscore,38,3,552,2,364,2
 77,5,Sun,2022-10-09,1:00PM,Tennessee Titans,@,Washington Commanders,boxscore,21,17,241,0,385,1
-78,5,Sun,2022-10-09,1:00PM,New England Patriots,,Detroit Lions,boxscore,29,0,364,1,312,2
+78,5,Sun,2022-10-09,1:00PM,New York Jets,,Miami Dolphins,boxscore,40,17,322,0,295,2
 79,5,Sun,2022-10-09,4:05PM,San Francisco 49ers,@,Carolina Panthers,boxscore,37,15,397,1,308,1
-80,5,Sun,2022-10-09,4:25PM,Philadelphia Eagles,@,Arizona Cardinals,boxscore,20,17,357,0,363,1
-81,5,Sun,2022-10-09,4:25PM,Dallas Cowboys,@,Los Angeles Rams,boxscore,22,10,239,0,323,3
+80,5,Sun,2022-10-09,4:25PM,Dallas Cowboys,@,Los Angeles Rams,boxscore,22,10,239,0,323,3
+81,5,Sun,2022-10-09,4:25PM,Philadelphia Eagles,@,Arizona Cardinals,boxscore,20,17,357,0,363,1
 82,5,Sun,2022-10-09,8:20PM,Baltimore Ravens,,Cincinnati Bengals,boxscore,19,17,325,1,291,1
 83,5,Mon,2022-10-10,8:15PM,Kansas City Chiefs,,Las Vegas Raiders,boxscore,30,29,368,0,378,0
 84,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 85,6,Thu,2022-10-13,8:15PM,Washington Commanders,@,Chicago Bears,boxscore,12,7,214,0,392,2
-86,6,Sun,2022-10-16,1:00PM,Minnesota Vikings,@,Miami Dolphins,boxscore,24,16,234,0,458,3
+86,6,Sun,2022-10-16,1:00PM,Indianapolis Colts,,Jacksonville Jaguars,boxscore,34,27,434,0,379,1
 87,6,Sun,2022-10-16,1:00PM,New England Patriots,@,Cleveland Browns,boxscore,38,15,399,1,328,4
 88,6,Sun,2022-10-16,1:00PM,Atlanta Falcons,,San Francisco 49ers,boxscore,28,14,289,0,346,3
 89,6,Sun,2022-10-16,1:00PM,New York Giants,,Baltimore Ravens,boxscore,24,20,238,1,406,2
-90,6,Sun,2022-10-16,1:00PM,Indianapolis Colts,,Jacksonville Jaguars,boxscore,34,27,434,0,379,1
-91,6,Sun,2022-10-16,1:00PM,New York Jets,@,Green Bay Packers,boxscore,27,10,278,0,278,1
-92,6,Sun,2022-10-16,1:00PM,Cincinnati Bengals,@,New Orleans Saints,boxscore,30,26,348,1,399,0
-93,6,Sun,2022-10-16,1:00PM,Pittsburgh Steelers,,Tampa Bay Buccaneers,boxscore,20,18,270,0,304,0
+90,6,Sun,2022-10-16,1:00PM,New York Jets,@,Green Bay Packers,boxscore,27,10,278,0,278,1
+91,6,Sun,2022-10-16,1:00PM,Cincinnati Bengals,@,New Orleans Saints,boxscore,30,26,348,1,399,0
+92,6,Sun,2022-10-16,1:00PM,Pittsburgh Steelers,,Tampa Bay Buccaneers,boxscore,20,18,270,0,304,0
+93,6,Sun,2022-10-16,1:00PM,Minnesota Vikings,@,Miami Dolphins,boxscore,24,16,234,0,458,3
 94,6,Sun,2022-10-16,4:05PM,Los Angeles Rams,,Carolina Panthers,boxscore,24,10,360,1,203,1
 95,6,Sun,2022-10-16,4:05PM,Seattle Seahawks,,Arizona Cardinals,boxscore,19,9,296,1,315,2
 96,6,Sun,2022-10-16,4:25PM,Buffalo Bills,@,Kansas City Chiefs,boxscore,24,20,443,1,387,2
 97,6,Sun,2022-10-16,8:20PM,Philadelphia Eagles,,Dallas Cowboys,boxscore,26,17,268,0,315,3
-98,6,Mon,2022-10-17,8:15PM,Denver Broncos,@,Los Angeles Chargers,preview,,,,,,
+98,6,Mon,2022-10-17,8:15PM,Los Angeles Chargers,,Denver Broncos,boxscore,19,16,297,1,258,1
 99,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 100,7,Thu,2022-10-20,8:15PM,New Orleans Saints,@,Arizona Cardinals,preview,,,,,,
 101,7,Sun,2022-10-23,1:00PM,Atlanta Falcons,@,Cincinnati Bengals,preview,,,,,,
