@@ -26,7 +26,7 @@ df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_14_10_
 df=df.copy()
 
 with st.expander('pro football workings'):
-    year=2006
+    year=2022
     url=f'https://www.pro-football-reference.com/years/{year}/games.htm'
     # st.write('url', url)
 
@@ -36,6 +36,7 @@ with st.expander('pro football workings'):
             test.to_csv(f'C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_{year}.csv')
             # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
             return test
+
 
     # def read_csv_data(file):
     # file_2006 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2006.csv')
@@ -54,12 +55,13 @@ with st.expander('pro football workings'):
     # file_2019 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2019.csv')
     # file_2020 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2020.csv')
     # file_2021 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2021.csv')
-    # file_2022 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2022.csv')
+    file_2022 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2022.csv')
     # combined_file = pd.concat([file_2006,file_2007,file_2008,file_2009,file_2010,file_2011,file_2012,file_2013,
     # file_2014,file_2015,file_2016,file_2017,file_2018,file_2019,file_2020,file_2021])
     # combined_file.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2006_2021.csv')
     combined_file=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2006_2021.csv')
-    st.write('comb files', combined_file)
+    combined_file=pd.concat([combined_file,file_2022])
+    # st.write('comb files', combined_file)
 
     def clean_pro_football_pickle_2021(nfl_data):
     # sourcery skip: inline-immediately-returned-variable
@@ -92,7 +94,26 @@ with st.expander('pro football workings'):
         return nfl_data
 
     cleaned_pro_football_file=clean_pro_football_pickle_2021(combined_file)
-    st.write('cleaned file', cleaned_pro_football_file)
+    cleaned_pro_football_file['Date']=pd.to_datetime(cleaned_pro_football_file['Date'],format='%Y-%m-%d')
+    df['Date']=pd.to_datetime(df['Date'],format='%Y-%m-%d')
+    df.loc [ (df['Date']=='2022-02-13')&(df['Home Team']=='Cincinnati Bengals'), 'Away Team' ] = 'Cincinnati Bengals'
+    df.loc [ (df['Date']=='2022-02-13')&(df['Home Team']=='Cincinnati Bengals'), 'Home Team' ] = 'Los Angeles Rams'
+
+    # st.write('cleaned file', cleaned_pro_football_file)
+    # st.write('merge with this file', df)
+    merged_file = pd.merge(cleaned_pro_football_file, df, how='outer')
+
+    # merged_file['Date']=pd.to_datetime(merged_file['Date'],format='%Y-%m-%d')
+    merged_file=merged_file.loc[(merged_file['Date']<'2022-10-14')]
+    st.write('merged file', merged_file)
+    # st.write('checking that loc works for date',merged_file.loc[(merged_file['Date']>'2022-10-14')])
+    st.write('want to clean this up a bit get rid of the future gameweeks')
+    st.write('then focus on the na games where havent merged properly like the final where on neutral field')
+    st.write(merged_file.loc[merged_file['Winner/tie'].isna()])
+    
+    merged_file.loc [ (merged_file['Date']=='2022-02-13')&(merged_file['Home Team']=='Cincinnati Bengals'), 'Away Team' ] = 'Cincinnati Bengals'
+    merged_file.loc [ (merged_file['Date']=='2022-02-13')&(merged_file['Home Team']=='Cincinnati Bengals'), 'Home Team' ] = 'Los Angeles Rams'
+    st.write('show individual problem games',merged_file.loc[(merged_file['Date']=='2022-02-13')])
 
 
 
@@ -267,7 +288,7 @@ df_combined=df_combined[cols]
 # st.download_button(label="Download data as CSV",data=df_combined[df_combined['season_year']==2021].to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
 
 st.write('The home-away date avg pts rolling is the average points scored in every match so we can see what the avg pts scored and conceded is both will be same')
-st.write('Database', df_combined)
+# st.write('Database', df_combined)
 result_count=df_combined.groupby(['season_year'])['result'].value_counts()
 clean_df_for_pivot=df_combined.loc[:,['season_year','result','bet_sign']]
 result_pivot=pd.pivot_table(clean_df_for_pivot, index='result', columns='season_year', aggfunc='count')
