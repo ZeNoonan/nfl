@@ -98,6 +98,27 @@ with st.expander('pro football workings'):
     df['Date']=pd.to_datetime(df['Date'],format='%Y-%m-%d')
     df.loc [ (df['Date']=='2022-02-13')&(df['Home Team']=='Cincinnati Bengals'), 'Away Team' ] = 'Cincinnati Bengals'
     df.loc [ (df['Date']=='2022-02-13')&(df['Home Team']=='Cincinnati Bengals'), 'Home Team' ] = 'Los Angeles Rams'
+    df.loc [ (df['Date']=='2019-02-03')&(df['Home Team']=='Los Angeles Rams'), 'Home Team' ] = 'New England Patriots'
+    df.loc [ (df['Date']=='2019-02-03')&(df['Home Team']=='New England Patriots'), 'Away Team' ] = 'Los Angeles Rams'
+    df.loc [ (df['Date']=='2018-02-04')&(df['Home Team']=='New England Patriots'), 'Home Team' ] = 'Philadelphia Eagles'
+    df.loc [ (df['Date']=='2018-02-04')&(df['Home Team']=='Philadelphia Eagles'), 'Away Team' ] = 'New England Patriots'
+    df.loc [ (df['Date']=='2017-02-05')&(df['Home Team']=='Atlanta Falcons'), 'Home Team' ] = 'New England Patriots'
+    df.loc [ (df['Date']=='2017-02-05')&(df['Home Team']=='New England Patriots'), 'Away Team' ] = 'Atlanta Falcons'
+    df.loc [ (df['Date']=='2015-02-01')&(df['Home Team']=='Seattle Seahawks'), 'Home Team' ] = 'New England Patriots'
+    df.loc [ (df['Date']=='2015-02-01')&(df['Home Team']=='New England Patriots'), 'Away Team' ] = 'Seattle Seahawks'
+    df.loc [ (df['Date']=='2015-01-04')&(df['Home Team']=='Carolina Panthers'), 'Date' ] = '2015-01-03'
+    df.loc [ (df['Date']=='2015-01-03')&(df['Home Team']=='Dallas Cowboys'), 'Date' ] = '2015-01-04'
+    df.loc [ (df['Date']=='2014-02-02')&(df['Home Team']=='Denver Broncos'), 'Home Team' ] = 'Seattle Seahawks'
+    df.loc [ (df['Date']=='2014-02-02')&(df['Home Team']=='Seattle Seahawks'), 'Away Team' ] = 'Denver Broncos'
+    df.loc [ (df['Date']=='2013-02-03')&(df['Home Team']=='San Francisco 49ers'), 'Home Team' ] = 'Baltimore Ravens'
+    df.loc [ (df['Date']=='2013-02-03')&(df['Home Team']=='Baltimore Ravens'), 'Away Team' ] = 'San Francisco 49ers'
+    df.loc [ (df['Date']=='2010-02-07')&(df['Home Team']=='Indianapolis Colts'), 'Home Team' ] = 'New Orleans Saints'
+    df.loc [ (df['Date']=='2010-02-07')&(df['Home Team']=='New Orleans Saints'), 'Away Team' ] = 'Indianapolis Colts'
+    df.loc [ (df['Date']=='2008-02-03')&(df['Home Team']=='New England Patriots'), 'Home Team' ] = 'New York Giants'
+    df.loc [ (df['Date']=='2008-02-03')&(df['Home Team']=='New York Giants'), 'Away Team' ] = 'New England Patriots'
+
+
+    # df.loc [ (df['Date']=='2015-01-04')&(df['Home Team']=='New England Patriots'), 'Away Team' ] = 'Seattle Seahawks'
 
     # st.write('cleaned file', cleaned_pro_football_file)
     # st.write('merge with this file', df)
@@ -109,11 +130,11 @@ with st.expander('pro football workings'):
     # st.write('checking that loc works for date',merged_file.loc[(merged_file['Date']>'2022-10-14')])
     st.write('want to clean this up a bit get rid of the future gameweeks')
     st.write('then focus on the na games where havent merged properly like the final where on neutral field')
-    st.write(merged_file.loc[merged_file['Winner/tie'].isna()])
+    # st.write(merged_file.loc[merged_file['Winner/tie'].isna()])
     
-    merged_file.loc [ (merged_file['Date']=='2022-02-13')&(merged_file['Home Team']=='Cincinnati Bengals'), 'Away Team' ] = 'Cincinnati Bengals'
-    merged_file.loc [ (merged_file['Date']=='2022-02-13')&(merged_file['Home Team']=='Cincinnati Bengals'), 'Home Team' ] = 'Los Angeles Rams'
-    st.write('show individual problem games',merged_file.loc[(merged_file['Date']=='2022-02-13')])
+    st.write('Checking NAs after merge',merged_file.loc[merged_file['Winner/tie'].isna()])
+    # st.write('show individual problem games',merged_file.loc[(merged_file['Date']>'2015-01-02') & (merged_file['Date']<'2015-01-05') ])
+    # st.write('show individual problem games',merged_file.loc[(merged_file['Date']=='2008-02-03')  ])
 
 
 
