@@ -122,23 +122,23 @@ with st.expander('pro football workings'):
 
     # st.write('cleaned file', cleaned_pro_football_file)
     # st.write('merge with this file', df)
-    merged_file = pd.merge(cleaned_pro_football_file, df, how='outer')
+    df = pd.merge(cleaned_pro_football_file, df, how='outer')
 
-    # merged_file['Date']=pd.to_datetime(merged_file['Date'],format='%Y-%m-%d')
-    merged_file=merged_file.loc[(merged_file['Date']<'2022-10-14')]
-    st.write('merged file', merged_file)
-    # st.write('checking that loc works for date',merged_file.loc[(merged_file['Date']>'2022-10-14')])
+    df=df.loc[(df['Date']<'2022-10-14')] # WATCH THIS FOR WHEN BRINGING IN NEW WEEK
+    st.write('merged file', df)
+    # st.write('checking that loc works for date',df.loc[(df['Date']>'2022-10-14')])
     st.write('want to clean this up a bit get rid of the future gameweeks')
     st.write('then focus on the na games where havent merged properly like the final where on neutral field')
-    # st.write(merged_file.loc[merged_file['Winner/tie'].isna()])
+    # st.write(df.loc[df['Winner/tie'].isna()])
     
-    st.write('Checking NAs after merge',merged_file.loc[merged_file['Winner/tie'].isna()])
-    # st.write('show individual problem games',merged_file.loc[(merged_file['Date']>'2015-01-02') & (merged_file['Date']<'2015-01-05') ])
-    # st.write('show individual problem games',merged_file.loc[(merged_file['Date']=='2008-02-03')  ])
+    st.write('Checking NAs in turnover',df.loc[df['turnover'].isna()])
+    st.write('Checking NAs in home score',df.loc[df['Home Score'].isna()])
+    # st.write('show individual problem games',df.loc[(df['Date']>'2015-01-02') & (df['Date']<'2015-01-05') ])
+    # st.write('show individual problem games',df.loc[(df['Date']=='2008-02-03')  ])
 
 
 
-
+df['home_score_margin_of_victory']=df['Home Points']-df['Away Points']
 df['Home Line Close']=df['Home Line Close'].fillna(df['Home Line Open'])
 df['year'] = pd.DatetimeIndex(df['Date']).year
 df['month'] = pd.DatetimeIndex(df['Date']).month
@@ -152,10 +152,6 @@ df['Away Team']=df['Away Team'].replace({'Washington Football Team':'Washington 
 df=df.sort_values(by=['Date','Home Team']).reset_index().drop('index',axis=1)
 df=df.reset_index().rename(columns={'index':'unique_id'})
 
-# df=df.sort_values(by=['unique_id'],ascending=False)
-
-
-
 df['avg_home_score']=df['Home Score'].expanding().mean()
 df['avg_away_score']=df['Away Score'].expanding().mean()
 cols_to_move=['Date','Home Team','Away Team','unique_id','Home Score','Away Score','avg_home_score','avg_away_score']
@@ -164,6 +160,37 @@ df=df[cols]
 
 with st.expander('raw data'):
     st.write(df)
+
+with st.expander('Turnover 2 Variable Regression'):
+    # st.write('data', df)
+    regression_data=df.loc[:,['turnover','home_score_margin_of_victory']]
+    st.write('df turnover', df['turnover'])
+    # https://towardsdatascience.com/simple-and-multiple-linear-regression-with-python-c9ab422ec29c
+    turnover_regression = np.polyfit(df['home_score_margin_of_victory'], df['turnover'], 1)
+    st.write('regression output',turnover_regression)
+    # https://altair-viz.github.io/gallery/poly_fit_regression.html
+    rng = np.random.RandomState(1)
+    x = rng.rand(40) ** 2
+    y = 10 - 1.0 / (x + 0.1) + rng.randn(40)
+    source = pd.DataFrame({"x": x, "y": y})
+    # st.write('source', source)
+
+    # Define the degree of the polynomial fits
+    degree_list = [1, 3, 5]
+
+    base = alt.Chart(regression_data).mark_circle(color="black").encode(alt.X("turnover"), alt.Y("home_score_margin_of_victory"))
+
+    polynomial_fit = [base.transform_regression("turnover", "home_score_margin_of_victory", method="poly", order=order, as_=["turnover", str(order)])
+    .mark_line()
+    .transform_fold([str(order)], as_=["degree", "home_score_margin_of_victory"])
+    .encode(alt.Color("degree:N"))
+    for order in degree_list]
+
+    st.altair_chart(alt.layer(base, *polynomial_fit))
+    st.write('just interesting to see what the -7 and +7 turnovers were....')
+    # alt.Chart(regression_data).mark_bar().encode(
+    # alt.X("IMDB_Rating:Q", bin=True),
+    # y='count()')
 # NL_Raw_Clean['calendar_year']=NL_Raw_Clean['calendar_year']+2000
 # NL_Raw_Clean=NL_Raw_Clean.rename(columns={'calendar_year':'year', 'calendar_month':'month'})
 
