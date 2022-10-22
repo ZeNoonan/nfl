@@ -159,15 +159,22 @@ cols = cols_to_move + [col for col in df if col not in cols_to_move]
 df=df[cols]
 
 with st.expander('raw data'):
-    st.write(df)
+    st.write(df[df['turnover']>6])
 
 with st.expander('Turnover 2 Variable Regression'):
     # st.write('data', df)
     regression_data=df.loc[:,['turnover','home_score_margin_of_victory']]
-    st.write('df turnover', df['turnover'])
+    regression_graph_data=regression_data.copy()
+    regression_graph_data['home_score_margin_of_victory']=regression_graph_data['home_score_margin_of_victory'].abs()
+    # st.write('df turnover', df['turnover'])
     # https://towardsdatascience.com/simple-and-multiple-linear-regression-with-python-c9ab422ec29c
-    turnover_regression = np.polyfit(df['home_score_margin_of_victory'], df['turnover'], 1)
-    st.write('regression output',turnover_regression)
+    # turnover_regression = np.polyfit(df['home_score_margin_of_victory'], df['turnover'], 1)
+    turnover_regression_1 = np.polyfit(df['turnover'], df['home_score_margin_of_victory'], 1)
+    # st.write('regression output',turnover_regression)
+    st.write('regression output so if you multiply 7 turnovers by slope -4.55 you get -31.5 plus 1.87 = -29.9 ie expect to lose by 29.9 points')
+    st.write('also if you multiply -7 turnovers so you got 7 turnovers given to you, multiply by -4.55 equals 31.8 points plus 1.87 equals 32.7 points which you can\
+    see on the trend line so you would expect to win by 32.7 points')
+    st.write(turnover_regression_1)
     # https://altair-viz.github.io/gallery/poly_fit_regression.html
     rng = np.random.RandomState(1)
     x = rng.rand(40) ** 2
@@ -186,7 +193,9 @@ with st.expander('Turnover 2 Variable Regression'):
     .encode(alt.Color("degree:N"))
     for order in degree_list]
 
-    st.altair_chart(alt.layer(base, *polynomial_fit))
+    st.altair_chart(alt.layer(base, *polynomial_fit),use_container_width=True)
+    st.write('Was just curious if there was some home away effect but looks fairly even in terms of turnovers to points')
+    st.altair_chart(alt.Chart(regression_graph_data).mark_circle(color="black").encode(alt.X("turnover"), alt.Y("home_score_margin_of_victory")),use_container_width=True)
     st.write('just interesting to see what the -7 and +7 turnovers were....')
     # alt.Chart(regression_data).mark_bar().encode(
     # alt.X("IMDB_Rating:Q", bin=True),
