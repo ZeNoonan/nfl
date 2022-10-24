@@ -159,7 +159,8 @@ cols = cols_to_move + [col for col in df if col not in cols_to_move]
 df=df[cols]
 
 with st.expander('raw data'):
-    st.write(df[df['turnover']>6])
+
+    st.write('looking at matches where turnoves was greater than 6',df[df['turnover']>6])
 
 with st.expander('Turnover 2 Variable Regression'):
     # st.write('data', df)
@@ -173,8 +174,12 @@ with st.expander('Turnover 2 Variable Regression'):
     # st.write('regression output',turnover_regression)
     st.write('regression output so if you multiply 7 turnovers by slope -4.55 you get -31.5 plus 1.87 = -29.9 ie expect to lose by 29.9 points')
     st.write('also if you multiply -7 turnovers so you got 7 turnovers given to you, multiply by -4.55 equals 31.8 points plus 1.87 equals 32.7 points which you can\
-    see on the trend line so you would expect to win by 32.7 points')
+        see on the trend line so you would expect to win by 32.7 points')
+    st.write('so actually the minus in front of 4.5 is a red herring, just multiply the turnovers by the 4.5 and then add or subtract the 1.87 depending on whether\
+         you are home or away')
     st.write(turnover_regression_1)
+    st.write(turnover_regression_1[0])
+    st.write(turnover_regression_1[1])
     # https://altair-viz.github.io/gallery/poly_fit_regression.html
     rng = np.random.RandomState(1)
     x = rng.rand(40) ** 2
@@ -197,6 +202,8 @@ with st.expander('Turnover 2 Variable Regression'):
     st.write('Was just curious if there was some home away effect but looks fairly even in terms of turnovers to points')
     st.altair_chart(alt.Chart(regression_graph_data).mark_circle(color="black").encode(alt.X("turnover"), alt.Y("home_score_margin_of_victory")),use_container_width=True)
     st.write('just interesting to see what the -7 and +7 turnovers were....')
+    st.write('looking at matches where turnoves was greater than 6',df[df['turnover']>6])
+    st.write('looking at matches where turnoves was greater than 6',df[df['turnover']<-6])
     # alt.Chart(regression_data).mark_bar().encode(
     # alt.X("IMDB_Rating:Q", bin=True),
     # y='count()')
