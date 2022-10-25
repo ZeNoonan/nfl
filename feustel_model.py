@@ -161,8 +161,10 @@ df=df[cols]
 with st.expander('raw data'):
 
     st.write('looking at matches where turnoves was greater than 6',df[df['turnover']>6])
+    # grouped = df.groupby('season_year')
 
 with st.expander('Turnover 2 Variable Regression'):
+
     # st.write('data', df)
     regression_data=df.loc[:,['turnover','home_score_margin_of_victory']]
     regression_graph_data=regression_data.copy()
@@ -215,9 +217,11 @@ with st.expander('Turnover 2 Variable Regression'):
 # for _ in df.groupby('season_year'):
 #     pass
 
-df_offensive_home=df.loc[:,['Date','Home Team', 'Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']].rename(columns={'Home Team':'team','Home Score':'score'})
+df_offensive_home=df.loc[:,['Date','Home Team', 'Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
+    .rename(columns={'Home Team':'team','Home Score':'score'})
 df_offensive_home['home_away']=1
-df_offensive_away=df.loc[:,['Date','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']].rename(columns={'Away Team':'team','Away Score':'score'})
+df_offensive_away=df.loc[:,['Date','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
+    .rename(columns={'Away Team':'team','Away Score':'score'})
 df_offensive_away['home_away']=-1
 df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
 # df_groupby_scores=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
@@ -244,10 +248,11 @@ df_offensive=col_correction(df_offensive,col='avg_pts_scored_team_season')
 # st.write('check to see if shift worked',df_offensive[(df_offensive['team']=='Arizona Cardinals') | (df_offensive['team']=='Arizona Cardinals')])
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
 
-df_defensive_home=df.loc[:,['Date','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']]\
+df_defensive_home=df.loc[:,['Date','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
     .rename(columns={'Home Team':'team','Away Score':'score'})
 df_defensive_home['home_away']=1
-df_defensive_away=df.loc[:,['Date','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close']].rename(columns={'Away Team':'team','Home Score':'score'})
+df_defensive_away=df.loc[:,['Date','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
+    .rename(columns={'Away Team':'team','Home Score':'score'})
 df_defensive_away['home_away']=-1
 df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
 # df_groupby_scores=df_defensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
