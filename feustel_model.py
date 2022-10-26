@@ -222,8 +222,10 @@ df_offensive_home=df.loc[:,['Date','Home Team', 'Home Score', 'season_year','uni
 df_offensive_home['home_away']=1
 df_offensive_away=df.loc[:,['Date','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
     .rename(columns={'Away Team':'team','Away Score':'score'})
+df_offensive_away['turnover']=-df_offensive_away['turnover'] # i think this works converts it to same for everyone
 df_offensive_away['home_away']=-1
 df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
+df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount()+1
 # df_groupby_scores=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
 # df_offensive['sum_score']=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum()\
 #     .reset_index().drop(['level_2','team','season_year'],axis=1)
@@ -240,10 +242,19 @@ def col_correction(df_offensive,col='avg_pts_scored_team_season'):
         .reset_index().drop(['level_2','team','season_year'],axis=1)
     df_offensive['test_col']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
     df_offensive[col]=df_offensive['SHIFT avg_pts_scored_team_season']*df_offensive['test_col']
-    df_offensive=df_offensive.drop(['test_col','SHIFT avg_pts_scored_team_season'],axis=1)
+    df_offensive=df_offensive.drop(['SHIFT avg_pts_scored_team_season'],axis=1)
+    return df_offensive
+
+def col_correction_turnover(df_offensive,col='turnover'):
+    df_offensive['SHIFT turnover']=df_offensive.groupby(['team','season_year'])['turnover'].expanding(min_periods=4).sum().shift()\
+        .reset_index().drop(['level_2','team','season_year'],axis=1)
+    # df_offensive['test_col_turn']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT turnover'].isna(),np.NaN,1))
+    df_offensive['cum_turnover']=df_offensive['SHIFT turnover']*df_offensive['test_col']
+    df_offensive=df_offensive.drop(['test_col','SHIFT turnover'],axis=1)
     return df_offensive
 
 df_offensive=col_correction(df_offensive,col='avg_pts_scored_team_season')
+df_offensive=col_correction_turnover(df_offensive,col='turnover')
 # st.write('df off', df_offensive)
 # st.write('check to see if shift worked',df_offensive[(df_offensive['team']=='Arizona Cardinals') | (df_offensive['team']=='Arizona Cardinals')])
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
@@ -254,6 +265,7 @@ df_defensive_home['home_away']=1
 df_defensive_away=df.loc[:,['Date','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
     .rename(columns={'Away Team':'team','Home Score':'score'})
 df_defensive_away['home_away']=-1
+df_defensive_away['turnover']=-df_defensive_away['turnover']
 df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
 # df_groupby_scores=df_defensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
 # df_defensive['sum_score']=df_defensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum()\
@@ -264,6 +276,7 @@ df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','seaso
     .reset_index().drop(['level_2','team','season_year'],axis=1)
 
 df_defensive=col_correction(df_defensive,col='avg_pts_conceded_team_season')
+# df_defensive=col_correction_turnover(df_defensive,col='turnover')
 # st.write('check to see if shift worked defensive',df_defensive[(df_defensive['team']=='Arizona Cardinals') | (df_defensive['team']=='Arizona Cardinals')])
 # df_defensive['SHIFT avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
 #     .reset_index().drop(['level_2','team','season_year'],axis=1)
@@ -276,6 +289,7 @@ df_defensive=df_defensive.rename(columns={'score':'pts_conceded','mean_score':'4
 # st.write('df offensive 1', df_offensive)
 # st.write('df defence 1', df_defensive)
 df_new=pd.merge(df_offensive,df_defensive,how='outer')
+st.write('check to see if shift worked defensive',df_new[(df_new['team']=='Arizona Cardinals') | (df_new['team']=='Arizona Cardinals')])
 # st.write('after merge', df_new)
 df_new['team_cum_sum_pts']=df_new.groupby(['team'])['pts_scored'].cumsum()
 df_new['team_cum_sum_games']=df_new.groupby(['team'])['pts_scored'].cumcount()+1
