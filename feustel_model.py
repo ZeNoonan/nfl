@@ -255,6 +255,7 @@ def col_correction_turnover(df_offensive,col='turnover'):
 
 df_offensive=col_correction(df_offensive,col='avg_pts_scored_team_season')
 df_offensive=col_correction_turnover(df_offensive,col='turnover')
+df_offensive['turnover_per_game']=df_offensive['cum_turnover'] / df_offensive['season_games_played']
 # st.write('df off', df_offensive)
 # st.write('check to see if shift worked',df_offensive[(df_offensive['team']=='Arizona Cardinals') | (df_offensive['team']=='Arizona Cardinals')])
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
@@ -327,7 +328,7 @@ cols_to_move=['Date','team','season_year','Home Line Close','unique_id','pts_sco
 cols = cols_to_move + [col for col in df_new if col not in cols_to_move]
 df_new=df_new[cols]
 df_new=df_new.loc[:,['Date','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
-'avg_pts_conceded_team_season','home_away']]
+'avg_pts_conceded_team_season','home_away','turnover','cum_turnover','season_games_played']]
 # st.write('df update', df_new)
 
 # st.write('df after concat', df_new.sort_values(by=['home_away','Date'],ascending=True))
@@ -345,44 +346,49 @@ df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts
 # df_combined=pd.concat([df_home_1,df_away_1],axis=0)
 # st.write('before home and away are combined', df_home_1, 'away', df_away_1)
 df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year', 'Home Line Close'],how='outer')
-# st.write('before calcs are done', df_combined)
-df_combined['away_defensive_rating']=df_combined['away_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
-df_combined['projected_team_a_pts']= df_combined['home_avg_pts_scored_team_season'] * df_combined['away_defensive_rating']
-df_combined['home_defensive_rating']=df_combined['home_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
-df_combined['projected_team_b_pts']= df_combined['away_avg_pts_scored_team_season'] * df_combined['home_defensive_rating']
-df_combined['projected_team_a_pts']= df_combined['projected_team_a_pts'] + (df_combined['home_adv']/2)
-df_combined['projected_team_b_pts']= df_combined['projected_team_b_pts'] - (df_combined['home_adv']/2)
-df_combined['proj_spread'] = df_combined['projected_team_b_pts'] - df_combined['projected_team_a_pts']
-df_combined['bet_sign']=np.where(df_combined['proj_spread']>df_combined['Home Line Close'],-1,np.where(df_combined['proj_spread']<df_combined['Home Line Close'],1,0))
-df_combined['home_win']=df_combined['home_pts_scored'] - df_combined['away_pts_scored']
-df_combined['home_win'] = np.where((df_combined['home_pts_scored'] > df_combined['away_pts_scored']), 1, np.where((df_combined['home_pts_scored'] < df_combined['away_pts_scored']),-1,0))
-df_combined['home_cover']=(np.where(((df_combined['home_pts_scored'] + df_combined['Home Line Close']) > df_combined['away_pts_scored']), 1,
-np.where(((df_combined['home_pts_scored']+ df_combined['Home Line Close']) < df_combined['away_pts_scored']),-1,0)))
-df_combined['home_cover_result']=df_combined['home_cover'].astype(int)
-df_combined['away_cover'] = -df_combined['home_cover']
-df_combined['result']=df_combined['home_cover_result'] * df_combined['bet_sign']
 
-cols_to_move=['Date','season_year','unique_id','home_team','away_team','home_pts_scored','away_pts_scored','Home Line Close','proj_spread',
-'bet_sign','home_cover_result','result']
-cols = cols_to_move + [col for col in df_combined if col not in cols_to_move]
-df_combined=df_combined[cols]
+with st.expander('first simple model'):
+    df_turnover_rating=df_combined.copy()
+    # st.write('before calcs are done', df_combined)
+    df_combined['away_defensive_rating']=df_combined['away_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
+    df_combined['projected_team_a_pts']= df_combined['home_avg_pts_scored_team_season'] * df_combined['away_defensive_rating']
+    df_combined['home_defensive_rating']=df_combined['home_avg_pts_conceded_team_season'] / df_combined['away_date_avg_pts_rolling']
+    df_combined['projected_team_b_pts']= df_combined['away_avg_pts_scored_team_season'] * df_combined['home_defensive_rating']
+    df_combined['projected_team_a_pts']= df_combined['projected_team_a_pts'] + (df_combined['home_adv']/2)
+    df_combined['projected_team_b_pts']= df_combined['projected_team_b_pts'] - (df_combined['home_adv']/2)
+    df_combined['proj_spread'] = df_combined['projected_team_b_pts'] - df_combined['projected_team_a_pts']
+    df_combined['bet_sign']=np.where(df_combined['proj_spread']>df_combined['Home Line Close'],-1,np.where(df_combined['proj_spread']<df_combined['Home Line Close'],1,0))
+    df_combined['home_win']=df_combined['home_pts_scored'] - df_combined['away_pts_scored']
+    df_combined['home_win'] = np.where((df_combined['home_pts_scored'] > df_combined['away_pts_scored']), 1, np.where((df_combined['home_pts_scored'] < df_combined['away_pts_scored']),-1,0))
+    df_combined['home_cover']=(np.where(((df_combined['home_pts_scored'] + df_combined['Home Line Close']) > df_combined['away_pts_scored']), 1,
+    np.where(((df_combined['home_pts_scored']+ df_combined['Home Line Close']) < df_combined['away_pts_scored']),-1,0)))
+    df_combined['home_cover_result']=df_combined['home_cover'].astype(int)
+    df_combined['away_cover'] = -df_combined['home_cover']
+    df_combined['result']=df_combined['home_cover_result'] * df_combined['bet_sign']
 
-# st.write('df_comb', df_combined[df_combined['season_year']==2022].set_index('Date'))
-# st.download_button(label="Download data as CSV",data=df_combined[df_combined['season_year']==2021].to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
+    cols_to_move=['Date','season_year','unique_id','home_team','away_team','home_pts_scored','away_pts_scored','Home Line Close','proj_spread',
+    'bet_sign','home_cover_result','result']
+    cols = cols_to_move + [col for col in df_combined if col not in cols_to_move]
+    df_combined=df_combined[cols]
+    st.write('data before results are tallied up')
+    AgGrid(df_combined,enable_enterprise_modules=True)
 
-st.write('The home-away date avg pts rolling is the average points scored in every match so we can see what the avg pts scored and conceded is both will be same')
-# st.write('Database', df_combined)
-result_count=df_combined.groupby(['season_year'])['result'].value_counts()
-clean_df_for_pivot=df_combined.loc[:,['season_year','result','bet_sign']]
-result_pivot=pd.pivot_table(clean_df_for_pivot, index='result', columns='season_year', aggfunc='count')
-result_pivot.index=result_pivot.index.astype('str')
-result_pivot.loc['total_games']=result_pivot.sum(axis=0)
-result_pivot.loc['winning_%']=result_pivot.loc['1']/(result_pivot.loc['1']+result_pivot.loc['-1'])
-result_pivot.loc['cum_winning_%']=result_pivot.loc['1'].cumsum() / (result_pivot.loc['1'].cumsum()+result_pivot.loc['-1'].cumsum())
-# st.write(result_count.columns)
-# result_count=result_count.reset_index()
-# st.dataframe(result_count)
-st.dataframe(result_pivot)
+    # st.write('df_comb', df_combined[df_combined['season_year']==2022].set_index('Date'))
+    # st.download_button(label="Download data as CSV",data=df_combined[df_combined['season_year']==2021].to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
+
+    st.write('The home-away date avg pts rolling is the average points scored in every match so we can see what the avg pts scored and conceded is both will be same')
+    # st.write('Database', df_combined)
+    result_count=df_combined.groupby(['season_year'])['result'].value_counts()
+    clean_df_for_pivot=df_combined.loc[:,['season_year','result','bet_sign']]
+    result_pivot=pd.pivot_table(clean_df_for_pivot, index='result', columns='season_year', aggfunc='count')
+    result_pivot.index=result_pivot.index.astype('str')
+    result_pivot.loc['total_games']=result_pivot.sum(axis=0)
+    result_pivot.loc['winning_%']=result_pivot.loc['1']/(result_pivot.loc['1']+result_pivot.loc['-1'])
+    result_pivot.loc['cum_winning_%']=result_pivot.loc['1'].cumsum() / (result_pivot.loc['1'].cumsum()+result_pivot.loc['-1'].cumsum())
+    # st.write(result_count.columns)
+    # result_count=result_count.reset_index()
+    # st.dataframe(result_count)
+    st.dataframe(result_pivot)
 
 with st.expander('Average Error Calcs'):
     avg_error_data=df_combined.copy()
@@ -402,3 +408,34 @@ with st.expander('Splitting the Spread up to analyse'):
     decile_df=avg_error_data_spread.groupby(pd.qcut(avg_error_data_spread['Home Line Close'], 10))['result'].sum().reset_index()
     st.write(decile_df)
     # avg_error_data=avg_error_data[avg_error_data['proj_spread'].notna()]
+
+with st.expander('Turnover Model'):
+    df_turnover_rating=df_turnover_rating.copy().rename(columns={'turnover_x':'turnover_home','turnover_y':'turnover_away','cum_turnover_x':'turnover_cum_home',
+    'cum_turnover_y':'turnover_cum_away','season_games_played_x':'season_games_played_home','season_games_played_away':'season_games_played_away'})
+    st.write('think i need a home and away turnover for each team')
+    # AgGrid( df_turnover_rating,enable_enterprise_modules=True)
+    cols_to_move=['Date','home_team','away_team','turnover_home','turnover_away','turnover_cum_home','turnover_cum_away']
+    cols = cols_to_move + [col for col in df_turnover_rating if col not in cols_to_move]
+    df_turnover_rating=df_turnover_rating[cols]
+    AgGrid( df_turnover_rating,enable_enterprise_modules=True)
+    # st.write('before calcs are done', df_turnover_rating)
+    # df_turnover_rating['away_defensive_rating']=df_turnover_rating['away_avg_pts_conceded_team_season'] / df_turnover_rating['away_date_avg_pts_rolling']
+    df_turnover_rating['projected_team_a_pts']= df_turnover_rating['home_avg_pts_scored_team_season'] + (df_turnover_rating['turnover_per_game']*1.6)
+    # df_turnover_rating['home_defensive_rating']=df_turnover_rating['home_avg_pts_conceded_team_season'] / df_turnover_rating['away_date_avg_pts_rolling']
+    df_turnover_rating['projected_team_b_pts']= df_turnover_rating['away_avg_pts_scored_team_season'] * (df_turnover_rating['turnover_per_game']*1.6)
+    df_turnover_rating['projected_team_a_pts']= df_turnover_rating['projected_team_a_pts'] + (df_turnover_rating['home_adv']/2)
+    df_turnover_rating['projected_team_b_pts']= df_turnover_rating['projected_team_b_pts'] - (df_turnover_rating['home_adv']/2)
+    df_turnover_rating['proj_spread'] = df_turnover_rating['projected_team_b_pts'] - df_turnover_rating['projected_team_a_pts']
+    df_turnover_rating['bet_sign']=np.where(df_turnover_rating['proj_spread']>df_turnover_rating['Home Line Close'],-1,np.where(df_turnover_rating['proj_spread']<df_turnover_rating['Home Line Close'],1,0))
+    df_turnover_rating['home_win']=df_turnover_rating['home_pts_scored'] - df_turnover_rating['away_pts_scored']
+    df_turnover_rating['home_win'] = np.where((df_turnover_rating['home_pts_scored'] > df_turnover_rating['away_pts_scored']), 1, np.where((df_turnover_rating['home_pts_scored'] < df_turnover_rating['away_pts_scored']),-1,0))
+    df_turnover_rating['home_cover']=(np.where(((df_turnover_rating['home_pts_scored'] + df_turnover_rating['Home Line Close']) > df_turnover_rating['away_pts_scored']), 1,
+    np.where(((df_turnover_rating['home_pts_scored']+ df_turnover_rating['Home Line Close']) < df_turnover_rating['away_pts_scored']),-1,0)))
+    df_turnover_rating['home_cover_result']=df_turnover_rating['home_cover'].astype(int)
+    df_turnover_rating['away_cover'] = -df_turnover_rating['home_cover']
+    df_turnover_rating['result']=df_turnover_rating['home_cover_result'] * df_turnover_rating['bet_sign']
+
+    cols_to_move=['Date','season_year','unique_id','home_team','away_team','home_pts_scored','away_pts_scored','Home Line Close','proj_spread',
+    'bet_sign','home_cover_result','result']
+    cols = cols_to_move + [col for col in df_turnover_rating if col not in cols_to_move]
+    df_turnover_rating=df_turnover_rating[cols]
