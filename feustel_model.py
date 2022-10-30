@@ -206,6 +206,23 @@ with st.expander('Turnover 2 Variable Regression'):
     st.write('just interesting to see what the -7 and +7 turnovers were....')
     st.write('looking at matches where turnoves was greater than 6',df[df['turnover']>6])
     st.write('looking at matches where turnoves was greater than 6',df[df['turnover']<-6])
+
+    # st.write('checking out season',df[(df['season_year']<2008)]['turnover'])
+    
+    # def regression_output(df,year):
+    #     return np.polyfit(df[(df['season_year']<2008)]['turnover'], df[(df['season_year'] < year)]['home_score_margin_of_victory'], 1)
+    
+    raw_data=[]
+    for n in range(2008,2023):
+        x = np.polyfit(df[(df['season_year']<n)]['turnover'], df[(df['season_year'] < n)]['home_score_margin_of_victory'], 1)
+        raw_data.append(pd.Series(x))
+        # st.write('n', n)
+    turnover_cum_year = pd.concat(raw_data,axis=1)
+    turnover_cum_year.columns=list(range(2008,2023))
+    turnover_cum_year=turnover_cum_year.rename(index={0:'turnover',1:'home_advantage'})
+    turnover_cum_year.loc['total']=turnover_cum_year.loc['home_advantage']-turnover_cum_year.loc['turnover']
+    st.write(turnover_cum_year.style.format("{:.1f}", na_rep='-') )
+    # turnover_regression_2006_2007 = np.polyfit(df['turnover'], df['home_score_margin_of_victory'], 1)
     # alt.Chart(regression_data).mark_bar().encode(
     # alt.X("IMDB_Rating:Q", bin=True),
     # y='count()')
@@ -290,7 +307,7 @@ df_defensive=df_defensive.rename(columns={'score':'pts_conceded','mean_score':'4
 # st.write('df offensive 1', df_offensive)
 # st.write('df defence 1', df_defensive)
 df_new=pd.merge(df_offensive,df_defensive,how='outer')
-st.write('check to see if shift worked defensive',df_new[(df_new['team']=='Arizona Cardinals') | (df_new['team']=='Arizona Cardinals')])
+# st.write('check to see if shift worked defensive',df_new[(df_new['team']=='Arizona Cardinals') | (df_new['team']=='Arizona Cardinals')])
 # st.write('after merge', df_new)
 df_new['team_cum_sum_pts']=df_new.groupby(['team'])['pts_scored'].cumsum()
 df_new['team_cum_sum_games']=df_new.groupby(['team'])['pts_scored'].cumcount()+1
@@ -398,9 +415,13 @@ with st.expander('Average Error Calcs'):
     avg_error_data.insert(loc=8,column='betting_odds_error',value=(abs(avg_error_data['home_pts_scored']+avg_error_data['Home Line Close']-avg_error_data['away_pts_scored'])))
     avg_error_data.insert(loc=9,column='proj_odds_error',value=(abs(avg_error_data['home_pts_scored']+avg_error_data['proj_spread']-avg_error_data['away_pts_scored'])))
     # avg_error_data['avg_err_betting']=avg_error_data['betting_odds_error'].expanding().mean()
-    avg_error_data_groupby=avg_error_data.groupby(['season_year'])['betting_odds_error','proj_odds_error'].mean()
-    st.write('avg error df data', avg_error_data)
-    st.write('avg error df groupby comparing the average error on bookies odds versus our internal projections', avg_error_data_groupby)
+    avg_error_data_groupby=avg_error_data.groupby(['season_year'])['betting_odds_error','proj_odds_error'].mean().transpose()
+    avg_error_data_groupby.loc['Diff']=avg_error_data_groupby.loc['proj_odds_error']-avg_error_data_groupby.loc['betting_odds_error']
+    # st.write('avg error df data', avg_error_data)
+    st.write('avg error df groupby comparing the average error on bookies odds versus our internal projections', 
+    avg_error_data_groupby.style.format("{:.1f}", na_rep='-'))
+    st.write('betting odds error lifetime to date',avg_error_data['betting_odds_error'].mean())
+    st.write('proj odds error lifetime to date',avg_error_data['proj_odds_error'].mean())
 
 with st.expander('Splitting the Spread up to analyse'):
     avg_error_data_spread=avg_error_data.copy()
@@ -417,7 +438,7 @@ with st.expander('Turnover Model'):
     cols_to_move=['Date','home_team','away_team','turnover_home','turnover_away','turnover_cum_home','turnover_cum_away']
     cols = cols_to_move + [col for col in df_turnover_rating if col not in cols_to_move]
     df_turnover_rating=df_turnover_rating[cols]
-    AgGrid( df_turnover_rating,enable_enterprise_modules=True)
+    # AgGrid( df_turnover_rating,enable_enterprise_modules=True)
     # st.write('before calcs are done', df_turnover_rating)
     
     df_turnover_rating['home_turnover_per_game']=df_turnover_rating['turnover_cum_home'] / df_turnover_rating['season_games_played_home']
@@ -452,3 +473,32 @@ with st.expander('Turnover Model'):
     'bet_sign','home_cover_result','result']
     cols = cols_to_move + [col for col in df_turnover_rating if col not in cols_to_move]
     df_turnover_rating=df_turnover_rating[cols]
+
+    result_count=df_turnover_rating.groupby(['season_year'])['result'].value_counts()
+    clean_df_for_pivot=df_turnover_rating.loc[:,['season_year','result','bet_sign']]
+    result_pivot=pd.pivot_table(clean_df_for_pivot, index='result', columns='season_year', aggfunc='count')
+    result_pivot.index=result_pivot.index.astype('str')
+    result_pivot.loc['total_games']=result_pivot.sum(axis=0)
+    result_pivot.loc['winning_%']=result_pivot.loc['1']/(result_pivot.loc['1']+result_pivot.loc['-1'])
+    result_pivot.loc['cum_winning_%']=result_pivot.loc['1'].cumsum() / (result_pivot.loc['1'].cumsum()+result_pivot.loc['-1'].cumsum())
+    # st.write(result_count.columns)
+    # result_count=result_count.reset_index()
+    # st.dataframe(result_count)
+    st.dataframe(result_pivot)
+
+with st.expander('Average Error Calcs on Turnover Model'):
+    avg_error_data=df_turnover_rating.copy()
+    avg_error_data=avg_error_data[avg_error_data['proj_spread'].notna()]
+    # st.write('avg error df', avg_error_data)
+    # avg_error_data['test']=avg_error_data['home_team']-avg_error_data['away_team']
+    avg_error_data.insert(loc=8,column='betting_odds_error',value=(abs(avg_error_data['home_pts_scored']+avg_error_data['Home Line Close']-avg_error_data['away_pts_scored'])))
+    avg_error_data.insert(loc=9,column='proj_odds_error',value=(abs(avg_error_data['home_pts_scored']+avg_error_data['proj_spread']-avg_error_data['away_pts_scored'])))
+    # avg_error_data['avg_err_betting']=avg_error_data['betting_odds_error'].expanding().mean()
+    avg_error_data_groupby=avg_error_data.groupby(['season_year'])['betting_odds_error','proj_odds_error'].mean().transpose()
+    # st.write('avg error df data', avg_error_data)
+    avg_error_data_groupby.loc['Diff']=avg_error_data_groupby.loc['proj_odds_error']-avg_error_data_groupby.loc['betting_odds_error']
+    st.write('avg error df groupby comparing the average error on bookies odds versus our internal projections',
+    avg_error_data_groupby.style.format("{:.1f}", na_rep='-'))
+    
+    st.write('betting odds error lifetime to date',avg_error_data['betting_odds_error'].mean())
+    st.write('proj odds error lifetime to date',avg_error_data['proj_odds_error'].mean())
