@@ -115,19 +115,19 @@
 113,7,Mon,2022-10-24,8:15PM,Chicago Bears,@,New England Patriots,boxscore,33,14,390,1,260,4
 114,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 115,8,Thu,2022-10-27,8:15PM,Baltimore Ravens,@,Tampa Bay Buccaneers,boxscore,27,22,453,0,349,1
-116,8,Sun,2022-10-30,9:30AM,Denver Broncos,@,Jacksonville Jaguars,preview,,,,,,
-117,8,Sun,2022-10-30,1:00PM,Carolina Panthers,@,Atlanta Falcons,preview,,,,,,
-118,8,Sun,2022-10-30,1:00PM,Chicago Bears,@,Dallas Cowboys,preview,,,,,,
-119,8,Sun,2022-10-30,1:00PM,Arizona Cardinals,@,Minnesota Vikings,preview,,,,,,
-120,8,Sun,2022-10-30,1:00PM,Miami Dolphins,@,Detroit Lions,preview,,,,,,
-121,8,Sun,2022-10-30,1:00PM,New England Patriots,@,New York Jets,preview,,,,,,
-122,8,Sun,2022-10-30,1:00PM,Pittsburgh Steelers,@,Philadelphia Eagles,preview,,,,,,
-123,8,Sun,2022-10-30,1:00PM,Las Vegas Raiders,@,New Orleans Saints,preview,,,,,,
-124,8,Sun,2022-10-30,4:05PM,Tennessee Titans,@,Houston Texans,preview,,,,,,
-125,8,Sun,2022-10-30,4:25PM,New York Giants,@,Seattle Seahawks,preview,,,,,,
-126,8,Sun,2022-10-30,4:25PM,San Francisco 49ers,@,Los Angeles Rams,preview,,,,,,
-127,8,Sun,2022-10-30,4:25PM,Washington Commanders,@,Indianapolis Colts,preview,,,,,,
-128,8,Sun,2022-10-30,8:20PM,Green Bay Packers,@,Buffalo Bills,preview,,,,,,
+116,8,Sun,2022-10-30,9:30AM,Denver Broncos,@,Jacksonville Jaguars,boxscore,21,17,331,1,305,2
+117,8,Sun,2022-10-30,1:00PM,Miami Dolphins,@,Detroit Lions,boxscore,31,27,476,1,393,0
+118,8,Sun,2022-10-30,1:00PM,Philadelphia Eagles,,Pittsburgh Steelers,boxscore,35,13,401,0,300,2
+119,8,Sun,2022-10-30,1:00PM,Atlanta Falcons,,Carolina Panthers,boxscore,37,34,406,2,478,1
+120,8,Sun,2022-10-30,1:00PM,Dallas Cowboys,,Chicago Bears,boxscore,49,29,442,1,371,1
+121,8,Sun,2022-10-30,1:00PM,Minnesota Vikings,,Arizona Cardinals,boxscore,34,26,381,1,375,3
+122,8,Sun,2022-10-30,1:00PM,New Orleans Saints,,Las Vegas Raiders,boxscore,24,0,367,0,183,1
+123,8,Sun,2022-10-30,1:00PM,New England Patriots,@,New York Jets,boxscore,22,17,288,1,387,3
+124,8,Sun,2022-10-30,4:05PM,Tennessee Titans,@,Houston Texans,boxscore,17,10,354,2,161,1
+125,8,Sun,2022-10-30,4:25PM,San Francisco 49ers,@,Los Angeles Rams,boxscore,31,14,368,0,223,0
+126,8,Sun,2022-10-30,4:25PM,Washington Commanders,@,Indianapolis Colts,boxscore,17,16,362,1,324,2
+127,8,Sun,2022-10-30,4:25PM,Seattle Seahawks,,New York Giants,boxscore,27,13,277,1,225,2
+128,8,Sun,2022-10-30,8:20PM,Buffalo Bills,,Green Bay Packers,boxscore,27,17,369,2,398,1
 129,8,Mon,2022-10-31,8:15PM,Cincinnati Bengals,@,Cleveland Browns,preview,,,,,,
 130,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 131,9,Thu,2022-11-03,8:15PM,Philadelphia Eagles,@,Houston Texans,preview,,,,,,
