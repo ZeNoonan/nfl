@@ -493,6 +493,7 @@ with st.expander('Average Error Calcs on Turnover Model'):
     # avg_error_data['test']=avg_error_data['home_team']-avg_error_data['away_team']
     avg_error_data.insert(loc=8,column='betting_odds_error',value=(abs(avg_error_data['home_pts_scored']+avg_error_data['Home Line Close']-avg_error_data['away_pts_scored'])))
     avg_error_data.insert(loc=9,column='proj_odds_error',value=(abs(avg_error_data['home_pts_scored']+avg_error_data['proj_spread']-avg_error_data['away_pts_scored'])))
+    avg_error_data.insert(loc=11,column='diff_proj_spread_actual',value=(abs(avg_error_data['proj_spread']-avg_error_data['Home Line Close'])))
     # avg_error_data['avg_err_betting']=avg_error_data['betting_odds_error'].expanding().mean()
     avg_error_data_groupby=avg_error_data.groupby(['season_year'])['betting_odds_error','proj_odds_error'].mean().transpose()
     # st.write('avg error df data', avg_error_data)
@@ -502,3 +503,35 @@ with st.expander('Average Error Calcs on Turnover Model'):
     
     st.write('betting odds error lifetime to date',avg_error_data['betting_odds_error'].mean())
     st.write('proj odds error lifetime to date',avg_error_data['proj_odds_error'].mean())
+
+    st.write('How does the model do when the proj spread is at least 7 points different from the market?')
+    
+    df = pd.DataFrame({'A':'foo foo foo bar bar bar'.split(),
+                   'B':[0.1, 0.5, 1.0]*2})
+    # st.write(df)
+    df['C'] = df.groupby(['A'])['B'].transform(
+                     lambda x: pd.qcut(x, 3, labels=False))
+    # st.write(df)
+
+    df = pd.DataFrame(dict(revenue=np.random.randint(1000000, 99999999, 100)))
+    df['decile'] = pd.qcut(df.revenue, 10, labels=range(10))
+    df = df.join(df.groupby('decile').revenue.agg(Mean='mean', Std='std'), on='decile')
+    df['revenue_zscore_by_decile'] = df.revenue.sub(df.Mean).div(df.Std)
+    # st.write('try this',df.head())
+    # https://stackoverflow.com/questions/41354611/select-filter-bins-after-qcut-decile
+    avg_error_data['decile_spread_diff'] = pd.qcut(avg_error_data['diff_proj_spread_actual'], 10, labels=range(10))
+    avg_error_data['decile_spread'] = pd.qcut(avg_error_data['Home Line Close'], 10, labels=range(10))
+    
+    st.write('data',avg_error_data)
+    
+    avg_error_data = avg_error_data.join(avg_error_data.groupby('decile_spread_diff')['proj_odds_error'].agg(Mean='mean', Std='std',Max='max',Min='min',
+    Count='count',Median='median'), on='decile_spread_diff')
+    
+    st.write('Groupby Stats on Spread',avg_error_data.groupby('decile_spread')['Home Line Close'].agg(Mean='mean', Std='std',Max='max',Min='min',
+    Count='count',Median='median'), on='decile_spread')
+    
+    st.write('not sure on what the below stats is telling me')
+    st.write('Groupby Stats on Proj Odds Error',avg_error_data.groupby('decile_spread_diff')['proj_odds_error'].agg(Mean='mean', Std='std',Max='max',
+    Min='min',Count='count',Median='median'), on='decile_spread_diff')
+    # avg_error_data = avg_error_data.join(avg_error_data.groupby('decile_spread_diff')['proj_odds_error'].agg(Mean='mean', Std='std',Max='max',Min='min'), on='decile_spread_diff')
+    st.write('data',avg_error_data)
