@@ -523,15 +523,30 @@ with st.expander('Average Error Calcs on Turnover Model'):
     avg_error_data['decile_spread'] = pd.qcut(avg_error_data['Home Line Close'], 10, labels=range(10))
     
     st.write('data',avg_error_data)
+    cols_to_move=['Date','home_team','away_team','home_pts_scored','away_pts_scored','Home Line Close','proj_spread','diff_proj_spread_actual','decile_spread_diff']
+    cols = cols_to_move + [col for col in avg_error_data if col not in cols_to_move]
+    avg_error_data=avg_error_data[cols]
+    st.write('data',avg_error_data)
     
-    avg_error_data = avg_error_data.join(avg_error_data.groupby('decile_spread_diff')['proj_odds_error'].agg(Mean='mean', Std='std',Max='max',Min='min',
-    Count='count',Median='median'), on='decile_spread_diff')
+    # avg_error_data = avg_error_data.join(avg_error_data.groupby('decile_spread_diff')['diff_proj_spread_actual'].agg(Mean='mean', Std='std',Max='max',Min='min',
+    # Count='count',Median='median'), on='decile_spread_diff')
     
     st.write('Groupby Stats on Spread',avg_error_data.groupby('decile_spread')['Home Line Close'].agg(Mean='mean', Std='std',Max='max',Min='min',
     Count='count',Median='median'), on='decile_spread')
     
     st.write('not sure on what the below stats is telling me')
-    st.write('Groupby Stats on Proj Odds Error',avg_error_data.groupby('decile_spread_diff')['proj_odds_error'].agg(Mean='mean', Std='std',Max='max',
+    st.write('Groupby Stats on Proj Spread Diff v. Actual Spread',avg_error_data.groupby('decile_spread_diff')['diff_proj_spread_actual'].agg(Mean='mean', Std='std',Max='max',
     Min='min',Count='count',Median='median'), on='decile_spread_diff')
+
+    # st.write('Groupby Stats on Proj Spread Diff v. Actual Spread V1',avg_error_data.groupby('decile_spread_diff').agg(Mean='mean',
+    # Count='count',Median='median'),on=['proj_odds_error'])
+    # st.write(  avg_error_data.groupby(['decile_spread_diff'])[['proj_odds_error','result']].sum()    )
+    # st.write(  avg_error_data.groupby(['decile_spread_diff'])[['proj_odds_error','result']].agg('sum','count')    )
+    st.write('got to the below, maybe i can use the below code to replace some of the above')
+    st.write(   avg_error_data.groupby(['decile_spread_diff']).agg(winning=('result','sum'),count=('result','count'),test=('proj_odds_error','mean'))   )
+
+    # st.write(avg_error_data.groupby)
+    # st.write('x',avg_error_data.groupby(['decile_spread_diff','diff_proj_spread_actual']).agg({'proj_odds_error':['mean','count']}).reset_index())
+    
     # avg_error_data = avg_error_data.join(avg_error_data.groupby('decile_spread_diff')['proj_odds_error'].agg(Mean='mean', Std='std',Max='max',Min='min'), on='decile_spread_diff')
     st.write('data',avg_error_data)
