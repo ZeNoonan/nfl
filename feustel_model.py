@@ -407,13 +407,14 @@ with st.expander('first simple model'):
     # st.dataframe(result_count)
     st.dataframe(result_pivot)
 
-with st.expander('Average Error Calcs'):
+with st.expander('Average Error Calcs on Simple Model'):
     avg_error_data=df_combined.copy()
     avg_error_data=avg_error_data[avg_error_data['proj_spread'].notna()]
     # st.write('avg error df', avg_error_data)
     # avg_error_data['test']=avg_error_data['home_team']-avg_error_data['away_team']
     avg_error_data.insert(loc=8,column='betting_odds_error',value=(abs(avg_error_data['home_pts_scored']+avg_error_data['Home Line Close']-avg_error_data['away_pts_scored'])))
     avg_error_data.insert(loc=9,column='proj_odds_error',value=(abs(avg_error_data['home_pts_scored']+avg_error_data['proj_spread']-avg_error_data['away_pts_scored'])))
+    avg_error_data.insert(loc=11,column='diff_proj_spread_actual',value=(abs(avg_error_data['proj_spread']-avg_error_data['Home Line Close'])))
     # avg_error_data['avg_err_betting']=avg_error_data['betting_odds_error'].expanding().mean()
     avg_error_data_groupby=avg_error_data.groupby(['season_year'])['betting_odds_error','proj_odds_error'].mean().transpose()
     avg_error_data_groupby.loc['Diff']=avg_error_data_groupby.loc['proj_odds_error']-avg_error_data_groupby.loc['betting_odds_error']
@@ -422,6 +423,15 @@ with st.expander('Average Error Calcs'):
     avg_error_data_groupby.style.format("{:.1f}", na_rep='-'))
     st.write('betting odds error lifetime to date',avg_error_data['betting_odds_error'].mean())
     st.write('proj odds error lifetime to date',avg_error_data['proj_odds_error'].mean())
+
+    avg_error_data['decile_spread_diff'] = pd.qcut(avg_error_data['diff_proj_spread_actual'], 10, labels=range(10))
+    avg_error_data['decile_spread'] = pd.qcut(avg_error_data['Home Line Close'], 10, labels=range(10))
+    st.write('Index below is split into 10 deciles of the difference between the Closing Spread and our Estimated Spread')
+    st.write('So want to see the result for where the diff to the spread is greater than 7 per Elihu')
+    st.write(   avg_error_data.groupby(['decile_spread_diff']).agg(winning=('result','sum'),count=('result','count'),
+    avg_proj_odds_error=('proj_odds_error','mean'),med_proj_odds_error=('proj_odds_error','median'),min_diff_to_spread=('diff_proj_spread_actual','min'),
+    max_diff_to_spread=('diff_proj_spread_actual','max') )   )
+
 
 with st.expander('Splitting the Spread up to analyse'):
     avg_error_data_spread=avg_error_data.copy()
@@ -506,44 +516,49 @@ with st.expander('Average Error Calcs on Turnover Model'):
 
     st.write('How does the model do when the proj spread is at least 7 points different from the market?')
     
-    df = pd.DataFrame({'A':'foo foo foo bar bar bar'.split(),
-                   'B':[0.1, 0.5, 1.0]*2})
-    # st.write(df)
-    df['C'] = df.groupby(['A'])['B'].transform(
-                     lambda x: pd.qcut(x, 3, labels=False))
-    # st.write(df)
+    # df = pd.DataFrame({'A':'foo foo foo bar bar bar'.split(),
+    #                'B':[0.1, 0.5, 1.0]*2})
+    # # st.write(df)
+    # df['C'] = df.groupby(['A'])['B'].transform(
+    #                  lambda x: pd.qcut(x, 3, labels=False))
+    # # st.write(df)
 
-    df = pd.DataFrame(dict(revenue=np.random.randint(1000000, 99999999, 100)))
-    df['decile'] = pd.qcut(df.revenue, 10, labels=range(10))
-    df = df.join(df.groupby('decile').revenue.agg(Mean='mean', Std='std'), on='decile')
-    df['revenue_zscore_by_decile'] = df.revenue.sub(df.Mean).div(df.Std)
+    # df = pd.DataFrame(dict(revenue=np.random.randint(1000000, 99999999, 100)))
+    # df['decile'] = pd.qcut(df.revenue, 10, labels=range(10))
+    # df = df.join(df.groupby('decile').revenue.agg(Mean='mean', Std='std'), on='decile')
+    # df['revenue_zscore_by_decile'] = df.revenue.sub(df.Mean).div(df.Std)
     # st.write('try this',df.head())
     # https://stackoverflow.com/questions/41354611/select-filter-bins-after-qcut-decile
     avg_error_data['decile_spread_diff'] = pd.qcut(avg_error_data['diff_proj_spread_actual'], 10, labels=range(10))
     avg_error_data['decile_spread'] = pd.qcut(avg_error_data['Home Line Close'], 10, labels=range(10))
     
-    st.write('data',avg_error_data)
+    # st.write('data',avg_error_data)
     cols_to_move=['Date','home_team','away_team','home_pts_scored','away_pts_scored','Home Line Close','proj_spread','diff_proj_spread_actual','decile_spread_diff']
     cols = cols_to_move + [col for col in avg_error_data if col not in cols_to_move]
     avg_error_data=avg_error_data[cols]
-    st.write('data',avg_error_data)
+    # st.write('data',avg_error_data)
     
     # avg_error_data = avg_error_data.join(avg_error_data.groupby('decile_spread_diff')['diff_proj_spread_actual'].agg(Mean='mean', Std='std',Max='max',Min='min',
     # Count='count',Median='median'), on='decile_spread_diff')
     
-    st.write('Groupby Stats on Spread',avg_error_data.groupby('decile_spread')['Home Line Close'].agg(Mean='mean', Std='std',Max='max',Min='min',
-    Count='count',Median='median'), on='decile_spread')
+    # st.write('Groupby Stats on Spread',avg_error_data.groupby('decile_spread')['Home Line Close'].agg(Mean='mean', Std='std',Max='max',Min='min',
+    # Count='count',Median='median'), on='decile_spread')
     
-    st.write('not sure on what the below stats is telling me')
-    st.write('Groupby Stats on Proj Spread Diff v. Actual Spread',avg_error_data.groupby('decile_spread_diff')['diff_proj_spread_actual'].agg(Mean='mean', Std='std',Max='max',
-    Min='min',Count='count',Median='median'), on='decile_spread_diff')
+    # st.write('not sure on what the below stats is telling me')
+    # st.write('Groupby Stats on Proj Spread Diff v. Actual Spread',avg_error_data.groupby('decile_spread_diff')['diff_proj_spread_actual'].agg(Mean='mean', Std='std',Max='max',
+    # Min='min',Count='count',Median='median'), on='decile_spread_diff')
 
     # st.write('Groupby Stats on Proj Spread Diff v. Actual Spread V1',avg_error_data.groupby('decile_spread_diff').agg(Mean='mean',
     # Count='count',Median='median'),on=['proj_odds_error'])
     # st.write(  avg_error_data.groupby(['decile_spread_diff'])[['proj_odds_error','result']].sum()    )
     # st.write(  avg_error_data.groupby(['decile_spread_diff'])[['proj_odds_error','result']].agg('sum','count')    )
-    st.write('got to the below, maybe i can use the below code to replace some of the above')
-    st.write(   avg_error_data.groupby(['decile_spread_diff']).agg(winning=('result','sum'),count=('result','count'),test=('proj_odds_error','mean'))   )
+    st.write('Index below is split into 10 deciles of the difference between the Closing Spread and our Estimated Spread')
+    st.write('So want to see the result for where the diff to the spread is greater than 7 per Elihu')
+    # st.write(pd.qcut(pd.Series(avg_error_data['diff_proj_spread_actual']), 10,labels=range(10))             )
+    # st.write(pd.qcut(pd.Series(avg_error_data['diff_proj_spread_actual']), 10).drop_duplicates().sort_values().reset_index().drop('index',axis=1) )
+    st.write(   avg_error_data.groupby(['decile_spread_diff']).agg(winning=('result','sum'),count=('result','count'),
+    avg_proj_odds_error=('proj_odds_error','mean'),med_proj_odds_error=('proj_odds_error','median'),min_diff_to_spread=('diff_proj_spread_actual','min'),
+    max_diff_to_spread=('diff_proj_spread_actual','max') )   )
 
     # st.write(avg_error_data.groupby)
     # st.write('x',avg_error_data.groupby(['decile_spread_diff','diff_proj_spread_actual']).agg({'proj_odds_error':['mean','count']}).reset_index())
