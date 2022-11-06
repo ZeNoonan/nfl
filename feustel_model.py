@@ -22,7 +22,8 @@ def read_data(file):
     return pd.read_excel(file)
 
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_24_09_22.xlsx')
-df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_14_10_22.xlsx')
+# df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_14_10_22.xlsx')
+df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_05_11_22.xlsx')
 df=df.copy()
 
 with st.expander('pro football workings'):
@@ -120,13 +121,13 @@ with st.expander('pro football workings'):
 
     # df.loc [ (df['Date']=='2015-01-04')&(df['Home Team']=='New England Patriots'), 'Away Team' ] = 'Seattle Seahawks'
 
-    # st.write('cleaned file', cleaned_pro_football_file)
-    # st.write('merge with this file', df)
+    st.write('cleaned file', cleaned_pro_football_file.sort_values(by='Date',ascending=False).set_index(['Week','Date','Winner/tie','Loser/tie']))
+    st.write('merge with this file', df.set_index(['Date','Home Team','Away Team']))
     df = pd.merge(cleaned_pro_football_file, df, how='outer')
-
-    df=df.loc[(df['Date']<'2022-10-14')] # WATCH THIS FOR WHEN BRINGING IN NEW WEEK
-    st.write('merged file', df)
-    # st.write('checking that loc works for date',df.loc[(df['Date']>'2022-10-14')])
+    st.write('check this to see what the problem is', df.set_index(['Week','Date','Winner/tie','Loser/tie']))
+    df=df.loc[(df['Date']<'2022-10-15')] # WATCH THIS FOR WHEN BRINGING IN NEW WEEK
+    # st.write('merged file', df.set_index(['Week','Date','Winner/tie','Loser/tie']))
+    # st.write('checking that loc works for date',df.loc[(df['Date']>'2022-11-05')])
     st.write('want to clean this up a bit get rid of the future gameweeks')
     st.write('then focus on the na games where havent merged properly like the final where on neutral field')
     # st.write(df.loc[df['Winner/tie'].isna()])
@@ -234,10 +235,10 @@ with st.expander('Turnover 2 Variable Regression'):
 # for _ in df.groupby('season_year'):
 #     pass
 
-df_offensive_home=df.loc[:,['Date','Home Team', 'Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
+df_offensive_home=df.loc[:,['Date','Week','Home Team', 'Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
     .rename(columns={'Home Team':'team','Home Score':'score'})
 df_offensive_home['home_away']=1
-df_offensive_away=df.loc[:,['Date','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
+df_offensive_away=df.loc[:,['Date','Week','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
     .rename(columns={'Away Team':'team','Away Score':'score'})
 df_offensive_away['turnover']=-df_offensive_away['turnover'] # i think this works converts it to same for everyone
 df_offensive_away['home_away']=-1
@@ -277,10 +278,10 @@ df_offensive=col_correction_turnover(df_offensive,col='turnover')
 # st.write('check to see if shift worked',df_offensive[(df_offensive['team']=='Arizona Cardinals') | (df_offensive['team']=='Arizona Cardinals')])
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
 
-df_defensive_home=df.loc[:,['Date','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
+df_defensive_home=df.loc[:,['Date','Week','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
     .rename(columns={'Home Team':'team','Away Score':'score'})
 df_defensive_home['home_away']=1
-df_defensive_away=df.loc[:,['Date','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
+df_defensive_away=df.loc[:,['Date','Week','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
     .rename(columns={'Away Team':'team','Home Score':'score'})
 df_defensive_away['home_away']=-1
 df_defensive_away['turnover']=-df_defensive_away['turnover']
@@ -344,7 +345,8 @@ cols_to_move=['Date','team','season_year','Home Line Close','unique_id','pts_sco
 'avg_pts_conceded_team_season','home_pts_avg','away_pts_avg','avg_home_score','avg_away_score','home_away']
 cols = cols_to_move + [col for col in df_new if col not in cols_to_move]
 df_new=df_new[cols]
-df_new=df_new.loc[:,['Date','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
+strength_schedule_df_2=df_new.copy()
+df_new=df_new.loc[:,['Date','Week','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
 'avg_pts_conceded_team_season','home_away','turnover','cum_turnover','season_games_played']]
 # st.write('df update', df_new)
 
@@ -363,6 +365,7 @@ df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts
 # df_combined=pd.concat([df_home_1,df_away_1],axis=0)
 # st.write('before home and away are combined', df_home_1, 'away', df_away_1)
 df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year', 'Home Line Close'],how='outer')
+strength_schedule_df_1=df_combined.copy()
 
 with st.expander('first simple model'):
     df_turnover_rating=df_combined.copy()
@@ -453,6 +456,7 @@ with st.expander('Turnover Model'):
     
     df_turnover_rating['home_turnover_per_game']=df_turnover_rating['turnover_cum_home'] / df_turnover_rating['season_games_played_home']
     df_turnover_rating['away_turnover_per_game']=df_turnover_rating['turnover_cum_away'] / df_turnover_rating['season_games_played_away']
+    strength_schedule_df=df_turnover_rating.copy()
     df_turnover_rating['home_offensive_rating'] = df_turnover_rating['home_avg_pts_scored_team_season'] + (df_turnover_rating['home_turnover_per_game']*((4*0.8) /2))
     df_turnover_rating['home_defensive_rating']=df_turnover_rating['home_avg_pts_conceded_team_season'] - (df_turnover_rating['home_turnover_per_game']*((4*0.8) /2))
 
@@ -564,4 +568,16 @@ with st.expander('Average Error Calcs on Turnover Model'):
     # st.write('x',avg_error_data.groupby(['decile_spread_diff','diff_proj_spread_actual']).agg({'proj_odds_error':['mean','count']}).reset_index())
     
     # avg_error_data = avg_error_data.join(avg_error_data.groupby('decile_spread_diff')['proj_odds_error'].agg(Mean='mean', Std='std',Max='max',Min='min'), on='decile_spread_diff')
-    st.write('data',avg_error_data)
+    
+with st.expander("Strength of Schedule Workings"):
+    # st.write('data',strength_schedule_df)
+    # st.write('data',strength_schedule_df_1)
+    st.write('this might be best to work with as just one row of data',strength_schedule_df_2)
+    st.write('i think i need to get week numbers in so that strength of schedule can be done on a weekly basis ok done')
+    st.write('just take on year for the moment and work with that')
+    test_2006=strength_schedule_df_2[strength_schedule_df_2['season_year']==2006]
+    st.write('test 2006', test_2006)
+    st.write('lets just work with first 4 weeks of 2022')
+    weekly_group=test_2006.groupby('Week')
+    # for x,y in weekly_group:
+    #     st.write('x',x,'y',y)
