@@ -21,6 +21,9 @@ def read_csv_data(file):
 def read_data(file):
     return pd.read_excel(file)
 
+current_date='2022-11-03'
+# run the fbref function and bring in date of last completed week, and then check the test NA 
+
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_24_09_22.xlsx')
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_14_10_22.xlsx')
 df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_05_11_22.xlsx')
@@ -38,7 +41,7 @@ with st.expander('pro football workings'):
             # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
             return test
 
-
+    # fbref_scraper_csv(url)
     # def read_csv_data(file):
     # file_2006 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2006.csv')
     # file_2007 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2007.csv')
@@ -121,14 +124,14 @@ with st.expander('pro football workings'):
 
     # df.loc [ (df['Date']=='2015-01-04')&(df['Home Team']=='New England Patriots'), 'Away Team' ] = 'Seattle Seahawks'
 
-    st.write('cleaned file', cleaned_pro_football_file.sort_values(by='Date',ascending=False).set_index(['Week','Date','Winner/tie','Loser/tie']))
-    st.write('merge with this file', df.set_index(['Date','Home Team','Away Team']))
+    # st.write('cleaned file', cleaned_pro_football_file.sort_values(by='Date',ascending=False).set_index(['Week','Date','Winner/tie','Loser/tie']))
+    # st.write('merge with this file', df.set_index(['Date','Home Team','Away Team']))
     df = pd.merge(cleaned_pro_football_file, df, how='outer')
-    st.write('check this to see what the problem is', df.set_index(['Week','Date','Winner/tie','Loser/tie']))
-    df=df.loc[(df['Date']<'2022-10-15')] # WATCH THIS FOR WHEN BRINGING IN NEW WEEK
+    # st.write('check this to see what the problem is', df.set_index(['Week','Date','Winner/tie','Loser/tie']))
+    df=df.loc[(df['Date']<current_date)] # WATCH THIS FOR WHEN BRINGING IN NEW WEEK
     # st.write('merged file', df.set_index(['Week','Date','Winner/tie','Loser/tie']))
     # st.write('checking that loc works for date',df.loc[(df['Date']>'2022-11-05')])
-    st.write('want to clean this up a bit get rid of the future gameweeks')
+    # st.write('want to clean this up a bit get rid of the future gameweeks')
     st.write('then focus on the na games where havent merged properly like the final where on neutral field')
     # st.write(df.loc[df['Winner/tie'].isna()])
     
@@ -310,6 +313,7 @@ df_defensive=df_defensive.rename(columns={'score':'pts_conceded','mean_score':'4
 df_new=pd.merge(df_offensive,df_defensive,how='outer')
 # st.write('check to see if shift worked defensive',df_new[(df_new['team']=='Arizona Cardinals') | (df_new['team']=='Arizona Cardinals')])
 # st.write('after merge', df_new)
+# st.write('should this not be done by season?? need to check looks like its not used anywhere else strange!')
 df_new['team_cum_sum_pts']=df_new.groupby(['team'])['pts_scored'].cumsum()
 df_new['team_cum_sum_games']=df_new.groupby(['team'])['pts_scored'].cumcount()+1
 df_new['rolling_avg_team_pts_scored']=df_new['team_cum_sum_pts'] / df_new['team_cum_sum_games']
@@ -572,12 +576,43 @@ with st.expander('Average Error Calcs on Turnover Model'):
 with st.expander("Strength of Schedule Workings"):
     # st.write('data',strength_schedule_df)
     # st.write('data',strength_schedule_df_1)
-    st.write('this might be best to work with as just one row of data',strength_schedule_df_2)
+    st.write('this might be best to work with as just one row of data')
     st.write('i think i need to get week numbers in so that strength of schedule can be done on a weekly basis ok done')
     st.write('just take on year for the moment and work with that')
-    test_2006=strength_schedule_df_2[strength_schedule_df_2['season_year']==2006]
-    st.write('test 2006', test_2006)
+    test_2022=strength_schedule_df_2[strength_schedule_df_2['season_year']==2022]
+    st.write('test 2022', test_2022)
     st.write('lets just work with first 4 weeks of 2022')
-    weekly_group=test_2006.groupby('Week')
+
+    def col_correction(df_offensive,col='avg_pts_scored_team_season'):
+        df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+            .reset_index().drop(['level_2','team','season_year'],axis=1)
+        df_offensive['test_col']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
+        df_offensive[col]=df_offensive['SHIFT avg_pts_scored_team_season']*df_offensive['test_col']
+        df_offensive=df_offensive.drop(['SHIFT avg_pts_scored_team_season'],axis=1)
+        return df_offensive
+
+    team_list = test_2022['team'].unique()
+    # for x in team_list:
+    #     st.write(x)
+    # weekly_group=test_2022.groupby('team')
+    
+    # for x,weeteam_df in weekly_group:
+    #     no_team_df=team[]
+    #     pass
+        
+        # st.write('x',x,'y',y)
+
+
+    test_2022['test_avg_team_games']=test_2022.groupby(['team'])['pts_scored'].cumcount()+1
+    test_2022['test_avg_team_pts']=test_2022.groupby(['team'])['pts_scored'].cumsum()
+    test_2022['test_avg_team_pts_scored']=test_2022['test_avg_team_pts'] / test_2022['test_avg_team_games']
+
+    cols_to_move=['Date','team','season_year','Home Line Close','unique_id','pts_scored','pts_conceded','test_avg_team_pts_scored','avg_pts_scored_team_season',
+    'season_games_played','test_avg_team_games','away_pts_avg','avg_home_score','avg_away_score','home_away']
+    cols = cols_to_move + [col for col in test_2022 if col not in cols_to_move]
+    test_2022=test_2022[cols]
+    
+    st.write('test 2022', test_2022.sort_values(by='Date',ascending=False))
+    # weekly_group=test_2022.groupby('Week')
     # for x,y in weekly_group:
     #     st.write('x',x,'y',y)
