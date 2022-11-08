@@ -131,18 +131,18 @@
 129,8,Mon,2022-10-31,8:15PM,Cleveland Browns,,Cincinnati Bengals,boxscore,32,13,440,2,229,2
 130,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 131,9,Thu,2022-11-03,8:15PM,Philadelphia Eagles,@,Houston Texans,boxscore,29,17,360,1,303,2
-132,9,Sun,2022-11-06,1:00PM,Buffalo Bills,@,New York Jets,preview,,,,,,
-133,9,Sun,2022-11-06,1:00PM,Carolina Panthers,@,Cincinnati Bengals,preview,,,,,,
-134,9,Sun,2022-11-06,1:00PM,Indianapolis Colts,@,New England Patriots,preview,,,,,,
-135,9,Sun,2022-11-06,1:00PM,Green Bay Packers,@,Detroit Lions,preview,,,,,,
-136,9,Sun,2022-11-06,1:00PM,Miami Dolphins,@,Chicago Bears,preview,,,,,,
-137,9,Sun,2022-11-06,1:00PM,Minnesota Vikings,@,Washington Commanders,preview,,,,,,
-138,9,Sun,2022-11-06,1:00PM,Las Vegas Raiders,@,Jacksonville Jaguars,preview,,,,,,
-139,9,Sun,2022-11-06,1:00PM,Los Angeles Chargers,@,Atlanta Falcons,preview,,,,,,
-140,9,Sun,2022-11-06,4:05PM,Seattle Seahawks,@,Arizona Cardinals,preview,,,,,,
-141,9,Sun,2022-11-06,4:25PM,Los Angeles Rams,@,Tampa Bay Buccaneers,preview,,,,,,
-142,9,Sun,2022-11-06,8:20PM,Tennessee Titans,@,Kansas City Chiefs,preview,,,,,,
-143,9,Mon,2022-11-07,8:15PM,Baltimore Ravens,@,New Orleans Saints,preview,,,,,,
+132,9,Sun,2022-11-06,1:00PM,New York Jets,,Buffalo Bills,boxscore,20,17,310,1,317,2
+133,9,Sun,2022-11-06,1:00PM,Detroit Lions,,Green Bay Packers,boxscore,15,9,254,1,389,3
+134,9,Sun,2022-11-06,1:00PM,Minnesota Vikings,@,Washington Commanders,boxscore,20,17,301,1,263,1
+135,9,Sun,2022-11-06,1:00PM,Los Angeles Chargers,@,Atlanta Falcons,boxscore,20,17,336,2,315,2
+136,9,Sun,2022-11-06,1:00PM,Cincinnati Bengals,,Carolina Panthers,boxscore,42,21,464,0,228,3
+137,9,Sun,2022-11-06,1:00PM,Miami Dolphins,@,Chicago Bears,boxscore,35,32,379,0,368,0
+138,9,Sun,2022-11-06,1:00PM,New England Patriots,,Indianapolis Colts,boxscore,26,3,203,1,121,1
+139,9,Sun,2022-11-06,1:00PM,Jacksonville Jaguars,,Las Vegas Raiders,boxscore,27,20,403,1,321,1
+140,9,Sun,2022-11-06,4:05PM,Seattle Seahawks,@,Arizona Cardinals,boxscore,31,21,421,1,262,1
+141,9,Sun,2022-11-06,4:25PM,Tampa Bay Buccaneers,,Los Angeles Rams,boxscore,16,13,323,0,206,0
+142,9,Sun,2022-11-06,8:20PM,Kansas City Chiefs,,Tennessee Titans,boxscore,20,17,499,1,229,0
+143,9,Mon,2022-11-07,8:15PM,Baltimore Ravens,@,New Orleans Saints,boxscore,27,13,319,0,243,1
 144,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
 145,10,Thu,2022-11-10,8:15PM,Atlanta Falcons,@,Carolina Panthers,preview,,,,,,
 146,10,Sun,2022-11-13,9:30AM,Seattle Seahawks,@,Tampa Bay Buccaneers,preview,,,,,,

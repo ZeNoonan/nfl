@@ -238,11 +238,13 @@ with st.expander('Turnover 2 Variable Regression'):
 # for _ in df.groupby('season_year'):
 #     pass
 
-df_offensive_home=df.loc[:,['Date','Week','Home Team', 'Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
-    .rename(columns={'Home Team':'team','Home Score':'score'})
+df_offensive_home=df.loc[:,['Date','Week','Home Team', 'Home Score', 'season_year','unique_id','avg_home_score','avg_away_score',
+'Home Line Close','turnover','Away Team']]\
+    .rename(columns={'Home Team':'team','Home Score':'score','Away Team':'opponent'})
 df_offensive_home['home_away']=1
-df_offensive_away=df.loc[:,['Date','Week','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
-    .rename(columns={'Away Team':'team','Away Score':'score'})
+df_offensive_away=df.loc[:,['Date','Week','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score',
+'Home Line Close','turnover','Home Team']]\
+    .rename(columns={'Away Team':'team','Away Score':'score','Home Team':'opponent'})
 df_offensive_away['turnover']=-df_offensive_away['turnover'] # i think this works converts it to same for everyone
 df_offensive_away['home_away']=-1
 df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
@@ -281,7 +283,8 @@ df_offensive=col_correction_turnover(df_offensive,col='turnover')
 # st.write('check to see if shift worked',df_offensive[(df_offensive['team']=='Arizona Cardinals') | (df_offensive['team']=='Arizona Cardinals')])
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
 
-df_defensive_home=df.loc[:,['Date','Week','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
+df_defensive_home=df.loc[:,['Date','Week','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score',
+'Home Line Close','turnover']]\
     .rename(columns={'Home Team':'team','Away Score':'score'})
 df_defensive_home['home_away']=1
 df_defensive_away=df.loc[:,['Date','Week','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
@@ -351,7 +354,7 @@ cols = cols_to_move + [col for col in df_new if col not in cols_to_move]
 df_new=df_new[cols]
 strength_schedule_df_2=df_new.copy()
 df_new=df_new.loc[:,['Date','Week','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
-'avg_pts_conceded_team_season','home_away','turnover','cum_turnover','season_games_played']]
+'avg_pts_conceded_team_season','home_away','turnover','cum_turnover','season_games_played','opponent']]
 # st.write('df update', df_new)
 
 # st.write('df after concat', df_new.sort_values(by=['home_away','Date'],ascending=True))
@@ -580,18 +583,22 @@ with st.expander("Strength of Schedule Workings"):
     st.write('i think i need to get week numbers in so that strength of schedule can be done on a weekly basis ok done')
     st.write('just take on year for the moment and work with that')
     test_2022=strength_schedule_df_2[strength_schedule_df_2['season_year']==2022]
-    st.write('test 2022', test_2022)
-    st.write('lets just work with first 4 weeks of 2022')
+    # st.write('test 2022', test_2022)
+    st.write('lets just work with 2022')
 
-    def col_correction(df_offensive,col='avg_pts_scored_team_season'):
-        df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+    def col_correction(df_offensive,team,col='avg_pts_scored_team_season'):
+        df_offensive=df_offensive[df_offensive['team']!=team]
+        
+        df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['pts_scored'].expanding(min_periods=4).mean().shift()\
             .reset_index().drop(['level_2','team','season_year'],axis=1)
         df_offensive['test_col']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
-        df_offensive[col]=df_offensive['SHIFT avg_pts_scored_team_season']*df_offensive['test_col']
+        df_offensive[team]=df_offensive['SHIFT avg_pts_scored_team_season']*df_offensive['test_col']
         df_offensive=df_offensive.drop(['SHIFT avg_pts_scored_team_season'],axis=1)
         return df_offensive
 
     team_list = test_2022['team'].unique()
+
+    st.write('think i need to use the function in the below')
     # for x in team_list:
     #     st.write(x)
     # weekly_group=test_2022.groupby('team')
@@ -607,12 +614,13 @@ with st.expander("Strength of Schedule Workings"):
     test_2022['test_avg_team_pts']=test_2022.groupby(['team'])['pts_scored'].cumsum()
     test_2022['test_avg_team_pts_scored']=test_2022['test_avg_team_pts'] / test_2022['test_avg_team_games']
 
-    cols_to_move=['Date','team','season_year','Home Line Close','unique_id','pts_scored','pts_conceded','test_avg_team_pts_scored','avg_pts_scored_team_season',
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Home Line Close','pts_scored','pts_conceded','test_avg_team_pts_scored','avg_pts_scored_team_season',
     'season_games_played','test_avg_team_games','away_pts_avg','avg_home_score','avg_away_score','home_away']
     cols = cols_to_move + [col for col in test_2022 if col not in cols_to_move]
     test_2022=test_2022[cols]
     
-    st.write('test 2022', test_2022.sort_values(by='Date',ascending=False))
+    st.write('do i need to be careful with the Home Line Close....')
+    st.write('test 2022 need to get opponent on same line', test_2022.sort_values(by=['Date','unique_id'],ascending=False))
     # weekly_group=test_2022.groupby('Week')
     # for x,y in weekly_group:
     #     st.write('x',x,'y',y)
