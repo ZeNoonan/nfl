@@ -579,12 +579,12 @@ with st.expander('Average Error Calcs on Turnover Model'):
 with st.expander("Strength of Schedule Workings"):
     # st.write('data',strength_schedule_df)
     # st.write('data',strength_schedule_df_1)
-    st.write('this might be best to work with as just one row of data')
-    st.write('i think i need to get week numbers in so that strength of schedule can be done on a weekly basis ok done')
-    st.write('just take on year for the moment and work with that')
+    # st.write('this might be best to work with as just one row of data')
+    # st.write('i think i need to get week numbers in so that strength of schedule can be done on a weekly basis ok done')
+    # st.write('just take on year for the moment and work with that')
     test_2022=strength_schedule_df_2[strength_schedule_df_2['season_year']==2022]
     # st.write('test 2022', test_2022)
-    st.write('lets just work with 2022')
+    # st.write('lets just work with 2022')
 
     def col_correction(df_offensive,team,col='avg_pts_scored_team_season'):
         df_offensive=df_offensive[df_offensive['team']!=team]
@@ -597,10 +597,44 @@ with st.expander("Strength of Schedule Workings"):
         return df_offensive
 
     team_list = test_2022['team'].unique()
+    raw_data_offence=[]
+    st.write(test_2022[test_2022['team']=='Arizona Cardinals'])
+    # st.write('think i need to use the function in the below')
+    for x in team_list[:1]:
+        # st.write('x', x)
+        cols_to_move=['Date','team','Week','unique_id','opponent','season_year','Home Line Close','pts_scored','pts_conceded',
+        'avg_pts_scored_team_season',
+        'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
+        cols = cols_to_move + [col for col in test_2022 if col not in cols_to_move]
+        test_2022=test_2022[cols]
+        st.write('any Rams in here with Arizona',test_2022[test_2022['team']=='Los Angeles Rams'])
+        st.write('before adj',test_2022[test_2022['team']=='Arizona Cardinals'])
+        df_1=test_2022[test_2022['team']!=x].reset_index(drop=True)
+        st.write('after adj',df_1[df_1['team']=='Arizona Cardinals'])
+        # st.write(df_1)
+        # df_1=test_2022[test_2022[test_2022['team']==x]]
+        # st.write(df_1.groupby(['team','season_year'])['pts_scored'].expanding(min_periods=4).mean().shift().reset_index().rename(columns={'pts_scored':'test_1'}))
+        # df_1['test_Test']=df_1.groupby(['team','season_year'])['pts_scored'].expanding(min_periods=4).mean().shift().reset_index().\
+        #     drop(['level_2','team','season_year'],axis=1).rename(columns={'pts_scored':'test_1'})
+        # st.write(df_1['test_Test'])
 
-    st.write('think i need to use the function in the below')
-    # for x in team_list:
-    #     st.write(x)
+        # st.write(df_1.groupby(['team','season_year'])['pts_scored'].expanding(min_periods=4).mean().shift().reset_index().drop(['level_2','team','season_year'],axis=1))
+        df_1['SHIFT avg_pts_scored_team_season']=df_1.groupby(['team','season_year'])['pts_scored'].expanding(min_periods=3).mean().shift()\
+        .reset_index().drop(['level_2','team','season_year'],axis=1) # relaxing min 4 games as might have already played team in question
+        # st.write(df_1)
+        df_1['test_col']=np.where(df_1['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_1['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
+        df_1[x]=df_1['SHIFT avg_pts_scored_team_season']*df_1['test_col']
+        df_1=df_1.drop(['SHIFT avg_pts_scored_team_season'],axis=1)
+
+
+        # st.write(x)
+    cols_to_move=['Date','team','Week','unique_id','Los Angeles Rams','opponent','season_year','Home Line Close','pts_scored','pts_conceded',
+    'avg_pts_scored_team_season',
+    'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
+    cols = cols_to_move + [col for col in df_1 if col not in cols_to_move]
+    df_1=df_1[cols]
+
+    st.write(df_1[df_1['team']=='Arizona Cardinals'])
     # weekly_group=test_2022.groupby('team')
     
     # for x,weeteam_df in weekly_group:
@@ -619,8 +653,8 @@ with st.expander("Strength of Schedule Workings"):
     cols = cols_to_move + [col for col in test_2022 if col not in cols_to_move]
     test_2022=test_2022[cols]
     
-    st.write('do i need to be careful with the Home Line Close....')
-    st.write('test 2022 need to get opponent on same line', test_2022.sort_values(by=['Date','unique_id'],ascending=False))
+    # st.write('do i need to be careful with the Home Line Close....')
+    # st.write('test 2022 need to get opponent on same line', test_2022.sort_values(by=['Date','unique_id'],ascending=False))
     # weekly_group=test_2022.groupby('Week')
     # for x,y in weekly_group:
     #     st.write('x',x,'y',y)
