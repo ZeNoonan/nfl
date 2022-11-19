@@ -671,5 +671,21 @@ with st.expander("Strength of Schedule Workings"):
     cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
     df_4=df_4[cols]    
 
-    st.write('df3 check cardinals should be ok',df_4[df_4['team']=='Arizona Cardinals'])
-    st.write('df3 check miami should be ok',df_4[df_4['team']=='Miami Dolphins'])
+    # st.write('df3 check cardinals should be ok',df_4[df_4['team']=='Arizona Cardinals'])
+    # st.write('df3 check miami should be ok',df_4[df_4['team']=='Miami Dolphins'])
+
+    st.write('put in a column for have you played them, then have a cum sum of htat played multiplied by the other col')
+    for x in team_list:
+        df_4[x+' played']=np.where(df_4['opponent']==x,1,np.NaN)
+        df_4[x+' sum']=df_4.groupby(['team','season_year'])[x+' played'].cumsum()
+        # https://stackoverflow.com/questions/53335567/use-pandas-shift-within-a-group
+        df_4[x+' sum']=df_4.groupby(['team','season_year'])[x+' sum'].shift(-1)
+
+
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','New York Jets played',
+    'New York Jets sum','New England Patriots played','Buffalo Bills played','Buffalo Bills_offence',
+    'avg_pts_scored_team_season',
+    'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
+    cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
+    df_4=df_4[cols]      
+    st.write('check this out', df_4[df_4['team']=='Miami Dolphins'])
