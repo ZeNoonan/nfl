@@ -722,6 +722,20 @@ with st.expander("Strength of Schedule Workings"):
         df_4[x+' sum']=df_4.groupby(['team','season_year'])[x+' played'].cumsum()
         # https://stackoverflow.com/questions/53335567/use-pandas-shift-within-a-group
         df_4[x+' sum']=df_4.groupby(['team','season_year'])[x+' sum'].shift(1) # careful to refer back to above column name, got caught with it
+        df_4[x+' pts_diff']=df_4[x+' sum'] * (df_4[x+'_offence']-df_4[x+'_defence'])
+        df_4[x+' games_use']=df_4[x+' sum'] * (df_4[x+'_games_played'])
+
+
+    # https://stackoverflow.com/questions/71255870/calculate-sum-based-on-multiple-rows-from-list-column-for-each-row-in-pandas-dat
+    # interesting link above
+    # df = pd.DataFrame({'id': [0, 1, 3, 2, 4], 'col_to_sum': [1, 2, 3, 4, 5], 'list_col': [[], [1], [1, 2, 3], [2], [3, 1]]})
+    # st.write(df)
+    # df = df.set_index('id')
+    # df['sum'] = df['list_col'].apply(lambda x: df.loc[x, 'col_to_sum'].sum())
+    # df = df.reset_index()
+    # st.write(df)
+    # st.write('so the key to this is to match up the look up value into the df')
+    # st.write('also the key is apply where it goes through it one cell at a time')
 
 
     cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded',
@@ -739,8 +753,9 @@ with st.expander("Strength of Schedule Workings"):
     df_4=df_4[cols]      
     st.write('check this out LA', df_4[df_4['team']=='Los Angeles Rams'].set_index('team'))
 
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams_offence','Los Angeles Rams_defence',
-    'Los Angeles Rams_games_played','Arizona Cardinals sum',
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams sum',
+    'Los Angeles Rams pts_diff','Los Angeles Rams games_use',
+    'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
     'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
 
     cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
