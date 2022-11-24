@@ -725,6 +725,23 @@ with st.expander("Strength of Schedule Workings"):
         df_4[x+' pts_diff']=df_4[x+' sum'] * (df_4[x+'_offence']-df_4[x+'_defence'])
         df_4[x+' games_use']=df_4[x+' sum'] * (df_4[x+'_games_played'])
 
+    # for x,y in df_4.groupby('Week'):
+    #     # st.write('this is week', x)
+    #     for x in team_list:
+    #         df_4.loc [ (df_4['team']==x), x +'_test_games' ] = df_4[x+' sum'].sum()
+
+    grouped_container=[]
+    for week,group_df in df_4.groupby('Week'):
+        # st.write('this is week', x)
+        for x in team_list:
+            group_df.loc [ (group_df['team']==x), x +'_test_games' ] = group_df[x+' sum'].sum()
+            grouped_container[x +'_test_games'].append(group_df)
+
+    grouped_container=pd.DataFrame(grouped_container).transpose()
+    st.write('grouped container', grouped_container)
+    df_4=pd.merge(df_4,grouped_container,left_index=True,right_index=True,how='outer')
+    # df_power = pd.concat(grouped_container, ignore_index=True)
+
 
     # https://stackoverflow.com/questions/71255870/calculate-sum-based-on-multiple-rows-from-list-column-for-each-row-in-pandas-dat
     # interesting link above
@@ -753,11 +770,19 @@ with st.expander("Strength of Schedule Workings"):
     df_4=df_4[cols]      
     st.write('check this out LA', df_4[df_4['team']=='Los Angeles Rams'].set_index('team'))
 
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams sum',
+    # df_4['LA_Test']=np.where(df_4['Week']==5, df_4['Los Angeles Rams sum'].sum(),np.NaN)
+    
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams_test_games','Los Angeles Rams sum',
     'Los Angeles Rams pts_diff','Los Angeles Rams games_use',
     'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
     'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
 
     cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
-    df_4=df_4[cols]      
+    df_4=df_4[cols]
+
     st.write('Week 5', df_4[df_4['Week']==5].set_index('team'))
+    # test_test=df_4.set_index('team')
+    # df_4.loc [ (df_4['team']=='Los Angeles Rams'), 'Test LA' ] = 'son_heung-min' 
+    st.write('picking la ram row', df_4.set_index('team').loc['Los Angeles Rams',:])
+    
+    # st.write('picking la ram row' )
