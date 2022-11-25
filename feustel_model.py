@@ -730,17 +730,46 @@ with st.expander("Strength of Schedule Workings"):
     #     for x in team_list:
     #         df_4.loc [ (df_4['team']==x), x +'_test_games' ] = df_4[x+' sum'].sum()
 
+
+
     grouped_container=[]
     for week,group_df in df_4.groupby('Week'):
         # st.write('this is week', x)
         for x in team_list:
-            group_df.loc [ (group_df['team']==x), x +'_test_games' ] = group_df[x+' sum'].sum()
-            grouped_container[x +'_test_games'].append(group_df)
+            # st.write('START: this is x',x, 'this is week', week)
+            # group_df[x +'_test_games'] = group_df[x+' sum'].sum()
+            # group_df.loc [ (group_df['team']==x), 'Test LA' ] = group_df[x+' sum'].sum()
+            group_df.loc [ (group_df['team']==x), x+'_opp_games' ] = group_df[x+' sum'].sum()
+            group_df.loc [ (group_df['team']==x), x+'_diff_total' ] = group_df[x+' pts_diff'].sum()
+            group_df.loc [ (group_df['team']==x), x+'_total_opp_games' ] = group_df[x+' games_use'].sum()
+            group_df.loc [ (group_df['team']==x), x+'_diff_per_game' ] = group_df[x+'_diff_total']/group_df[x+'_total_opp_games']
+            cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams_opp_games',
+            'Los Angeles Rams_diff_per_game','Los Angeles Rams_total_opp_games',
+            'Los Angeles Rams sum','Los Angeles Rams_diff_total','Los Angeles Rams pts_diff','Los Angeles Rams games_use',
+            'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
+            'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
 
-    grouped_container=pd.DataFrame(grouped_container).transpose()
-    st.write('grouped container', grouped_container)
-    df_4=pd.merge(df_4,grouped_container,left_index=True,right_index=True,how='outer')
-    # df_power = pd.concat(grouped_container, ignore_index=True)
+            cols = cols_to_move + [col for col in group_df if col not in cols_to_move]
+            group_df=group_df[cols]
+            # st.write('this is group df', group_df)
+            # st.write('FINISH')
+            # group_df.loc [ (group_df['team']==x), (x +'_test_games') ] = group_df[x+' sum'].sum()
+        grouped_container.append(group_df)
+    
+    # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams_opp_games','Los Angeles Rams sum',
+    # 'Los Angeles Rams pts_diff','Los Angeles Rams games_use',
+    # 'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
+    # 'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
+
+    # cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
+    # df_4=df_4[cols]
+    # st.write('is the dataframe returned', df_4)
+    # st.write(pd.DataFrame(grouped_container))
+    # grouped_container=pd.DataFrame(grouped_container).transpose()
+    # st.write('grouped container', grouped_container)
+    # df_4=pd.merge(df_4,grouped_container,left_index=True,right_index=True,how='outer')
+    df_power = pd.concat(grouped_container)
+    st.write('df power Week 5', df_power[(df_power['Week']==5) | (df_power['Week']==6)].set_index('team'))
 
 
     # https://stackoverflow.com/questions/71255870/calculate-sum-based-on-multiple-rows-from-list-column-for-each-row-in-pandas-dat
@@ -761,18 +790,18 @@ with st.expander("Strength of Schedule Workings"):
 
     cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
     df_4=df_4[cols]      
-    st.write('check this out', df_4[df_4['team']=='Arizona Cardinals'].set_index('team'))
+    # st.write('check this out', df_4[df_4['team']=='Arizona Cardinals'].set_index('team'))
     cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Arizona Cardinals played','Arizona Cardinals sum',
     'Los Angeles Rams played', 'Los Angeles Rams sum',
     'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
 
     cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
     df_4=df_4[cols]      
-    st.write('check this out LA', df_4[df_4['team']=='Los Angeles Rams'].set_index('team'))
+    # st.write('check this out LA', df_4[df_4['team']=='Los Angeles Rams'].set_index('team'))
 
     # df_4['LA_Test']=np.where(df_4['Week']==5, df_4['Los Angeles Rams sum'].sum(),np.NaN)
     
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams_test_games','Los Angeles Rams sum',
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams sum',
     'Los Angeles Rams pts_diff','Los Angeles Rams games_use',
     'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
     'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
