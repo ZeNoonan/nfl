@@ -173,10 +173,10 @@
 171,11,Sun,2022-11-20,4:25PM,Dallas Cowboys,@,Minnesota Vikings,boxscore,40,3,458,0,183,1
 172,11,Sun,2022-11-20,8:20PM,Kansas City Chiefs,@,Los Angeles Chargers,boxscore,30,27,485,1,365,2
 173,11,Mon,2022-11-21,8:15PM,San Francisco 49ers,@,Arizona Cardinals,boxscore,38,10,387,0,314,2
-174,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
-175,12,Thu,2022-11-24,12:30PM,Buffalo Bills,@,Detroit Lions,preview,,,,,,
-176,12,Thu,2022-11-24,4:30PM,New York Giants,@,Dallas Cowboys,preview,,,,,,
-177,12,Thu,2022-11-24,8:20PM,New England Patriots,@,Minnesota Vikings,preview,,,,,,
+174,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
+175,12,Thu,2022-11-24,12:30PM,Buffalo Bills,@,Detroit Lions,boxscore,28,25,401,1,326,2
+176,12,Thu,2022-11-24,4:30PM,Dallas Cowboys,,New York Giants,boxscore,28,20,430,2,300,0
+177,12,Thu,2022-11-24,8:20PM,Minnesota Vikings,,New England Patriots,boxscore,33,26,358,1,409,0
 178,12,Sun,2022-11-27,1:00PM,Atlanta Falcons,@,Washington Commanders,preview,,,,,,
 179,12,Sun,2022-11-27,1:00PM,Chicago Bears,@,New York Jets,preview,,,,,,
 180,12,Sun,2022-11-27,1:00PM,Cincinnati Bengals,@,Tennessee Titans,preview,,,,,,
