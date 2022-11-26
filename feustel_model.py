@@ -731,7 +731,7 @@ with st.expander("Strength of Schedule Workings"):
     #         df_4.loc [ (df_4['team']==x), x +'_test_games' ] = df_4[x+' sum'].sum()
 
 
-
+    sos_container=[]
     grouped_container=[]
     for week,group_df in df_4.groupby('Week'):
         # st.write('this is week', x)
@@ -751,6 +751,7 @@ with st.expander("Strength of Schedule Workings"):
 
             cols = cols_to_move + [col for col in group_df if col not in cols_to_move]
             group_df=group_df[cols]
+            # sos_container.append(group_df.loc[:,x+'_diff_per_game'])
             # st.write('this is group df', group_df)
             # st.write('FINISH')
             # group_df.loc [ (group_df['team']==x), (x +'_test_games') ] = group_df[x+' sum'].sum()
@@ -769,6 +770,11 @@ with st.expander("Strength of Schedule Workings"):
     # st.write('grouped container', grouped_container)
     # df_4=pd.merge(df_4,grouped_container,left_index=True,right_index=True,how='outer')
     df_power = pd.concat(grouped_container)
+    # sos_container=pd.DataFrame(sos_container).transpose()
+    # sos_container.columns=sos_container.columns + '_latest'
+    # st.write('cleaned container games played', cleaned_container_diff)
+
+    # df_power=pd.merge(df_power,sos_container,left_index=True,right_index=True,how='outer')
     st.write('df power Week 5', df_power[(df_power['Week']==5) | (df_power['Week']==6)].set_index('team'))
 
 
