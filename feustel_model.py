@@ -21,12 +21,13 @@ def read_csv_data(file):
 def read_data(file):
     return pd.read_excel(file)
 
-current_date='2022-11-03'
+current_date='2022-11-23'
 # run the fbref function and bring in date of last completed week, and then check the test NA 
 
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_24_09_22.xlsx')
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_14_10_22.xlsx')
-df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_05_11_22.xlsx')
+# df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_05_11_22.xlsx')
+df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_26_11_22.xlsx')
 df=df.copy()
 
 with st.expander('pro football workings'):
@@ -769,13 +770,31 @@ with st.expander("Strength of Schedule Workings"):
     # grouped_container=pd.DataFrame(grouped_container).transpose()
     # st.write('grouped container', grouped_container)
     # df_4=pd.merge(df_4,grouped_container,left_index=True,right_index=True,how='outer')
+    adj_team_list=team_list.copy()
+    adj_team_list=[x + '_diff_per_game' for x in adj_team_list]
+    # for x in team_list:
+    #     x+'_diff_per_game'.append(adj_team_list)
+    st.write('adj group team list', adj_team_list)
     df_power = pd.concat(grouped_container)
+    st.write('this is the sos of the teams before backfill',df_power[adj_team_list])
+    st.write('this is the sos of the teams',df_power[adj_team_list].bfill(axis=1))
+
+    df_power['sos']=df_power[adj_team_list].bfill(axis=1).iloc[:,1]
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','sos','Los Angeles Rams_opp_games',
+    'Los Angeles Rams_diff_per_game','Los Angeles Rams_total_opp_games',
+    'Los Angeles Rams sum','Los Angeles Rams_diff_total','Los Angeles Rams pts_diff','Los Angeles Rams games_use',
+    'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
+    'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
+
+    cols = cols_to_move + [col for col in df_power if col not in cols_to_move]
+    df_power=df_power[cols]
     # sos_container=pd.DataFrame(sos_container).transpose()
     # sos_container.columns=sos_container.columns + '_latest'
     # st.write('cleaned container games played', cleaned_container_diff)
 
     # df_power=pd.merge(df_power,sos_container,left_index=True,right_index=True,how='outer')
     st.write('df power Week 5', df_power[(df_power['Week']==5) | (df_power['Week']==6)].set_index('team'))
+    st.write('df power LA', df_power[df_power['team']=='Los Angeles Rams'].set_index('team'))
 
 
     # https://stackoverflow.com/questions/71255870/calculate-sum-based-on-multiple-rows-from-list-column-for-each-row-in-pandas-dat
@@ -790,34 +809,42 @@ with st.expander("Strength of Schedule Workings"):
     # st.write('also the key is apply where it goes through it one cell at a time')
 
 
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded',
-    'Los Angeles Rams_offence', 'Los Angeles Rams_defence','Los Angeles Rams_games_played',
-    'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
+    # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded',
+    # 'Los Angeles Rams_offence', 'Los Angeles Rams_defence','Los Angeles Rams_games_played',
+    # 'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
 
-    cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
-    df_4=df_4[cols]      
-    # st.write('check this out', df_4[df_4['team']=='Arizona Cardinals'].set_index('team'))
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Arizona Cardinals played','Arizona Cardinals sum',
-    'Los Angeles Rams played', 'Los Angeles Rams sum',
-    'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
+    # cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
+    # df_4=df_4[cols]      
+    # # st.write('check this out', df_4[df_4['team']=='Arizona Cardinals'].set_index('team'))
+    # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Arizona Cardinals played','Arizona Cardinals sum',
+    # 'Los Angeles Rams played', 'Los Angeles Rams sum',
+    # 'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
 
-    cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
-    df_4=df_4[cols]      
-    # st.write('check this out LA', df_4[df_4['team']=='Los Angeles Rams'].set_index('team'))
+    # cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
+    # df_4=df_4[cols]      
+    # # st.write('check this out LA', df_4[df_4['team']=='Los Angeles Rams'].set_index('team'))
 
-    # df_4['LA_Test']=np.where(df_4['Week']==5, df_4['Los Angeles Rams sum'].sum(),np.NaN)
+    # # df_4['LA_Test']=np.where(df_4['Week']==5, df_4['Los Angeles Rams sum'].sum(),np.NaN)
     
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams sum',
-    'Los Angeles Rams pts_diff','Los Angeles Rams games_use',
-    'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
-    'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
+    # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams sum',
+    # 'Los Angeles Rams pts_diff','Los Angeles Rams games_use',
+    # 'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
+    # 'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
 
-    cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
-    df_4=df_4[cols]
+    # cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
+    # df_4=df_4[cols]
 
-    st.write('Week 5', df_4[df_4['Week']==5].set_index('team'))
+    # st.write('Week 5', df_4[df_4['Week']==5].set_index('team'))
     # test_test=df_4.set_index('team')
     # df_4.loc [ (df_4['team']=='Los Angeles Rams'), 'Test LA' ] = 'son_heung-min' 
-    st.write('picking la ram row', df_4.set_index('team').loc['Los Angeles Rams',:])
+    # st.write('picking la ram row', df_4.set_index('team').loc['Los Angeles Rams',:])
     
     # st.write('picking la ram row' )
+    # https://stackoverflow.com/questions/34989341/how-to-remove-nan-value-while-combining-two-column-in-panda-data-frame
+    # data = {'Name':['Arizona', 'NY Giants', 'Kansas', 'Buffalo','Denver', 'Raiders'], 'LA':[20, 21, np.NaN, np.NaN,np.NaN,np.NaN],
+    #  'Tampa':[np.NaN, np.NaN, 9, 8,np.NaN,np.NaN], 'Houston':[np.NaN, np.NaN, np.NaN, np.NaN,14,17]}
+    # df = pd.DataFrame(data)
+    # # st.write(df)
+    # df['update']=df[['Name','LA','Tampa','Houston']].bfill(axis=1).iloc[:,1]
+    # st.write(df[['LA','Tampa','Houston']].bfill(axis=1))
+    # st.write(df)
