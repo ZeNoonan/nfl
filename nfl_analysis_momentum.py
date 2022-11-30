@@ -80,7 +80,7 @@ def fbref_scraper_csv(url):
         # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
-fbref_scraper_csv(url)
+# fbref_scraper_csv(url)
 
 # prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
 # prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
@@ -324,6 +324,7 @@ def season_cover_3(data,column_sign,name):
     return data
 
 spread=spread_workings(data)
+# st.write('spread ', spread)
 
 def season_cover_workings(data,home,away,name,week_start):
     season_cover_df=data[data['Week']>week_start].copy()
@@ -649,7 +650,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     presentation_betting_matches=betting_matches.copy()
 
     # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
-    grid_height = st.number_input("Grid height", min_value=400, value=4950, step=100)
+    grid_height = st.number_input("Grid height", min_value=400, value=6950, step=100)
     gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
     gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
     gb.configure_column("my_spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
