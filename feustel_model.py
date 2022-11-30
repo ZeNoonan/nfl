@@ -774,12 +774,12 @@ with st.expander("Strength of Schedule Workings"):
     adj_team_list=[x + '_diff_per_game' for x in adj_team_list]
     # for x in team_list:
     #     x+'_diff_per_game'.append(adj_team_list)
-    st.write('adj group team list', adj_team_list)
+    # st.write('adj group team list', adj_team_list)
     df_power = pd.concat(grouped_container)
-    st.write('this is the sos of the teams before backfill',df_power[adj_team_list])
-    st.write('this is the sos of the teams',df_power[adj_team_list].bfill(axis=1))
+    # st.write('this is the sos of the teams before backfill',df_power[adj_team_list])
+    # st.write('this is the sos of the teams',df_power[adj_team_list].bfill(axis=1))
 
-    df_power['sos']=df_power[adj_team_list].bfill(axis=1).iloc[:,1]
+    df_power['sos']=df_power[adj_team_list].bfill(axis=1).iloc[:,0]
     cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','sos','Los Angeles Rams_opp_games',
     'Los Angeles Rams_diff_per_game','Los Angeles Rams_total_opp_games',
     'Los Angeles Rams sum','Los Angeles Rams_diff_total','Los Angeles Rams pts_diff','Los Angeles Rams games_use',
@@ -793,8 +793,10 @@ with st.expander("Strength of Schedule Workings"):
     # st.write('cleaned container games played', cleaned_container_diff)
 
     # df_power=pd.merge(df_power,sos_container,left_index=True,right_index=True,how='outer')
-    st.write('df power Week 5', df_power[(df_power['Week']==5) | (df_power['Week']==6)].set_index('team'))
-    st.write('df power LA', df_power[df_power['team']=='Los Angeles Rams'].set_index('team'))
+    st.write('df power Week 11', df_power[(df_power['Week']==11) ].set_index('team'))
+    st.write('Latest Week is:', df_power['Week'].max()) 
+    st.write('Baltimore Hardest Schedule', df_power[df_power['team']=='Baltimore Ravens'].set_index('team'))
+    st.write('Patriots Easiest Schedule', df_power[df_power['team']=='New England Patriots'].set_index('team'))
 
 
     # https://stackoverflow.com/questions/71255870/calculate-sum-based-on-multiple-rows-from-list-column-for-each-row-in-pandas-dat
