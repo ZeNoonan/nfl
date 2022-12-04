@@ -249,7 +249,11 @@ df_offensive_away=df.loc[:,['Date','Week','Away Team','Away Score', 'season_year
 df_offensive_away['turnover']=-df_offensive_away['turnover'] # i think this works converts it to same for everyone
 df_offensive_away['home_away']=-1
 df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
-df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount()+1
+df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount() # by not adding +1 it basically means i am shifting
+#  the line, so if we are in week 5, it will only count the games up to and including week 4
+# df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount()+1 # CAREFUL WATCH THIS
+
+
 # df_groupby_scores=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
 # df_offensive['sum_score']=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum()\
 #     .reset_index().drop(['level_2','team','season_year'],axis=1)
@@ -460,7 +464,12 @@ with st.expander('Turnover Model'):
     cols = cols_to_move + [col for col in df_turnover_rating if col not in cols_to_move]
     df_turnover_rating=df_turnover_rating[cols]
     # AgGrid( df_turnover_rating,enable_enterprise_modules=True)
-    # st.write('before calcs are done', df_turnover_rating)
+    st.write('turnover_home: means the turnover gained by the home team in the game and it will be a negative number if the home team won the turnover battle')
+    st.write('turnover_cum_home: means the cumulative turnovers gained, same as above, negative number if the home team won the turnover battle')
+    st.write('The turnover numbers are shifted, I checked, so in week 5, you are looking at turnovers up to and including week 4')
+    st.write('what about season games played???')
+    st.write('Dataframe', 
+    df_turnover_rating[(df_turnover_rating['home_team']=='Philadelphia Eagles') | (df_turnover_rating['away_team']=='Philadelphia Eagles') ].head(2)  )
     
     df_turnover_rating['home_turnover_per_game']=df_turnover_rating['turnover_cum_home'] / df_turnover_rating['season_games_played_home']
     df_turnover_rating['away_turnover_per_game']=df_turnover_rating['turnover_cum_away'] / df_turnover_rating['season_games_played_away']
@@ -584,6 +593,7 @@ with st.expander("Strength of Schedule Workings"):
     # st.write('i think i need to get week numbers in so that strength of schedule can be done on a weekly basis ok done')
     # st.write('just take on year for the moment and work with that')
     test_2022=strength_schedule_df_2[strength_schedule_df_2['season_year']==2022]
+    st.write('turnover cols', test_2022.loc[:, test_2022.columns.str.contains('turnover')].head())
     # st.write('Buffalo Bills', test_2022[test_2022['team']=='Miami Dolphins'])
     # st.write('test 2022', test_2022)
     # st.write('lets just work with 2022')
