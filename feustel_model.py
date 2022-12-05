@@ -142,6 +142,9 @@ with st.expander('pro football workings'):
     # st.write('show individual problem games',df.loc[(df['Date']=='2008-02-03')  ])
 
 
+# st.write('df raw data 145', df.head(4))
+# st.download_button(label="Download data as CSV",data=df.head().to_csv().encode('utf-8'),
+# file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
 
 df['home_score_margin_of_victory']=df['Home Points']-df['Away Points']
 df['Home Line Close']=df['Home Line Close'].fillna(df['Home Line Open'])
@@ -156,9 +159,16 @@ df['Away Team']=df['Away Team'].replace({'Washington Football Team':'Washington 
 'Oakland Raiders':'Las Vegas Raiders','San Diego Chargers':'Los Angeles Chargers'})
 df=df.sort_values(by=['Date','Home Team']).reset_index().drop('index',axis=1)
 df=df.reset_index().rename(columns={'index':'unique_id'})
+# st.write('df raw data', df.head(4))
+dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data.csv')
 
-df['avg_home_score']=df['Home Score'].expanding().mean()
-df['avg_away_score']=df['Away Score'].expanding().mean()
+def avg_score(x):
+    df['avg_home_score']=df['Home Score'].expanding().mean()
+    df['avg_away_score']=df['Away Score'].expanding().mean()
+    return df
+df = avg_score(df)
+dummy_df=avg_score(dummy_df)
+st.write('min', df['season_year'].min())
 cols_to_move=['Date','Home Team','Away Team','unique_id','Home Score','Away Score','avg_home_score','avg_away_score']
 cols = cols_to_move + [col for col in df if col not in cols_to_move]
 df=df[cols]
@@ -171,27 +181,38 @@ with st.expander('raw data'):
 with st.expander('Turnover 2 Variable Regression'):
 
     # st.write('data', df)
-    regression_data=df.loc[:,['turnover','home_score_margin_of_victory']]
-    regression_graph_data=regression_data.copy()
-    regression_graph_data['home_score_margin_of_victory']=regression_graph_data['home_score_margin_of_victory'].abs()
-    # st.write('df turnover', df['turnover'])
-    # https://towardsdatascience.com/simple-and-multiple-linear-regression-with-python-c9ab422ec29c
-    # turnover_regression = np.polyfit(df['home_score_margin_of_victory'], df['turnover'], 1)
-    turnover_regression_1 = np.polyfit(df['turnover'], df['home_score_margin_of_victory'], 1)
+    def regression_function(df):
+        regression_data=df.loc[:,['turnover','home_score_margin_of_victory']]
+        return regression_data
+    
+    def regression_function_1(regression_data):
+        regression_graph_data=regression_data.copy()
+        regression_graph_data['home_score_margin_of_victory']=regression_graph_data['home_score_margin_of_victory'].abs()
+        # st.write('df turnover', df['turnover'])
+        # https://towardsdatascience.com/simple-and-multiple-linear-regression-with-python-c9ab422ec29c
+        # turnover_regression = np.polyfit(df['home_score_margin_of_victory'], df['turnover'], 1)
+        turnover_regression_1 = np.polyfit(df['turnover'], df['home_score_margin_of_victory'], 1)
+        return turnover_regression_1
     # st.write('regression output',turnover_regression)
     st.write('regression output so if you multiply 7 turnovers by slope -4.55 you get -31.5 plus 1.87 = -29.9 ie expect to lose by 29.9 points')
     st.write('also if you multiply -7 turnovers so you got 7 turnovers given to you, multiply by -4.55 equals 31.8 points plus 1.87 equals 32.7 points which you can\
         see on the trend line so you would expect to win by 32.7 points')
     st.write('so actually the minus in front of 4.5 is a red herring, just multiply the turnovers by the 4.5 and then add or subtract the 1.87 depending on whether\
          you are home or away')
+    regression_data=regression_function(df)
+    turnover_regression_1=regression_function_1(regression_data)
     st.write(turnover_regression_1)
     st.write(turnover_regression_1[0])
     st.write(turnover_regression_1[1])
+
+
+
+
     # https://altair-viz.github.io/gallery/poly_fit_regression.html
-    rng = np.random.RandomState(1)
-    x = rng.rand(40) ** 2
-    y = 10 - 1.0 / (x + 0.1) + rng.randn(40)
-    source = pd.DataFrame({"x": x, "y": y})
+    # rng = np.random.RandomState(1)
+    # x = rng.rand(40) ** 2
+    # y = 10 - 1.0 / (x + 0.1) + rng.randn(40)
+    # source = pd.DataFrame({"x": x, "y": y})
     # st.write('source', source)
 
     # Define the degree of the polynomial fits
@@ -207,7 +228,7 @@ with st.expander('Turnover 2 Variable Regression'):
 
     st.altair_chart(alt.layer(base, *polynomial_fit),use_container_width=True)
     st.write('Was just curious if there was some home away effect but looks fairly even in terms of turnovers to points')
-    st.altair_chart(alt.Chart(regression_graph_data).mark_circle(color="black").encode(alt.X("turnover"), alt.Y("home_score_margin_of_victory")),use_container_width=True)
+    st.altair_chart(alt.Chart(regression_data).mark_circle(color="black").encode(alt.X("turnover"), alt.Y("home_score_margin_of_victory")),use_container_width=True)
     st.write('just interesting to see what the -7 and +7 turnovers were....')
     st.write('looking at matches where turnoves was greater than 6',df[df['turnover']>6])
     st.write('looking at matches where turnoves was greater than 6',df[df['turnover']<-6])
@@ -216,17 +237,23 @@ with st.expander('Turnover 2 Variable Regression'):
     
     # def regression_output(df,year):
     #     return np.polyfit(df[(df['season_year']<2008)]['turnover'], df[(df['season_year'] < year)]['home_score_margin_of_victory'], 1)
-    
-    raw_data=[]
-    for n in range(2008,2023):
-        x = np.polyfit(df[(df['season_year']<n)]['turnover'], df[(df['season_year'] < n)]['home_score_margin_of_victory'], 1)
-        raw_data.append(pd.Series(x))
-        # st.write('n', n)
-    turnover_cum_year = pd.concat(raw_data,axis=1)
-    turnover_cum_year.columns=list(range(2008,2023))
-    turnover_cum_year=turnover_cum_year.rename(index={0:'turnover',1:'home_advantage'})
-    turnover_cum_year.loc['total']=turnover_cum_year.loc['home_advantage']-turnover_cum_year.loc['turnover']
-    st.write(turnover_cum_year.style.format("{:.1f}", na_rep='-') )
+    st.write('max+1', df['season_year'].max()+1)
+    # for n in range(2021,df['season_year'].max()+2):
+    #     st.write(n)
+    def turnover_table(df):
+        raw_data=[]
+        for n in range(2008,df['season_year'].max()+2):
+            x = np.polyfit(df[(df['season_year']<n+1)]['turnover'], df[(df['season_year'] < n+1)]['home_score_margin_of_victory'], 1)
+            raw_data.append(pd.Series(x))
+            # st.write('n', n)
+        turnover_cum_year = pd.concat(raw_data,axis=1)
+        turnover_cum_year.columns=list(range(2008,df['season_year'].max()+2))
+        turnover_cum_year=turnover_cum_year.rename(index={0:'turnover',1:'home_advantage'})
+        turnover_cum_year.loc['total']=turnover_cum_year.loc['home_advantage']-turnover_cum_year.loc['turnover']
+        return turnover_cum_year
+
+    turnover_cum_year=turnover_table(df)
+    st.write('Cumulative Turnover regression by year',turnover_cum_year.style.format("{:.2f}", na_rep='-') )
     # turnover_regression_2006_2007 = np.polyfit(df['turnover'], df['home_score_margin_of_victory'], 1)
     # alt.Chart(regression_data).mark_bar().encode(
     # alt.X("IMDB_Rating:Q", bin=True),
