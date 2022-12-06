@@ -161,14 +161,15 @@ df=df.sort_values(by=['Date','Home Team']).reset_index().drop('index',axis=1)
 df=df.reset_index().rename(columns={'index':'unique_id'})
 # st.write('df raw data', df.head(4))
 dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data.csv')
+# st.write('dummy df', dummy_df.head(4))
 
-def avg_score(x):
+def avg_score(df):
     df['avg_home_score']=df['Home Score'].expanding().mean()
     df['avg_away_score']=df['Away Score'].expanding().mean()
     return df
 df = avg_score(df)
 dummy_df=avg_score(dummy_df)
-st.write('min', df['season_year'].min())
+# st.write('dummy', dummy_df)
 cols_to_move=['Date','Home Team','Away Team','unique_id','Home Score','Away Score','avg_home_score','avg_away_score']
 cols = cols_to_move + [col for col in df if col not in cols_to_move]
 df=df[cols]
@@ -237,60 +238,62 @@ with st.expander('Turnover 2 Variable Regression'):
     
     # def regression_output(df,year):
     #     return np.polyfit(df[(df['season_year']<2008)]['turnover'], df[(df['season_year'] < year)]['home_score_margin_of_victory'], 1)
-    st.write('max+1', df['season_year'].max()+1)
+    # st.write('max+1', df['season_year'].max()+1)
     # for n in range(2021,df['season_year'].max()+2):
     #     st.write(n)
     def turnover_table(df):
         raw_data=[]
-        for n in range(2008,df['season_year'].max()+2):
+        for n in range(df['season_year'].min(),df['season_year'].max()+1):
             x = np.polyfit(df[(df['season_year']<n+1)]['turnover'], df[(df['season_year'] < n+1)]['home_score_margin_of_victory'], 1)
             raw_data.append(pd.Series(x))
-            # st.write('n', n)
         turnover_cum_year = pd.concat(raw_data,axis=1)
-        turnover_cum_year.columns=list(range(2008,df['season_year'].max()+2))
+        turnover_cum_year.columns=list(range(df['season_year'].min(),df['season_year'].max()+1))
+        turnover_cum_year=turnover_cum_year.rename(index={0:'turnover',1:'home_advantage'})
+        turnover_cum_year.loc['total']=turnover_cum_year.loc['home_advantage']-turnover_cum_year.loc['turnover']
+        return turnover_cum_year
+
+    def turnover_table_year(df):
+        raw_data=[]
+        for n in range(df['season_year'].min(),df['season_year'].max()+1):
+            x = np.polyfit(df[(df['season_year']==n)]['turnover'], df[(df['season_year'] ==n)]['home_score_margin_of_victory'], 1)
+            raw_data.append(pd.Series(x))
+        turnover_cum_year = pd.concat(raw_data,axis=1)
+        turnover_cum_year.columns=list(range(df['season_year'].min(),df['season_year'].max()+1))
         turnover_cum_year=turnover_cum_year.rename(index={0:'turnover',1:'home_advantage'})
         turnover_cum_year.loc['total']=turnover_cum_year.loc['home_advantage']-turnover_cum_year.loc['turnover']
         return turnover_cum_year
 
     turnover_cum_year=turnover_table(df)
-    st.write('Cumulative Turnover regression by year',turnover_cum_year.style.format("{:.2f}", na_rep='-') )
-    # turnover_regression_2006_2007 = np.polyfit(df['turnover'], df['home_score_margin_of_victory'], 1)
-    # alt.Chart(regression_data).mark_bar().encode(
-    # alt.X("IMDB_Rating:Q", bin=True),
-    # y='count()')
-# NL_Raw_Clean['calendar_year']=NL_Raw_Clean['calendar_year']+2000
-# NL_Raw_Clean=NL_Raw_Clean.rename(columns={'calendar_year':'year', 'calendar_month':'month'})
+    st.write('Cumulative Turnover regression by year: and 2022 is current year',turnover_cum_year.style.format("{:.1f}", na_rep='-') )
+    turnover_every_year=turnover_table_year(df)
+    st.write('Annual Turnover regression by year',turnover_every_year.style.format("{:.1f}", na_rep='-') )
+    # st.write('Dummy DF', dummy_df)
+    turnover_every_year_dummy=turnover_table_year(dummy_df)
+    st.write('Annual Dummy Turnover regression by year',turnover_every_year_dummy.style.format("{:.1f}", na_rep='-') )
+    
+    
+def offensive_calc(df):
+    df_offensive_home=df.loc[:,['Date','Week','Home Team', 'Home Score', 'season_year','unique_id','avg_home_score','avg_away_score',
+    'Home Line Close','turnover','Away Team']]\
+        .rename(columns={'Home Team':'team','Home Score':'score','Away Team':'opponent'})
+    df_offensive_home['home_away']=1
+    df_offensive_away=df.loc[:,['Date','Week','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score',
+    'Home Line Close','turnover','Home Team']]\
+        .rename(columns={'Away Team':'team','Away Score':'score','Home Team':'opponent'})
+    df_offensive_away['turnover']=-df_offensive_away['turnover'] # i think this works converts it to same for everyone
+    df_offensive_away['home_away']=-1
+    df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
+    df_offensive=df_offensive.sort_values(by=['unique_id','Date','Week'])
+    df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount() # by not adding +1 it basically means i am shifting
+    #  the line, so if we are in week 5, it will only count the games up to and including week 4
+    # df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount()+1 # CAREFUL WATCH THIS
+    df_offensive['avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
+        .reset_index().drop(['level_2','team','season_year'],axis=1)
+    # df_1[x]=df_1.groupby(['team','season_year'])[x].shift(1) # Need to work on THIS
+    return df_offensive
 
-# df['']
-# st.write(df.sort_values(by='Date'))
-# for _ in df.groupby('season_year'):
-#     pass
-
-df_offensive_home=df.loc[:,['Date','Week','Home Team', 'Home Score', 'season_year','unique_id','avg_home_score','avg_away_score',
-'Home Line Close','turnover','Away Team']]\
-    .rename(columns={'Home Team':'team','Home Score':'score','Away Team':'opponent'})
-df_offensive_home['home_away']=1
-df_offensive_away=df.loc[:,['Date','Week','Away Team','Away Score', 'season_year','unique_id','avg_home_score','avg_away_score',
-'Home Line Close','turnover','Home Team']]\
-    .rename(columns={'Away Team':'team','Away Score':'score','Home Team':'opponent'})
-df_offensive_away['turnover']=-df_offensive_away['turnover'] # i think this works converts it to same for everyone
-df_offensive_away['home_away']=-1
-df_offensive=pd.concat([df_offensive_home,df_offensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
-df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount() # by not adding +1 it basically means i am shifting
-#  the line, so if we are in week 5, it will only count the games up to and including week 4
-# df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount()+1 # CAREFUL WATCH THIS
-
-
-# df_groupby_scores=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
-# df_offensive['sum_score']=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum()\
-#     .reset_index().drop(['level_2','team','season_year'],axis=1)
-# df_offensive['mean_score']=df_offensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).mean()\
-#     .reset_index().drop(['level_2','team','season_year'],axis=1)
-df_offensive['avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
-    .reset_index().drop(['level_2','team','season_year'],axis=1)
-
-# st.write(df_offensive.groupby(['team','season_year'])['score'].shift().expanding(min_periods=4).mean().shift()\
-#     .reset_index())
+df_offensive=offensive_calc(df)
+df_offensive_dummy=offensive_calc(dummy_df)
 
 def col_correction(df_offensive,col='avg_pts_scored_team_season'):
     df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
@@ -310,42 +313,42 @@ def col_correction_turnover(df_offensive,col='turnover'):
 
 df_offensive=col_correction(df_offensive,col='avg_pts_scored_team_season')
 df_offensive=col_correction_turnover(df_offensive,col='turnover')
-# df_offensive['turnover_per_game']=df_offensive['cum_turnover'] / df_offensive['season_games_played']
-# st.write('df off', df_offensive)
-# st.write('check to see if shift worked',df_offensive[(df_offensive['team']=='Arizona Cardinals') | (df_offensive['team']=='Arizona Cardinals')])
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
 
-df_defensive_home=df.loc[:,['Date','Week','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score',
-'Home Line Close','turnover']]\
-    .rename(columns={'Home Team':'team','Away Score':'score'})
-df_defensive_home['home_away']=1
-df_defensive_away=df.loc[:,['Date','Week','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
-    .rename(columns={'Away Team':'team','Home Score':'score'})
-df_defensive_away['home_away']=-1
-df_defensive_away['turnover']=-df_defensive_away['turnover']
-df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
-# df_groupby_scores=df_defensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum().reset_index().drop('level_2',axis=1)
-# df_defensive['sum_score']=df_defensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).sum()\
-#     .reset_index().drop(['level_2','team','season_year'],axis=1)
-# df_defensive['mean_score']=df_defensive.groupby(['team','season_year'])['score'].rolling(window=4,min_periods=4, center=False).mean()\
-#     .reset_index().drop(['level_2','team','season_year'],axis=1)
-df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
-    .reset_index().drop(['level_2','team','season_year'],axis=1)
+df_offensive_dummy=col_correction(df_offensive_dummy,col='avg_pts_scored_team_season')
+df_offensive_dummy=col_correction_turnover(df_offensive_dummy,col='turnover')
+df_offensive_dummy=df_offensive_dummy.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
 
+
+
+def defensive_calc(df):
+    df_defensive_home=df.loc[:,['Date','Week','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score',
+    'Home Line Close','turnover']]\
+        .rename(columns={'Home Team':'team','Away Score':'score'})
+    df_defensive_home['home_away']=1
+    df_defensive_away=df.loc[:,['Date','Week','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
+        .rename(columns={'Away Team':'team','Home Score':'score'})
+    df_defensive_away['home_away']=-1
+    df_defensive_away['turnover']=-df_defensive_away['turnover']
+    df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
+    df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
+        .reset_index().drop(['level_2','team','season_year'],axis=1)
+    return df_defensive
+
+df_defensive=defensive_calc(df)
 df_defensive=col_correction(df_defensive,col='avg_pts_conceded_team_season')
-# df_defensive=col_correction_turnover(df_defensive,col='turnover')
-# st.write('check to see if shift worked defensive',df_defensive[(df_defensive['team']=='Arizona Cardinals') | (df_defensive['team']=='Arizona Cardinals')])
-# df_defensive['SHIFT avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
-#     .reset_index().drop(['level_2','team','season_year'],axis=1)
-# df_defensive['test_col']=np.where(df_defensive['avg_pts_conceded_team_season'].isna(),np.NaN,np.where(df_defensive['SHIFT avg_pts_conceded_team_season'].isna(),np.NaN,1))
-# df_defensive['avg_pts_conceded_team_season']=df_defensive['SHIFT avg_pts_conceded_team_season']*df_defensive['test_col']
-
-
 df_defensive=df_defensive.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['team','Date'])
 
-# st.write('df offensive 1', df_offensive)
-# st.write('df defence 1', df_defensive)
+df_defensive_dummy=defensive_calc(dummy_df)
+df_defensive_dummy=col_correction(df_defensive_dummy,col='avg_pts_conceded_team_season')
+df_defensive_dummy=df_defensive_dummy.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['team','Date'])
+
+
 df_new=pd.merge(df_offensive,df_defensive,how='outer')
+df_new_dummy=pd.merge(df_offensive_dummy,df_defensive_dummy,how='outer')
+st.download_button(label="Download data as CSV",data=df_new_dummy.sort_values(by='unique_id').to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
+st.write('df dummy THIS DOES NOT LOOK GOOD....need to dig in...', df_new_dummy)
+
 # st.write('check to see if shift worked defensive',df_new[(df_new['team']=='Arizona Cardinals') | (df_new['team']=='Arizona Cardinals')])
 # st.write('after merge', df_new)
 # st.write('should this not be done by season?? need to check looks like its not used anywhere else strange!')
