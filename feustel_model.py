@@ -287,17 +287,42 @@ def offensive_calc(df):
     df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount() # by not adding +1 it basically means i am shifting
     #  the line, so if we are in week 5, it will only count the games up to and including week 4
     # df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount()+1 # CAREFUL WATCH THIS
-    df_offensive['avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
-        .reset_index().drop(['level_2','team','season_year'],axis=1)
-    # df_1[x]=df_1.groupby(['team','season_year'])[x].shift(1) # Need to work on THIS
+    df_offensive=df_offensive.sort_values(by=['unique_id','Date','Week'])
     return df_offensive
 
+def offensive_calc_1(df_offensive):
+    df_offensive['avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
+        .reset_index().drop(['level_2','team','season_year'],axis=1)
+    # df_offensive['test_avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].shift()
+    return df_offensive
+
+def offensive_calc_test(df_offensive):
+    df_offensive['avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
+        .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
+    # df_offensive['test_avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].shift()
+    return df_offensive
+
+
 df_offensive=offensive_calc(df)
+df_offensive=offensive_calc_test(df_offensive)
+
 df_offensive_dummy=offensive_calc(dummy_df)
+# st.write('df offensive dummy and where is score column??', df_offensive_dummy)
+# st.write('take a look at groupby here',df_offensive_dummy.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean())
+df_offensive_dummy=offensive_calc_test(df_offensive_dummy)
+st.write('after new function', df_offensive_dummy)
 
 def col_correction(df_offensive,col='avg_pts_scored_team_season'):
     df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
-        .reset_index().drop(['level_2','team','season_year'],axis=1)
+        .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
+    df_offensive['test_col']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
+    df_offensive[col]=df_offensive['SHIFT avg_pts_scored_team_season']*df_offensive['test_col']
+    df_offensive=df_offensive.drop(['SHIFT avg_pts_scored_team_season'],axis=1)
+    return df_offensive
+
+def col_correction_test(df_offensive,col='avg_pts_scored_team_season'):
+    df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+        .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
     df_offensive['test_col']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
     df_offensive[col]=df_offensive['SHIFT avg_pts_scored_team_season']*df_offensive['test_col']
     df_offensive=df_offensive.drop(['SHIFT avg_pts_scored_team_season'],axis=1)
@@ -305,7 +330,7 @@ def col_correction(df_offensive,col='avg_pts_scored_team_season'):
 
 def col_correction_turnover(df_offensive,col='turnover'):
     df_offensive['SHIFT turnover']=df_offensive.groupby(['team','season_year'])['turnover'].expanding(min_periods=4).sum().shift()\
-        .reset_index().drop(['level_2','team','season_year'],axis=1)
+        .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
     # df_offensive['test_col_turn']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT turnover'].isna(),np.NaN,1))
     df_offensive['cum_turnover']=df_offensive['SHIFT turnover']*df_offensive['test_col']
     df_offensive=df_offensive.drop(['test_col','SHIFT turnover'],axis=1)
@@ -331,15 +356,38 @@ def defensive_calc(df):
     df_defensive_away['home_away']=-1
     df_defensive_away['turnover']=-df_defensive_away['turnover']
     df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
-    df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
-        .reset_index().drop(['level_2','team','season_year'],axis=1)
+    df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+        .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
+    return df_defensive
+
+def defensive_calc_1(df):
+    df_defensive_home=df.loc[:,['Date','Week','Home Team', 'Away Score', 'season_year','unique_id','avg_home_score','avg_away_score',
+    'Home Line Close','turnover']]\
+        .rename(columns={'Home Team':'team','Away Score':'score'})
+    df_defensive_home['home_away']=1
+    df_defensive_away=df.loc[:,['Date','Week','Away Team','Home Score', 'season_year','unique_id','avg_home_score','avg_away_score','Home Line Close','turnover']]\
+        .rename(columns={'Away Team':'team','Home Score':'score'})
+    df_defensive_away['home_away']=-1
+    df_defensive_away['turnover']=-df_defensive_away['turnover']
+    df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values(by=['unique_id','Date'],ascending=True).reset_index().drop('index',axis=1)
+    return df_defensive
+
+def defensive_calc_2(df_defensive):
+    df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+        .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
     return df_defensive
 
 df_defensive=defensive_calc(df)
 df_defensive=col_correction(df_defensive,col='avg_pts_conceded_team_season')
 df_defensive=df_defensive.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['team','Date'])
 
-df_defensive_dummy=defensive_calc(dummy_df)
+df_defensive_dummy=defensive_calc_1(dummy_df)
+st.write('anything off in here',df_defensive_dummy.sort_values('unique_id'))
+st.write('pts conceded',df_defensive_dummy.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift())
+st.write('so i am good up to this point i think need to continue on from here')
+df_defensive_dummy=defensive_calc_2(df_defensive_dummy)
+
+
 df_defensive_dummy=col_correction(df_defensive_dummy,col='avg_pts_conceded_team_season')
 df_defensive_dummy=df_defensive_dummy.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['team','Date'])
 
