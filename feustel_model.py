@@ -310,7 +310,7 @@ df_offensive_dummy=offensive_calc(dummy_df)
 # st.write('df offensive dummy and where is score column??', df_offensive_dummy)
 # st.write('take a look at groupby here',df_offensive_dummy.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean())
 df_offensive_dummy=offensive_calc_test(df_offensive_dummy)
-st.write('after new function', df_offensive_dummy)
+# st.write('after new function', df_offensive_dummy)
 
 def col_correction(df_offensive,col='avg_pts_scored_team_season'):
     df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
@@ -343,7 +343,7 @@ df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_g
 df_offensive_dummy=col_correction(df_offensive_dummy,col='avg_pts_scored_team_season')
 df_offensive_dummy=col_correction_turnover(df_offensive_dummy,col='turnover')
 df_offensive_dummy=df_offensive_dummy.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
-
+# st.write('is offence ok>>',df_offensive_dummy[df_offensive_dummy['team']=='Buffalo Bills'].sort_values('unique_id'))
 
 
 def defensive_calc(df):
@@ -356,7 +356,7 @@ def defensive_calc(df):
     df_defensive_away['home_away']=-1
     df_defensive_away['turnover']=-df_defensive_away['turnover']
     df_defensive=pd.concat([df_defensive_home,df_defensive_away],axis=0).sort_values(by=['team','Date'],ascending=True).reset_index().drop('index',axis=1)
-    df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+    df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
         .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
     return df_defensive
 
@@ -373,7 +373,7 @@ def defensive_calc_1(df):
     return df_defensive
 
 def defensive_calc_2(df_defensive):
-    df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+    df_defensive['avg_pts_conceded_team_season']=df_defensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean()\
         .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
     return df_defensive
 
@@ -382,20 +382,22 @@ df_defensive=col_correction(df_defensive,col='avg_pts_conceded_team_season')
 df_defensive=df_defensive.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['team','Date'])
 
 df_defensive_dummy=defensive_calc_1(dummy_df)
-st.write('anything off in here',df_defensive_dummy.sort_values('unique_id'))
-st.write('pts conceded',df_defensive_dummy.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift())
-st.write('so i am good up to this point i think need to continue on from here')
+# st.write('anything off in here',df_defensive_dummy.sort_values('unique_id'))
+# st.write('pts conceded',df_defensive_dummy.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift())
+# st.write('so i am good up to this point i think need to continue on from here')
 df_defensive_dummy=defensive_calc_2(df_defensive_dummy)
-
+# st.write('df dummy', df_defensive_dummy[df_defensive_dummy['team']=='Buffalo Bills'])
 
 df_defensive_dummy=col_correction(df_defensive_dummy,col='avg_pts_conceded_team_season')
+# st.write('df dummy after col correction', df_defensive_dummy[df_defensive_dummy['team']=='Buffalo Bills'].sort_values('unique_id'))
+# st.write('df dummy offence after col correction', df_offensive_dummy[df_offensive_dummy['team']=='Buffalo Bills'].sort_values('unique_id'))
 df_defensive_dummy=df_defensive_dummy.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['team','Date'])
 
 
 df_new=pd.merge(df_offensive,df_defensive,how='outer')
 df_new_dummy=pd.merge(df_offensive_dummy,df_defensive_dummy,how='outer')
 st.download_button(label="Download data as CSV",data=df_new_dummy.sort_values(by='unique_id').to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
-st.write('df dummy THIS DOES NOT LOOK GOOD....need to dig in...', df_new_dummy)
+st.write('So this looks good to here now continue on from here', df_new_dummy.sort_values(by='unique_id'))
 
 # st.write('check to see if shift worked defensive',df_new[(df_new['team']=='Arizona Cardinals') | (df_new['team']=='Arizona Cardinals')])
 # st.write('after merge', df_new)
