@@ -406,30 +406,16 @@ df_new['team_cum_sum_pts']=df_new.groupby(['team'])['pts_scored'].cumsum()
 df_new['team_cum_sum_games']=df_new.groupby(['team'])['pts_scored'].cumcount()+1
 df_new['rolling_avg_team_pts_scored']=df_new['team_cum_sum_pts'] / df_new['team_cum_sum_games']
 df_new=df_new.sort_values(by=['Date','unique_id','team'])
-# st.write('before rolling avg date', df_new)
 df_new['date_avg_pts_rolling']=df_new['pts_scored'].expanding().mean().shift(32) # 16 teams by 2, want the previous week numbers
-# df_new['date_avg_pts_rolling_test']=df_new['pts_scored'].expanding().mean().shift(32)
-# st.write('df new after date avg pts rolling', df_new)
-# st.write('just checking the average pts scored in every match', df_new)
-# st.write('sorted by date avg score by date',df_new)
 df_new=df_new.sort_values(by=['team','Date'],ascending=True)
-
 df_new=df_new.sort_values(by=['home_away','Date','unique_id','team'],ascending=True)
-# st.write('after sorting CHECK THIS OUT',df_new)
 df_home=df_new[df_new['home_away']==1].sort_values(by=['Date','unique_id'],ascending=True)
 df_home['home_pts_avg']=df_home['pts_scored'].expanding().mean().shift(16) # want to get previous week points
-# st.write('home avg points', df_home)
 df_away=df_new[df_new['home_away']==-1].sort_values(by=['Date','unique_id'],ascending=True)
 df_away['away_pts_avg']=df_away['pts_scored'].expanding().mean().shift(16)
 df_new=pd.concat([df_home,df_away],ignore_index=True)
-# df_new['home_pts_avg_']=df_new['pts_scored'].expanding().mean()
-# df_new['away_pts_avg_']=df_new['pts_scored'].expanding().mean()
-
-
 
 df_new=df_new.sort_values(by=['unique_id','home_away'],ascending=[True,False])
-# st.write('df before', df_new)
-# df_new['away_pts_avg']=df_new['away_pts_avg'].shift(-1)
 df_new['avg_away_score']=df_new['avg_away_score'].fillna(method='ffill')
 df_new['avg_home_score']=df_new['avg_home_score'].fillna(method='ffill')
 df_new['home_adv']=df_new['avg_home_score']-df_new['avg_away_score']
@@ -437,26 +423,43 @@ cols_to_move=['Date','team','season_year','Home Line Close','unique_id','pts_sco
 'avg_pts_conceded_team_season','home_pts_avg','away_pts_avg','avg_home_score','avg_away_score','home_away']
 cols = cols_to_move + [col for col in df_new if col not in cols_to_move]
 df_new=df_new[cols]
+
 strength_schedule_df_2=df_new.copy()
-df_new=df_new.loc[:,['Date','Week','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
-'avg_pts_conceded_team_season','home_away','turnover','cum_turnover','season_games_played','opponent']]
-# st.write('df update', df_new)
 
-# st.write('df after concat', df_new.sort_values(by=['home_away','Date'],ascending=True))
+def home_away_combine(df_new):
+    df_new=df_new.loc[:,['Date','Week','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
+    'avg_pts_conceded_team_season','home_away','turnover','cum_turnover','season_games_played','opponent']]
+    df_home_1=df_new[df_new['home_away']==1].rename(columns={'pts_scored':'home_pts_scored','pts_conceded':'home_pts_conceded','team':'home_team',
+    'avg_pts_scored_team_season':'home_avg_pts_scored_team_season','avg_pts_conceded_team_season':'home_avg_pts_conceded_team_season','date_avg_pts_rolling':'home_date_avg_pts_rolling'})\
+        .set_index(['unique_id']).drop('home_away',axis=1).copy()
+    df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts_scored','pts_conceded':'away_pts_conceded','team':'away_team',
+    'avg_pts_scored_team_season':'away_avg_pts_scored_team_season','avg_pts_conceded_team_season':'away_avg_pts_conceded_team_season','date_avg_pts_rolling':'away_date_avg_pts_rolling'})\
+        .set_index(['unique_id']).drop(['home_adv','home_away'],axis=1).copy()
+    # st.write('df home', df_home_1, 'away', df_away_1)
+    # df_combined=pd.concat([df_home_1,df_away_1],axis=0)
+    # st.write('before home and away are combined', df_home_1, 'away', df_away_1)
+    df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year', 'Home Line Close'],how='outer')
+    return df_combined
 
-# st.write('sort out team names', df_new['team'].unique())
-# st.write('checking rolling team scores', df_new.sort_values(by=['team','Date']))
-# st.write('just checking the home adv calc keep it there to sense check', df_new.sort_values(by=['Date','unique_id','team']))
-df_home_1=df_new[df_new['home_away']==1].rename(columns={'pts_scored':'home_pts_scored','pts_conceded':'home_pts_conceded','team':'home_team',
-'avg_pts_scored_team_season':'home_avg_pts_scored_team_season','avg_pts_conceded_team_season':'home_avg_pts_conceded_team_season','date_avg_pts_rolling':'home_date_avg_pts_rolling'})\
-    .set_index(['unique_id']).drop('home_away',axis=1).copy()
-df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts_scored','pts_conceded':'away_pts_conceded','team':'away_team',
-'avg_pts_scored_team_season':'away_avg_pts_scored_team_season','avg_pts_conceded_team_season':'away_avg_pts_conceded_team_season','date_avg_pts_rolling':'away_date_avg_pts_rolling'})\
-    .set_index(['unique_id']).drop(['home_adv','home_away'],axis=1).copy()
-# st.write('df home', df_home_1, 'away', df_away_1)
-# df_combined=pd.concat([df_home_1,df_away_1],axis=0)
-# st.write('before home and away are combined', df_home_1, 'away', df_away_1)
-df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year', 'Home Line Close'],how='outer')
+def home_away_combine_dummy(df_new): # no 'home adv' or 'date avg pts rolling'
+    df_new=df_new.loc[:,['Date','Week','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','avg_pts_scored_team_season',
+    'avg_pts_conceded_team_season','home_away','turnover','cum_turnover','season_games_played','opponent']]
+    df_home_1=df_new[df_new['home_away']==1].rename(columns={'pts_scored':'home_pts_scored','pts_conceded':'home_pts_conceded','team':'home_team',
+    'avg_pts_scored_team_season':'home_avg_pts_scored_team_season','avg_pts_conceded_team_season':'home_avg_pts_conceded_team_season',
+    'date_avg_pts_rolling':'home_date_avg_pts_rolling'})\
+        .set_index(['unique_id']).drop('home_away',axis=1).copy()
+    df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts_scored','pts_conceded':'away_pts_conceded','team':'away_team',
+    'avg_pts_scored_team_season':'away_avg_pts_scored_team_season','avg_pts_conceded_team_season':'away_avg_pts_conceded_team_season',
+    'date_avg_pts_rolling':'away_date_avg_pts_rolling'})\
+        .set_index(['unique_id']).drop(['home_away'],axis=1).copy()
+    # st.write('df home', df_home_1, 'away', df_away_1)
+    # df_combined=pd.concat([df_home_1,df_away_1],axis=0)
+    # st.write('before home and away are combined', df_home_1, 'away', df_away_1)
+    df_combined=pd.merge(df_home_1.reset_index(),df_away_1.reset_index(),on=['unique_id','Date','season_year', 'Home Line Close'],how='outer')
+    return df_combined
+
+df_combined=home_away_combine(df_new)
+df_dummy_turnover=home_away_combine_dummy(df_new_dummy)
 strength_schedule_df_1=df_combined.copy()
 
 with st.expander('first simple model'):
@@ -536,13 +539,19 @@ with st.expander('Splitting the Spread up to analyse'):
     # avg_error_data=avg_error_data[avg_error_data['proj_spread'].notna()]
 
 with st.expander('Turnover Model'):
-    df_turnover_rating=df_turnover_rating.copy().rename(columns={'turnover_x':'turnover_home','turnover_y':'turnover_away','cum_turnover_x':'turnover_cum_home',
-    'cum_turnover_y':'turnover_cum_away','season_games_played_x':'season_games_played_home','season_games_played_y':'season_games_played_away'})
-    st.write('think i need a home and away turnover for each team')
-    # AgGrid( df_turnover_rating,enable_enterprise_modules=True)
-    cols_to_move=['Date','home_team','away_team','turnover_home','turnover_away','turnover_cum_home','turnover_cum_away']
-    cols = cols_to_move + [col for col in df_turnover_rating if col not in cols_to_move]
-    df_turnover_rating=df_turnover_rating[cols]
+    # df_dummy_turnover
+    def clean_turnover_df(df_turnover_rating):
+        df_turnover_rating=df_turnover_rating.copy().rename(columns={'turnover_x':'turnover_home','turnover_y':'turnover_away','cum_turnover_x':'turnover_cum_home',
+        'cum_turnover_y':'turnover_cum_away','season_games_played_x':'season_games_played_home','season_games_played_y':'season_games_played_away'})
+        st.write('think i need a home and away turnover for each team')
+        # AgGrid( df_turnover_rating,enable_enterprise_modules=True)
+        cols_to_move=['Date','home_team','away_team','turnover_home','turnover_away','turnover_cum_home','turnover_cum_away']
+        cols = cols_to_move + [col for col in df_turnover_rating if col not in cols_to_move]
+        df_turnover_rating=df_turnover_rating[cols]
+        return df_turnover_rating
+    df_turnover_rating=clean_turnover_df(df_turnover_rating)
+    df_turnover_rating_dummy=clean_turnover_df(df_dummy_turnover)
+    st.write('Take it from here')
     # AgGrid( df_turnover_rating,enable_enterprise_modules=True)
     st.write('turnover_home: means the turnover gained by the home team in the game and it will be a negative number if the home team won the turnover battle')
     st.write('turnover_cum_home: means the cumulative turnovers gained, same as above, negative number if the home team won the turnover battle')
@@ -667,16 +676,7 @@ with st.expander('Average Error Calcs on Turnover Model'):
     # avg_error_data = avg_error_data.join(avg_error_data.groupby('decile_spread_diff')['proj_odds_error'].agg(Mean='mean', Std='std',Max='max',Min='min'), on='decile_spread_diff')
     
 with st.expander("Strength of Schedule Workings"):
-    # st.write('data',strength_schedule_df)
-    # st.write('data',strength_schedule_df_1)
-    # st.write('this might be best to work with as just one row of data')
-    # st.write('i think i need to get week numbers in so that strength of schedule can be done on a weekly basis ok done')
-    # st.write('just take on year for the moment and work with that')
     test_2022=strength_schedule_df_2[strength_schedule_df_2['season_year']==2022]
-    st.write('turnover cols', test_2022.loc[:, test_2022.columns.str.contains('turnover')].head())
-    # st.write('Buffalo Bills', test_2022[test_2022['team']=='Miami Dolphins'])
-    # st.write('test 2022', test_2022)
-    # st.write('lets just work with 2022')
 
     def col_correction(df_offensive,team,col='avg_pts_scored_team_season'):
         df_offensive=df_offensive[df_offensive['team']!=team]
@@ -690,34 +690,11 @@ with st.expander("Strength of Schedule Workings"):
 
     team_list = test_2022['team'].unique()
 
-
-    
-    
-    # for x in team_list[:1]:
-    #     st.write('x', x)
-    #     df_2=test_2022[(test_2022['team']!=x) & (test_2022['opponent']!=x)].reset_index(drop=True).sort_values(['Week','Date','unique_id'],ascending=[True,True,True])
-    #     add_column=df_2.groupby(['team','season_year'])['pts_scored'].expanding(min_periods=3).mean().shift()\
-    #     .reset_index().rename(columns={'level_2':'index','pts_scored':x}).drop(['team','season_year'],axis=1).set_index('index') # relaxing min 4 games as might have already played team in question
-    #     df_2=pd.merge(df_2,add_column,left_index=True,right_index=True,how='outer')
-    #     df_2['test_col']=np.where(df_2['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_2[x].isna(),np.NaN,1))
-    #     df_2[x]=df_2[x]*df_2['test_col']
-
-    # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams','avg_pts_scored_team_season',
-    # 'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
-    # cols = cols_to_move + [col for col in df_2 if col not in cols_to_move]
-    # df_2=df_2[cols]    
-    # st.write('Check this NEW way of doing things IT WORKS', test_2022[test_2022['team']=='Arizona Cardinals'].set_index('opponent'))
-    # st.write('Check this NEW way of doing things IT WORKS', df_2[df_2['team']=='Buffalo Bills'])
-    
     test_2022=test_2022.reset_index(drop=True)
-    # test_2022['pts_diff']=test_2022['pts_scored']-test_2022['pts_conceded']
 
     raw_data_offence=[]
     raw_data_defence=[]
     
-    # for x in team_list[:1]:
-    #     st.write('team', x)
-
     for x in team_list:
         # st.write('x within function', x)
         df_1=test_2022[(test_2022['team']!=x) & (test_2022['opponent']!=x)].sort_values(['Week','Date','unique_id'],ascending=[True,True,True])
@@ -785,27 +762,7 @@ with st.expander("Strength of Schedule Workings"):
     'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
     cols = cols_to_move + [col for col in df_5 if col not in cols_to_move]
     df_5=df_5[cols]      
-    # st.write('check this out against excel', df_5[df_5['team']=='Arizona Cardinals'].set_index('team'))
 
-    # df_5['pts_diff']=df_5['pts_scored']-df_5['pts_conceded']
-
-    # raw_data_test=[]
-    # for x in team_list:
-    #     df_5=df_4[(df_4['team']!=x) & (df_4['opponent']!=x)].sort_values(['Week','Date','unique_id'],ascending=[True,True,True])
-    #     add_column=df_5.groupby(['team','season_year'])['pts_diff'].expanding(min_periods=3).mean().shift()\
-    #     .reset_index().rename(columns={'level_2':'index','pts_diff':x}).drop(['team','season_year'],axis=1).set_index('index') # relaxing min 4 games as might have already played team in question
-    #     df_5=pd.merge(df_5,add_column,left_index=True,right_index=True,how='outer')
-    #     df_5['test_col']=np.where(df_5['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_5[x].isna(),np.NaN,1))
-    #     df_5[x]=df_5[x]*df_5['test_col']
-    #     extract=df_5.loc[:,['unique_id',x]]
-    #     raw_data_test.append(df_5.loc[:,x])
-
-    # cleaned_container_test=pd.DataFrame(raw_data_diff).transpose()
-    # df_5=pd.merge(df_4,cleaned_container_test,left_index=True,right_index=True,how='outer')
-
-
-    # st.write('df3 check cardinals should be ok',df_4[df_4['team']=='Arizona Cardinals'])
-    # st.write('df3 check miami should be ok',df_4[df_4['team']=='Miami Dolphins'])
     df_4=df_5.copy()
     st.write('put in a column for have you played them, then have a cum sum of htat played multiplied by the other col')
     for x in team_list:
@@ -816,20 +773,10 @@ with st.expander("Strength of Schedule Workings"):
         df_4[x+' pts_diff']=df_4[x+' sum'] * (df_4[x+'_offence']-df_4[x+'_defence'])
         df_4[x+' games_use']=df_4[x+' sum'] * (df_4[x+'_games_played'])
 
-    # for x,y in df_4.groupby('Week'):
-    #     # st.write('this is week', x)
-    #     for x in team_list:
-    #         df_4.loc [ (df_4['team']==x), x +'_test_games' ] = df_4[x+' sum'].sum()
-
-
     sos_container=[]
     grouped_container=[]
     for week,group_df in df_4.groupby('Week'):
-        # st.write('this is week', x)
         for x in team_list:
-            # st.write('START: this is x',x, 'this is week', week)
-            # group_df[x +'_test_games'] = group_df[x+' sum'].sum()
-            # group_df.loc [ (group_df['team']==x), 'Test LA' ] = group_df[x+' sum'].sum()
             group_df.loc [ (group_df['team']==x), x+'_opp_games' ] = group_df[x+' sum'].sum()
             group_df.loc [ (group_df['team']==x), x+'_diff_total' ] = group_df[x+' pts_diff'].sum()
             group_df.loc [ (group_df['team']==x), x+'_total_opp_games' ] = group_df[x+' games_use'].sum()
@@ -842,32 +789,11 @@ with st.expander("Strength of Schedule Workings"):
 
             cols = cols_to_move + [col for col in group_df if col not in cols_to_move]
             group_df=group_df[cols]
-            # sos_container.append(group_df.loc[:,x+'_diff_per_game'])
-            # st.write('this is group df', group_df)
-            # st.write('FINISH')
-            # group_df.loc [ (group_df['team']==x), (x +'_test_games') ] = group_df[x+' sum'].sum()
         grouped_container.append(group_df)
     
-    # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams_opp_games','Los Angeles Rams sum',
-    # 'Los Angeles Rams pts_diff','Los Angeles Rams games_use',
-    # 'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
-    # 'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
-
-    # cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
-    # df_4=df_4[cols]
-    # st.write('is the dataframe returned', df_4)
-    # st.write(pd.DataFrame(grouped_container))
-    # grouped_container=pd.DataFrame(grouped_container).transpose()
-    # st.write('grouped container', grouped_container)
-    # df_4=pd.merge(df_4,grouped_container,left_index=True,right_index=True,how='outer')
     adj_team_list=team_list.copy()
     adj_team_list=[x + '_diff_per_game' for x in adj_team_list]
-    # for x in team_list:
-    #     x+'_diff_per_game'.append(adj_team_list)
-    # st.write('adj group team list', adj_team_list)
     df_power = pd.concat(grouped_container)
-    # st.write('this is the sos of the teams before backfill',df_power[adj_team_list])
-    # st.write('this is the sos of the teams',df_power[adj_team_list].bfill(axis=1))
 
     df_power['sos']=df_power[adj_team_list].bfill(axis=1).iloc[:,0]
     cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','sos','Los Angeles Rams_opp_games',
@@ -900,38 +826,6 @@ with st.expander("Strength of Schedule Workings"):
     # st.write('so the key to this is to match up the look up value into the df')
     # st.write('also the key is apply where it goes through it one cell at a time')
 
-
-    # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded',
-    # 'Los Angeles Rams_offence', 'Los Angeles Rams_defence','Los Angeles Rams_games_played',
-    # 'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
-
-    # cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
-    # df_4=df_4[cols]      
-    # # st.write('check this out', df_4[df_4['team']=='Arizona Cardinals'].set_index('team'))
-    # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Arizona Cardinals played','Arizona Cardinals sum',
-    # 'Los Angeles Rams played', 'Los Angeles Rams sum',
-    # 'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
-
-    # cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
-    # df_4=df_4[cols]      
-    # # st.write('check this out LA', df_4[df_4['team']=='Los Angeles Rams'].set_index('team'))
-
-    # # df_4['LA_Test']=np.where(df_4['Week']==5, df_4['Los Angeles Rams sum'].sum(),np.NaN)
-    
-    # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','Los Angeles Rams sum',
-    # 'Los Angeles Rams pts_diff','Los Angeles Rams games_use',
-    # 'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
-    # 'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
-
-    # cols = cols_to_move + [col for col in df_4 if col not in cols_to_move]
-    # df_4=df_4[cols]
-
-    # st.write('Week 5', df_4[df_4['Week']==5].set_index('team'))
-    # test_test=df_4.set_index('team')
-    # df_4.loc [ (df_4['team']=='Los Angeles Rams'), 'Test LA' ] = 'son_heung-min' 
-    # st.write('picking la ram row', df_4.set_index('team').loc['Los Angeles Rams',:])
-    
-    # st.write('picking la ram row' )
     # https://stackoverflow.com/questions/34989341/how-to-remove-nan-value-while-combining-two-column-in-panda-data-frame
     # data = {'Name':['Arizona', 'NY Giants', 'Kansas', 'Buffalo','Denver', 'Raiders'], 'LA':[20, 21, np.NaN, np.NaN,np.NaN,np.NaN],
     #  'Tampa':[np.NaN, np.NaN, 9, 8,np.NaN,np.NaN], 'Houston':[np.NaN, np.NaN, np.NaN, np.NaN,14,17]}
