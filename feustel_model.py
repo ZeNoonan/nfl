@@ -560,51 +560,67 @@ with st.expander('Turnover Model'):
     st.write('Dataframe', 
     df_turnover_rating[(df_turnover_rating['home_team']=='Philadelphia Eagles') | (df_turnover_rating['away_team']=='Philadelphia Eagles') ].head(2)  )
     
-    df_turnover_rating['home_turnover_per_game']=df_turnover_rating['turnover_cum_home'] / df_turnover_rating['season_games_played_home']
-    df_turnover_rating['away_turnover_per_game']=df_turnover_rating['turnover_cum_away'] / df_turnover_rating['season_games_played_away']
-    strength_schedule_df=df_turnover_rating.copy()
-    df_turnover_rating['home_offensive_rating'] = df_turnover_rating['home_avg_pts_scored_team_season'] + (df_turnover_rating['home_turnover_per_game']*((4*0.8) /2))
-    df_turnover_rating['home_defensive_rating']=df_turnover_rating['home_avg_pts_conceded_team_season'] - (df_turnover_rating['home_turnover_per_game']*((4*0.8) /2))
+    def turnover_calcs(df_turnover_rating):
+        df_turnover_rating['home_turnover_per_game']=df_turnover_rating['turnover_cum_home'] / df_turnover_rating['season_games_played_home']
+        df_turnover_rating['away_turnover_per_game']=df_turnover_rating['turnover_cum_away'] / df_turnover_rating['season_games_played_away']
+        # strength_schedule_df=df_turnover_rating.copy()
+        df_turnover_rating['home_offensive_rating'] = df_turnover_rating['home_avg_pts_scored_team_season'] + (df_turnover_rating['home_turnover_per_game']*((4*0.8) /2))
+        df_turnover_rating['home_defensive_rating']=df_turnover_rating['home_avg_pts_conceded_team_season'] - (df_turnover_rating['home_turnover_per_game']*((4*0.8) /2))
 
-    df_turnover_rating['away_offensive_rating'] = df_turnover_rating['away_avg_pts_scored_team_season'] + (df_turnover_rating['away_turnover_per_game']*((4*0.8) /2))
-    df_turnover_rating['away_defensive_rating']=df_turnover_rating['away_avg_pts_conceded_team_season'] - (df_turnover_rating['away_turnover_per_game']*((4*0.8) /2))
-    # df_turnover_rating['away_defensive_rating']=df_turnover_rating['away_avg_pts_conceded_team_season'] / df_turnover_rating['away_date_avg_pts_rolling']
-    
-    df_turnover_rating['projected_team_a_pts']= df_turnover_rating['home_offensive_rating'] * \
-        (df_turnover_rating['away_defensive_rating'] / df_turnover_rating['away_avg_pts_scored_team_season'])
-    df_turnover_rating['projected_team_b_pts']= df_turnover_rating['away_offensive_rating'] * \
-        (df_turnover_rating['home_defensive_rating'] / df_turnover_rating['away_avg_pts_scored_team_season'])
+        df_turnover_rating['away_offensive_rating'] = df_turnover_rating['away_avg_pts_scored_team_season'] + (df_turnover_rating['away_turnover_per_game']*((4*0.8) /2))
+        df_turnover_rating['away_defensive_rating']=df_turnover_rating['away_avg_pts_conceded_team_season'] - (df_turnover_rating['away_turnover_per_game']*((4*0.8) /2))
+        # df_turnover_rating['away_defensive_rating']=df_turnover_rating['away_avg_pts_conceded_team_season'] / df_turnover_rating['away_date_avg_pts_rolling']
+        
+        df_turnover_rating['projected_team_a_pts']= df_turnover_rating['home_offensive_rating'] * \
+            (df_turnover_rating['away_defensive_rating'] / df_turnover_rating['away_avg_pts_scored_team_season'])
+        df_turnover_rating['projected_team_b_pts']= df_turnover_rating['away_offensive_rating'] * \
+            (df_turnover_rating['home_defensive_rating'] / df_turnover_rating['away_avg_pts_scored_team_season'])
+
+        df_turnover_rating['proj_spread'] = df_turnover_rating['projected_team_b_pts'] - df_turnover_rating['projected_team_a_pts']
+        df_turnover_rating['bet_sign']=np.where(df_turnover_rating['proj_spread']>df_turnover_rating['Home Line Close'],-1,np.where(df_turnover_rating['proj_spread']<df_turnover_rating['Home Line Close'],1,0))
+        df_turnover_rating['home_win']=df_turnover_rating['home_pts_scored'] - df_turnover_rating['away_pts_scored']
+        df_turnover_rating['home_win'] = np.where((df_turnover_rating['home_pts_scored'] > df_turnover_rating['away_pts_scored']), 1, np.where((df_turnover_rating['home_pts_scored'] < df_turnover_rating['away_pts_scored']),-1,0))
+        df_turnover_rating['home_cover']=(np.where(((df_turnover_rating['home_pts_scored'] + df_turnover_rating['Home Line Close']) > df_turnover_rating['away_pts_scored']), 1,
+        np.where(((df_turnover_rating['home_pts_scored']+ df_turnover_rating['Home Line Close']) < df_turnover_rating['away_pts_scored']),-1,0)))
+        df_turnover_rating['home_cover_result']=df_turnover_rating['home_cover'].astype(int)
+        df_turnover_rating['away_cover'] = -df_turnover_rating['home_cover']
+        df_turnover_rating['result']=df_turnover_rating['home_cover_result'] * df_turnover_rating['bet_sign']
+
+        cols_to_move=['Date','season_year','unique_id','home_team','away_team','home_pts_scored','away_pts_scored','Home Line Close','proj_spread',
+        'bet_sign','home_cover_result','result']
+        cols = cols_to_move + [col for col in df_turnover_rating if col not in cols_to_move]
+        df_turnover_rating=df_turnover_rating[cols]
+        return df_turnover_rating
 
 
-    # df_turnover_rating['projected_team_b_pts']= df_turnover_rating['away_avg_pts_scored_team_season'] * (df_turnover_rating['away_turnover_per_game']*1.6)
-    # df_turnover_rating['projected_team_a_pts']= df_turnover_rating['projected_team_a_pts'] + (df_turnover_rating['home_adv']/2)
-    # df_turnover_rating['projected_team_b_pts']= df_turnover_rating['projected_team_b_pts'] - (df_turnover_rating['home_adv']/2)
-    df_turnover_rating['proj_spread'] = df_turnover_rating['projected_team_b_pts'] - df_turnover_rating['projected_team_a_pts']
-    df_turnover_rating['bet_sign']=np.where(df_turnover_rating['proj_spread']>df_turnover_rating['Home Line Close'],-1,np.where(df_turnover_rating['proj_spread']<df_turnover_rating['Home Line Close'],1,0))
-    df_turnover_rating['home_win']=df_turnover_rating['home_pts_scored'] - df_turnover_rating['away_pts_scored']
-    df_turnover_rating['home_win'] = np.where((df_turnover_rating['home_pts_scored'] > df_turnover_rating['away_pts_scored']), 1, np.where((df_turnover_rating['home_pts_scored'] < df_turnover_rating['away_pts_scored']),-1,0))
-    df_turnover_rating['home_cover']=(np.where(((df_turnover_rating['home_pts_scored'] + df_turnover_rating['Home Line Close']) > df_turnover_rating['away_pts_scored']), 1,
-    np.where(((df_turnover_rating['home_pts_scored']+ df_turnover_rating['Home Line Close']) < df_turnover_rating['away_pts_scored']),-1,0)))
-    df_turnover_rating['home_cover_result']=df_turnover_rating['home_cover'].astype(int)
-    df_turnover_rating['away_cover'] = -df_turnover_rating['home_cover']
-    df_turnover_rating['result']=df_turnover_rating['home_cover_result'] * df_turnover_rating['bet_sign']
+    df_turnover_rating=turnover_calcs(df_turnover_rating)
+    df_turnover_rating_dummy=turnover_calcs(df_turnover_rating_dummy)
 
-    cols_to_move=['Date','season_year','unique_id','home_team','away_team','home_pts_scored','away_pts_scored','Home Line Close','proj_spread',
-    'bet_sign','home_cover_result','result']
-    cols = cols_to_move + [col for col in df_turnover_rating if col not in cols_to_move]
-    df_turnover_rating=df_turnover_rating[cols]
+    def pivot_turnover(df_turnover_rating):
+        result_count=df_turnover_rating.groupby(['season_year'])['result'].value_counts()
+        clean_df_for_pivot=df_turnover_rating.loc[:,['season_year','result','bet_sign']]
+        result_pivot=pd.pivot_table(clean_df_for_pivot, index='result', columns='season_year', aggfunc='count')
+        result_pivot.index=result_pivot.index.astype('str')
+        result_pivot.loc['total_games']=result_pivot.sum(axis=0)
+        return result_pivot
 
-    result_count=df_turnover_rating.groupby(['season_year'])['result'].value_counts()
-    clean_df_for_pivot=df_turnover_rating.loc[:,['season_year','result','bet_sign']]
-    result_pivot=pd.pivot_table(clean_df_for_pivot, index='result', columns='season_year', aggfunc='count')
-    result_pivot.index=result_pivot.index.astype('str')
-    result_pivot.loc['total_games']=result_pivot.sum(axis=0)
-    result_pivot.loc['winning_%']=result_pivot.loc['1']/(result_pivot.loc['1']+result_pivot.loc['-1'])
-    result_pivot.loc['cum_winning_%']=result_pivot.loc['1'].cumsum() / (result_pivot.loc['1'].cumsum()+result_pivot.loc['-1'].cumsum())
+    def pivot_turnover_1(result_pivot):
+        result_pivot.loc['winning_%']=result_pivot.loc['1']/(result_pivot.loc['1']+result_pivot.loc['-1'])
+        result_pivot.loc['cum_winning_%']=result_pivot.loc['1'].cumsum() / (result_pivot.loc['1'].cumsum()+result_pivot.loc['-1'].cumsum())
+        return result_pivot
+
     # st.write(result_count.columns)
     # result_count=result_count.reset_index()
     # st.dataframe(result_count)
+    result_pivot=pivot_turnover(df_turnover_rating)
+    st.write('should replciate this', result_pivot)
+    result_pivot=pivot_turnover_1(result_pivot)
     st.dataframe(result_pivot)
+
+    result_pivot_dummy=pivot_turnover(df_turnover_rating_dummy)
+    st.write('what is up with dummy' ,result_pivot_dummy)
+    result_pivot_dummy=pivot_turnover_1(result_pivot_dummy)
+    st.dataframe('dummy',result_pivot_dummy)
 
 with st.expander('Average Error Calcs on Turnover Model'):
     avg_error_data=df_turnover_rating.copy()
