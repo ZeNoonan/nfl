@@ -398,8 +398,8 @@ df_defensive_dummy=df_defensive_dummy.rename(columns={'score':'pts_conceded','me
 
 df_new=pd.merge(df_offensive,df_defensive,how='outer')
 df_new_dummy=pd.merge(df_offensive_dummy,df_defensive_dummy,how='outer')
-st.download_button(label="Download data as CSV",data=df_new_dummy.sort_values(by='unique_id').to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
-st.write('So this looks good to here now continue on from here', df_new_dummy.sort_values(by='unique_id'))
+# st.download_button(label="Download data as CSV",data=df_new_dummy.sort_values(by='unique_id').to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
+# st.write('So this looks good to here now continue on from here', df_new_dummy.sort_values(by='unique_id'))
 
 # st.write('check to see if shift worked defensive',df_new[(df_new['team']=='Arizona Cardinals') | (df_new['team']=='Arizona Cardinals')])
 # st.write('after merge', df_new)
@@ -433,8 +433,8 @@ df_new=calcs_2(df_new)
 df_new_dummy=calcs_2(df_new_dummy)
 
 strength_schedule_df_2=df_new.copy()
-st.write('strenght schedule original', strength_schedule_df_2)
-st.write('could i use this?? LETS TRY', df_new_dummy)
+# st.write('strenght schedule original', strength_schedule_df_2)
+# st.write('home_away looks fine in here', df_new_dummy)
 
 
 def home_away_combine(df_new):
@@ -458,7 +458,7 @@ def home_away_combine_dummy(df_new): # no 'home adv' or 'date avg pts rolling'
     df_home_1=df_new[df_new['home_away']==1].rename(columns={'pts_scored':'home_pts_scored','pts_conceded':'home_pts_conceded','team':'home_team',
     'avg_pts_scored_team_season':'home_avg_pts_scored_team_season','avg_pts_conceded_team_season':'home_avg_pts_conceded_team_season',
     'date_avg_pts_rolling':'home_date_avg_pts_rolling'})\
-        .set_index(['unique_id']).drop('home_away',axis=1).copy()
+        .set_index(['unique_id']).copy()
     df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts_scored','pts_conceded':'away_pts_conceded','team':'away_team',
     'avg_pts_scored_team_season':'away_avg_pts_scored_team_season','avg_pts_conceded_team_season':'away_avg_pts_conceded_team_season',
     'date_avg_pts_rolling':'away_date_avg_pts_rolling'})\
@@ -735,7 +735,9 @@ with st.expander("Strength of Schedule Workings"):
 
     team_list_dummy = dummy_2022['team'].unique()
     dummy_2022=dummy_2022.reset_index(drop=True)
-    # st.write('line 729 dummy data', dummy_2022)
+
+    # want to adjust points scored for home advantage 
+    dummy_2022['home_adv_adj']=np.where(dummy_2022['home_away']==1,-2.5,np.NaN)
 
     # raw_data_offence=[]
     # raw_data_defence=[]
@@ -756,6 +758,8 @@ with st.expander("Strength of Schedule Workings"):
         cleaned_container.columns=cleaned_container.columns + '_offence'
         df_1=pd.merge(test_2022,cleaned_container,left_index=True,right_index=True,how='outer')
         return df_1
+
+    st.download_button(label="Download",data=dummy_2022.to_csv().encode('utf-8'),file_name='df_dummy.csv',mime='text/csv',key='dummy')
 
     def offence_sos_dummy(test_2022,team_list):
         raw_data_offence=[]
