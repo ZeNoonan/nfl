@@ -2,9 +2,7 @@ from operator import is_
 import pandas as pd
 import numpy as np
 import streamlit as st
-from io import BytesIO
-# import os
-import base64 
+import datetime
 import altair as alt
 # import datetime as dt
 from datetime import date, timedelta
@@ -163,7 +161,10 @@ df=df.reset_index().rename(columns={'index':'unique_id'})
 # st.write('df raw data', df.head(4))
 # dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_1.csv')
 dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_2.csv')
-# st.write('dummy df', dummy_df.head(4))
+dummy_df['Date'] = [datetime.datetime.strptime(x, '%d/%m/%Y') for x in dummy_df['Date']]
+dummy_df['Date']=pd.to_datetime(dummy_df['Date']).dt.normalize()
+
+# st.write('dummy df', dummy_df)
 
 def avg_score(df):
     df['avg_home_score']=df['Home Score'].expanding().mean()
@@ -409,8 +410,21 @@ def calcs_2(df_new):
     df_new['team_cum_sum_pts']=df_new.groupby(['team'])['pts_scored'].cumsum()
     df_new['team_cum_sum_games']=df_new.groupby(['team'])['pts_scored'].cumcount()+1
     df_new['rolling_avg_team_pts_scored']=df_new['team_cum_sum_pts'] / df_new['team_cum_sum_games']
+    return df_new
+
+def calcs_3(df_new):
     df_new=df_new.sort_values(by=['Date','unique_id','team'])
     df_new['date_avg_pts_rolling']=df_new['pts_scored'].expanding().mean().shift(32) # 16 teams by 2, want the previous week numbers
+    df_new['date_avg_pts_rolling_no_shift']=df_new['pts_scored'].expanding().mean()
+    return df_new
+
+def calcs_3_dummy(df_new):
+    df_new=df_new.sort_values(by=['Date','unique_id','team'])
+    df_new['date_avg_pts_rolling']=df_new['pts_scored'].expanding().mean().shift(6) # smaller dummy size for six nations
+    df_new['date_avg_pts_rolling_no_shift']=df_new['pts_scored'].expanding().mean()
+    return df_new
+
+def calcs_4(df_new):
     df_new=df_new.sort_values(by=['team','Date'],ascending=True)
     df_new=df_new.sort_values(by=['home_away','Date','unique_id','team'],ascending=True)
     df_home=df_new[df_new['home_away']==1].sort_values(by=['Date','unique_id'],ascending=True)
@@ -423,28 +437,38 @@ def calcs_2(df_new):
     df_new['avg_away_score']=df_new['avg_away_score'].fillna(method='ffill')
     df_new['avg_home_score']=df_new['avg_home_score'].fillna(method='ffill')
     df_new['home_adv']=df_new['avg_home_score']-df_new['avg_away_score']
-    cols_to_move=['Date','team','season_year','Home Line Close','unique_id','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
+    cols_to_move=['Date','team','season_year','Home Line Close','unique_id','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling_no_shift',
+    'date_avg_pts_rolling','avg_pts_scored_team_season',
     'avg_pts_conceded_team_season','home_pts_avg','away_pts_avg','avg_home_score','avg_away_score','home_away']
     cols = cols_to_move + [col for col in df_new if col not in cols_to_move]
     df_new=df_new[cols]
+    df_new=df_new.sort_values(by=['Date','unique_id','team'])
     return df_new
 
 df_new=calcs_2(df_new)
 df_new_dummy=calcs_2(df_new_dummy)
+df_new=calcs_3(df_new)
+df_new_dummy=calcs_3_dummy(df_new_dummy)
+df_new=calcs_4(df_new)
+df_new_dummy=calcs_4(df_new_dummy)
 
 strength_schedule_df_2=df_new.copy()
 # st.write('strenght schedule original', strength_schedule_df_2)
-# st.write('home_away looks fine in here', df_new_dummy)
+# st.download_button(label="Download",data=df_new_dummy.to_csv().encode('utf-8'),file_name='df_dummy.csv',mime='text/csv',key='dummy_shift')
+# st.write('date avg pts rolling in here???', df_new_dummy.dtypes)
 
 
 def home_away_combine(df_new):
-    df_new=df_new.loc[:,['Date','Week','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling','avg_pts_scored_team_season',
-    'avg_pts_conceded_team_season','home_away','turnover','cum_turnover','season_games_played','opponent']]
+    df_new=df_new.loc[:,['Date','Week','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','home_adv','date_avg_pts_rolling',
+    'avg_pts_scored_team_season','avg_pts_conceded_team_season','home_away','turnover','cum_turnover','season_games_played','opponent']]
+
     df_home_1=df_new[df_new['home_away']==1].rename(columns={'pts_scored':'home_pts_scored','pts_conceded':'home_pts_conceded','team':'home_team',
-    'avg_pts_scored_team_season':'home_avg_pts_scored_team_season','avg_pts_conceded_team_season':'home_avg_pts_conceded_team_season','date_avg_pts_rolling':'home_date_avg_pts_rolling'})\
+    'avg_pts_scored_team_season':'home_avg_pts_scored_team_season','avg_pts_conceded_team_season':'home_avg_pts_conceded_team_season',
+    'date_avg_pts_rolling':'home_date_avg_pts_rolling'})\
         .set_index(['unique_id']).drop('home_away',axis=1).copy()
     df_away_1=df_new[df_new['home_away']==-1].rename(columns={'pts_scored':'away_pts_scored','pts_conceded':'away_pts_conceded','team':'away_team',
-    'avg_pts_scored_team_season':'away_avg_pts_scored_team_season','avg_pts_conceded_team_season':'away_avg_pts_conceded_team_season','date_avg_pts_rolling':'away_date_avg_pts_rolling'})\
+    'avg_pts_scored_team_season':'away_avg_pts_scored_team_season','avg_pts_conceded_team_season':'away_avg_pts_conceded_team_season',
+    'date_avg_pts_rolling':'away_date_avg_pts_rolling'})\
         .set_index(['unique_id']).drop(['home_adv','home_away'],axis=1).copy()
     # st.write('df home', df_home_1, 'away', df_away_1)
     # df_combined=pd.concat([df_home_1,df_away_1],axis=0)
@@ -454,6 +478,7 @@ def home_away_combine(df_new):
 
 def home_away_combine_dummy(df_new): # no 'home adv' or 'date avg pts rolling'
     df_new=df_new.loc[:,['Date','Week','team','season_year','unique_id','Home Line Close','pts_scored','pts_conceded','avg_pts_scored_team_season',
+    'date_avg_pts_rolling',
     'avg_pts_conceded_team_season','home_away','turnover','cum_turnover','season_games_played','opponent']]
     df_home_1=df_new[df_new['home_away']==1].rename(columns={'pts_scored':'home_pts_scored','pts_conceded':'home_pts_conceded','team':'home_team',
     'avg_pts_scored_team_season':'home_avg_pts_scored_team_season','avg_pts_conceded_team_season':'home_avg_pts_conceded_team_season',
@@ -497,8 +522,8 @@ with st.expander('first simple model'):
     'bet_sign','home_cover_result','result']
     cols = cols_to_move + [col for col in df_combined if col not in cols_to_move]
     df_combined=df_combined[cols]
-    st.write('data before results are tallied up')
-    AgGrid(df_combined,enable_enterprise_modules=True)
+    # st.write('data before results are tallied up')
+    # AgGrid(df_combined,enable_enterprise_modules=True)
 
     # st.write('df_comb', df_combined[df_combined['season_year']==2022].set_index('Date'))
     # st.download_button(label="Download data as CSV",data=df_combined[df_combined['season_year']==2021].to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
@@ -555,7 +580,7 @@ with st.expander('Turnover Model'):
     def clean_turnover_df(df_turnover_rating):
         df_turnover_rating=df_turnover_rating.copy().rename(columns={'turnover_x':'turnover_home','turnover_y':'turnover_away','cum_turnover_x':'turnover_cum_home',
         'cum_turnover_y':'turnover_cum_away','season_games_played_x':'season_games_played_home','season_games_played_y':'season_games_played_away'})
-        st.write('think i need a home and away turnover for each team')
+        # st.write('think i need a home and away turnover for each team')
         # AgGrid( df_turnover_rating,enable_enterprise_modules=True)
         cols_to_move=['Date','home_team','away_team','turnover_home','turnover_away','turnover_cum_home','turnover_cum_away']
         cols = cols_to_move + [col for col in df_turnover_rating if col not in cols_to_move]
@@ -563,7 +588,7 @@ with st.expander('Turnover Model'):
         return df_turnover_rating
     df_turnover_rating=clean_turnover_df(df_turnover_rating)
     df_turnover_rating_dummy=clean_turnover_df(df_dummy_turnover)
-    st.write('Take it from here')
+    # st.write('Take it from here', df_turnover_rating_dummy)
     # AgGrid( df_turnover_rating,enable_enterprise_modules=True)
     st.write('turnover_home: means the turnover gained by the home team in the game and it will be a negative number if the home team won the turnover battle')
     st.write('turnover_cum_home: means the cumulative turnovers gained, same as above, negative number if the home team won the turnover battle')
@@ -584,9 +609,9 @@ with st.expander('Turnover Model'):
         # df_turnover_rating['away_defensive_rating']=df_turnover_rating['away_avg_pts_conceded_team_season'] / df_turnover_rating['away_date_avg_pts_rolling']
         
         df_turnover_rating['projected_team_a_pts']= df_turnover_rating['home_offensive_rating'] * \
-            (df_turnover_rating['away_defensive_rating'] / df_turnover_rating['away_avg_pts_scored_team_season'])
+            (df_turnover_rating['away_defensive_rating'] / df_turnover_rating['away_date_avg_pts_rolling'])
         df_turnover_rating['projected_team_b_pts']= df_turnover_rating['away_offensive_rating'] * \
-            (df_turnover_rating['home_defensive_rating'] / df_turnover_rating['away_avg_pts_scored_team_season'])
+            (df_turnover_rating['home_defensive_rating'] / df_turnover_rating['away_date_avg_pts_rolling'])
 
         df_turnover_rating['proj_spread'] = df_turnover_rating['projected_team_b_pts'] - df_turnover_rating['projected_team_a_pts']
         df_turnover_rating['bet_sign']=np.where(df_turnover_rating['proj_spread']>df_turnover_rating['Home Line Close'],-1,np.where(df_turnover_rating['proj_spread']<df_turnover_rating['Home Line Close'],1,0))
@@ -607,7 +632,8 @@ with st.expander('Turnover Model'):
 
     df_turnover_rating=turnover_calcs(df_turnover_rating)
     df_turnover_rating_dummy=turnover_calcs(df_turnover_rating_dummy)
-    # st.write('check this DUMMY', df_turnover_rating_dummy.sort_values(by='unique_id'))
+    # st.download_button(label="Download",data=df_turnover_rating_dummy.to_csv().encode('utf-8'),file_name='df_dummy.csv',mime='text/csv',key='dummy')
+    st.write('check that theres no rating for 2021 proj spread strange what is causing it', df_turnover_rating_dummy)
 
     def pivot_turnover(df_turnover_rating):
         result_count=df_turnover_rating.groupby(['season_year'])['result'].value_counts()
@@ -736,17 +762,24 @@ with st.expander("Strength of Schedule Workings"):
     team_list_dummy = dummy_2022['team'].unique()
     dummy_2022=dummy_2022.reset_index(drop=True)
 
-    # want to adjust points scored for home advantage 
-    dummy_2022['home_adv_adj']=np.where(dummy_2022['home_away']==1,-2.5,np.NaN)
+    def home_pts_adj(dummy_2022):
+        # want to adjust points scored for home advantage 
+        dummy_2022['home_adv_adj']=np.where(dummy_2022['home_away']==1,-2.5,2.5)
+        dummy_2022['pts_scored_adj']=dummy_2022['pts_scored']+dummy_2022['home_adv_adj']
+        return dummy_2022
 
+    test_2022=home_pts_adj(test_2022)
+    dummy_2022=home_pts_adj(dummy_2022)
+
+    # st.download_button(label="Download",data=dummy_2022.to_csv().encode('utf-8'),file_name='df_dummy.csv',mime='text/csv',key='dummy_shift_1')
     # raw_data_offence=[]
     # raw_data_defence=[]
     
-    def offence_sos(test_2022,team_list):
+    def offence_sos(test_2022,team_list,pts_scored='pts_scored'):
         raw_data_offence=[]
         for x in team_list:
             df_1=test_2022[(test_2022['team']!=x) & (test_2022['opponent']!=x)].sort_values(['Week','Date','unique_id'],ascending=[True,True,True])
-            df_1[x]=df_1.groupby(['team','season_year'])['pts_scored'].cumsum()
+            df_1[x]=df_1.groupby(['team','season_year'])[pts_scored].cumsum()
             df_1[x]=df_1.groupby(['team','season_year'])[x].shift(1)
             df_1['test_col']=np.where(df_1['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_1[x].isna(),np.NaN,1))
             df_1[x]=df_1[x]*df_1['test_col']
@@ -759,18 +792,19 @@ with st.expander("Strength of Schedule Workings"):
         df_1=pd.merge(test_2022,cleaned_container,left_index=True,right_index=True,how='outer')
         return df_1
 
-    st.download_button(label="Download",data=dummy_2022.to_csv().encode('utf-8'),file_name='df_dummy.csv',mime='text/csv',key='dummy')
+    
 
-    def offence_sos_dummy(test_2022,team_list):
+    def offence_sos_dummy(test_2022,team_list,pts_scored='pts_scored'):
         raw_data_offence=[]
         for x in team_list:
             df_1=test_2022[(test_2022['team']!=x) & (test_2022['opponent']!=x)].sort_values(['Week','Date','unique_id'],ascending=[True,True,True])
-            df_1[x]=df_1.groupby(['team','season_year'])['pts_scored'].cumsum()
+            df_1[x]=df_1.groupby(['team','season_year'])[pts_scored].cumsum()
             df_1[x]=df_1.groupby(['team','season_year'])[x].shift(1)
             df_1['test_col']=np.where(df_1['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_1[x].isna(),np.NaN,1))
             df_1[x]=df_1[x]*df_1['test_col']
             # extract=df_1.loc[:,['unique_id',x]]
             raw_data_offence.append(df_1.loc[:,x])
+            # st.write('team', x, 'data', df_1.sort_values(by=['Date','unique_id'],ascending=[True,True]))
             # st.write('test 2022 first function team', x, 'data', df_1)
             # df_1=df_1.drop(x,axis=1)
 
@@ -782,8 +816,8 @@ with st.expander("Strength of Schedule Workings"):
         return df_1    
 
     # st.write('df1 before function', dummy_2022)
-    df_1=offence_sos(test_2022,team_list)
-    df_1_dummy=offence_sos_dummy(dummy_2022,team_list_dummy)
+    df_1=offence_sos(test_2022,team_list,pts_scored='pts_scored_adj')
+    df_1_dummy=offence_sos_dummy(dummy_2022,team_list_dummy,pts_scored='pts_scored_adj')
     # for x in team_list_dummy:
     #     st.write('x',x)
     # st.write('df_1 dummy 753 line',df_1_dummy)
@@ -899,7 +933,7 @@ with st.expander("Strength of Schedule Workings"):
     # st.write('cleaned container games played', cleaned_container_diff)
 
     # df_power=pd.merge(df_power,sos_container,left_index=True,right_index=True,how='outer')
-    st.write('This is the Six Nations SOS, looks good did a recalc', df_power_dummy.sort_values(by='unique_id'))
+    st.write('This is the Six Nations SOS, looks good did a recalc', df_power_dummy[df_power_dummy['season_year']==2022].sort_values(by='unique_id'))
     
     st.write('df power Week 15', df_power[(df_power['Week']==15) & (df_power['season_year']==2022) ].set_index('team'))
     # st.write('Latest Week is:', df_power['season_year']==2022) [ df_power['Week'].max()]
