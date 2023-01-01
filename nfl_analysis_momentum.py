@@ -80,7 +80,7 @@ def fbref_scraper_csv(url):
         # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
-fbref_scraper_csv(url)
+# fbref_scraper_csv(url)
 
 # prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
 # prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
@@ -639,6 +639,14 @@ with placeholder_2.expander('Betting Slip Matches'):
     # this is for graphing anlaysis on spreadsheet
     betting_matches['bet_sign_all'] = (np.where(betting_matches['total_factor']>0,1,np.where(betting_matches['total_factor']<-0,-1,0)))
     betting_matches['result_all']=betting_matches['home_cover_result'] * betting_matches['bet_sign_all']
+    
+    filt=betting_matches['bet_sign']!=0
+    betting_matches['filtered_bets_made']=betting_matches['bet_sign'].where(filt)
+    betting_matches['tease_spread']=betting_matches['filtered_bets_made']*6+betting_matches['Spread']
+    betting_matches['tease_home_cover']=(np.where(((betting_matches['Home Points'] + betting_matches['tease_spread']) > betting_matches['Away Points']), 1,
+    np.where(((betting_matches['Home Points']+ betting_matches['tease_spread']) < betting_matches['Away Points']),-1,0)))
+    betting_matches['tease_result']=betting_matches['tease_home_cover'] * betting_matches['bet_sign']
+
     # st.write('testing sum of betting all result',betting_matches['result_all'].sum())
     betting_matches['my_spread']=betting_matches['away_power']-betting_matches['home_power']
     betting_matches['spread_diff']=betting_matches['Spread']-betting_matches['my_spread']
@@ -1275,6 +1283,44 @@ with st.expander('Deep Dive on Power Factor'):
     vline = alt.Chart(overlay).mark_rule(color='red', strokeWidth=1).encode(y='power_ranking_success?:Q')
     st.altair_chart(line_cover + vline,use_container_width=True)
 
+with st.expander('Teaser Analyis'):
+    teaser_df = betting_matches.copy()
+    # st.write('teaser df', teaser_df)
+    cols_to_move=['Week','Home Team','Away Team','total_factor','bet_on','result','Spread','Home Points','Away Points','tease_spread','tease_result','filtered_bets_made','tease_home_cover']
+    cols = cols_to_move + [col for col in teaser_df if col not in cols_to_move]
+    teaser_df=teaser_df[cols]
+    # st.write('teaser df', teaser_df)
+    AgGrid(teaser_df)
+
+    group_teaser=teaser_df.groupby(['Week','tease_result']).agg(count=('tease_spread','count')).reset_index()
+    st.write(group_teaser)
+    # group_teaser_1=teaser_df.groupby(['Week']).agg(count=('tease_spread','count'),sum=('tease_result','sum'))
+    group_teaser=(pd.pivot_table(group_teaser,index='Week', columns='tease_result').fillna(0))
+    group_teaser.columns=group_teaser.columns.get_level_values(1)
+    group_teaser.columns=['lose','no_result','win']
+    # group_teaser=group_teaser.reset_index()
+    # st.write(group_teaser.columns)
+    st.write(group_teaser)
+    filt=group_teaser['lose']==0
+    group_teaser['success_week']=group_teaser['win'].where(filt)
+    # st.write(group_teaser)
+    odds_df=pd.DataFrame.from_dict({1:2,2:2,3:2.5,4:3.25,5:4.5,6:6,7:8,8:11,9:15},orient='index').reset_index().rename(columns={'index':'success_week',0:'odds'})
+    market_odds=pd.DataFrame.from_dict({1:-110,2:-110,3:150.5,4:250,5:400,6:600,7:700,8:800,9:900},orient='index').reset_index().rename(columns={'index':'success_week',0:'market_odds'})
+    # https://www.sportsbettingstats.com/sportsbooks/best-teaser-odds
+    # st.write('odds', odds_df)
+    odds_df['american_odds']=np.where(odds_df['odds']>1.999,(odds_df['odds']-1)*100,-100/(odds_df['odds']-1))
+    # st.write('market odds', market_odds)
+    st.write('there is no 2 point teaser available on Bet365, also the market odds are the worst that i could find, so it doesnt look great for bet365')
+    odds_df=pd.merge(odds_df,market_odds,how='outer')
+    st.write('6 Point Teaser odds', odds_df)
+    test_merge_odds=pd.merge(group_teaser,odds_df,how='left')
+    # test_merge_odds['stake']=-10
+    test_merge_odds['stake']=np.where(test_merge_odds['win']<3,np.NaN,-10)
+    test_merge_odds['payout']=test_merge_odds['odds'] * 10
+    test_merge_odds['net_winnings']=test_merge_odds['stake']+test_merge_odds['payout'].fillna(0)
+    st.write('6 Point Teaser Return', test_merge_odds)
+    st.write('total staked',test_merge_odds['stake'].sum())
+    st.write('total returned',test_merge_odds['payout'].sum())
 
 with st.expander('Tests'):
     st.write('To Check that all ok with odds data')
