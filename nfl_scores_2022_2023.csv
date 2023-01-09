@@ -270,21 +270,27 @@
 268,17,Sun,2023-01-01,4:05PM,San Francisco 49ers,@,Las Vegas Raiders,boxscore,37,34,454,1,500,2
 269,17,Sun,2023-01-01,4:25PM,Green Bay Packers,,Minnesota Vikings,boxscore,41,17,315,0,346,4
 270,17,Sun,2023-01-01,4:25PM,Los Angeles Chargers,,Los Angeles Rams,boxscore,31,10,431,0,277,1
-271,17,Mon,2023-01-02,8:30PM,Cincinnati Bengals,,Buffalo Bills,boxscore,7,3,66,0,68,0
-272,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
-273,18,Sat,2023-01-07,4:30PM,Kansas City Chiefs,@,Las Vegas Raiders,preview,,,,,,
-274,18,Sat,2023-01-07,8:15PM,Tennessee Titans,@,Jacksonville Jaguars,preview,,,,,,
-275,18,Sun,2023-01-08,1:00PM,Carolina Panthers,@,New Orleans Saints,preview,,,,,,
-276,18,Sun,2023-01-08,1:00PM,Cleveland Browns,@,Pittsburgh Steelers,preview,,,,,,
-277,18,Sun,2023-01-08,1:00PM,Houston Texans,@,Indianapolis Colts,preview,,,,,,
-278,18,Sun,2023-01-08,1:00PM,Minnesota Vikings,@,Chicago Bears,preview,,,,,,
-279,18,Sun,2023-01-08,1:00PM,New England Patriots,@,Buffalo Bills,preview,,,,,,
-280,18,Sun,2023-01-08,1:00PM,New York Jets,@,Miami Dolphins,preview,,,,,,
-281,18,Sun,2023-01-08,1:00PM,Baltimore Ravens,@,Cincinnati Bengals,preview,,,,,,
-282,18,Sun,2023-01-08,1:00PM,Tampa Bay Buccaneers,@,Atlanta Falcons,preview,,,,,,
-283,18,Sun,2023-01-08,4:25PM,Arizona Cardinals,@,San Francisco 49ers,preview,,,,,,
-284,18,Sun,2023-01-08,4:25PM,Dallas Cowboys,@,Washington Commanders,preview,,,,,,
-285,18,Sun,2023-01-08,4:25PM,New York Giants,@,Philadelphia Eagles,preview,,,,,,
-286,18,Sun,2023-01-08,4:25PM,Los Angeles Rams,@,Seattle Seahawks,preview,,,,,,
-287,18,Sun,2023-01-08,4:25PM,Los Angeles Chargers,@,Denver Broncos,preview,,,,,,
-288,18,Sun,2023-01-08,8:20PM,Detroit Lions,@,Green Bay Packers,preview,,,,,,
+271,Week,Day,Date,Time,Winner/tie,,Loser/tie,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
+272,18,Sat,2023-01-07,4:30PM,Kansas City Chiefs,@,Las Vegas Raiders,boxscore,31,13,349,0,279,2
+273,18,Sat,2023-01-07,8:15PM,Jacksonville Jaguars,,Tennessee Titans,boxscore,20,16,222,1,312,2
+274,18,Sun,2023-01-08,1:00PM,Buffalo Bills,,New England Patriots,boxscore,35,23,327,3,341,3
+275,18,Sun,2023-01-08,1:00PM,Cincinnati Bengals,,Baltimore Ravens,boxscore,27,16,257,1,386,4
+276,18,Sun,2023-01-08,1:00PM,Atlanta Falcons,,Tampa Bay Buccaneers,boxscore,30,17,382,1,222,1
+277,18,Sun,2023-01-08,1:00PM,Carolina Panthers,@,New Orleans Saints,boxscore,10,7,203,2,304,1
+278,18,Sun,2023-01-08,1:00PM,Minnesota Vikings,@,Chicago Bears,boxscore,29,13,482,2,259,2
+279,18,Sun,2023-01-08,1:00PM,Pittsburgh Steelers,,Cleveland Browns,boxscore,28,14,337,1,307,2
+280,18,Sun,2023-01-08,1:00PM,Houston Texans,@,Indianapolis Colts,boxscore,32,31,360,3,398,3
+281,18,Sun,2023-01-08,1:00PM,Miami Dolphins,,New York Jets,boxscore,11,6,302,0,187,0
+282,18,Sun,2023-01-08,4:25PM,San Francisco 49ers,,Arizona Cardinals,boxscore,38,13,311,0,255,4
+283,18,Sun,2023-01-08,4:25PM,Washington Commanders,,Dallas Cowboys,boxscore,26,6,309,1,182,2
+284,18,Sun,2023-01-08,4:25PM,Denver Broncos,,Los Angeles Chargers,boxscore,31,28,471,2,352,2
+285,18,Sun,2023-01-08,4:25PM,Philadelphia Eagles,,New York Giants,boxscore,22,16,342,1,284,0
+286,18,Sun,2023-01-08,4:25PM,Seattle Seahawks,,Los Angeles Rams,boxscore,19,16,402,2,269,1
+287,18,Sun,2023-01-08,8:20PM,Detroit Lions,@,Green Bay Packers,boxscore,20,16,323,0,291,2
+288,Week,Day,Date,Time,Visitor,,Home,,PtsW,PtsL,YdsW,TOW,YdsL,TOL
+289,WildCard,Sat,2023-01-14,4:30PM,Seattle Seahawks,@,San Francisco 49ers,preview,,,,,,
+290,WildCard,Sat,2023-01-14,8:15PM,Los Angeles Chargers,@,Jacksonville Jaguars,preview,,,,,,
+291,WildCard,Sun,2023-01-15,1:00PM,Miami Dolphins,@,Buffalo Bills,preview,,,,,,
+292,WildCard,Sun,2023-01-15,4:30PM,New York Giants,@,Minnesota Vikings,preview,,,,,,
+293,WildCard,Sun,2023-01-15,8:15PM,Baltimore Ravens,@,Cincinnati Bengals,preview,,,,,,
+294,WildCard,Mon,2023-01-16,8:15PM,Dallas Cowboys,@,Tampa Bay Buccaneers,preview,,,,,,
