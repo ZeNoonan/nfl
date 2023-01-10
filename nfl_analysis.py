@@ -637,7 +637,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     presentation_betting_matches=betting_matches.copy()
 
     # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
-    grid_height = st.number_input("Grid height", min_value=400, value=5550, step=100)
+    grid_height = st.number_input("Grid height", min_value=400, value=6550, step=100)
     gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
     gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
     gb.configure_column("home_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
@@ -1243,24 +1243,40 @@ with st.expander('Deep Dive on Power Factor'):
 
 with st.expander('Teaser Analyis'):
     teaser_df = betting_matches.copy()
+    # st.write('teaser df', teaser_df)
+    cols_to_move=['Week','Home Team','Away Team','total_factor','bet_on','result','Spread','Home Points','Away Points','tease_spread','tease_result','filtered_bets_made','tease_home_cover']
+    cols = cols_to_move + [col for col in teaser_df if col not in cols_to_move]
+    teaser_df=teaser_df[cols]
+    # st.write('teaser df', teaser_df)
+    # AgGrid(teaser_df)
+
     group_teaser=teaser_df.groupby(['Week','tease_result']).agg(count=('tease_spread','count')).reset_index()
+    # st.write(group_teaser)
     # group_teaser_1=teaser_df.groupby(['Week']).agg(count=('tease_spread','count'),sum=('tease_result','sum'))
     group_teaser=(pd.pivot_table(group_teaser,index='Week', columns='tease_result').fillna(0))
     group_teaser.columns=group_teaser.columns.get_level_values(1)
     group_teaser.columns=['lose','no_result','win']
     # group_teaser=group_teaser.reset_index()
     # st.write(group_teaser.columns)
-    st.write(group_teaser)
-    filt=group_teaser['lose']==0
+    # st.write(group_teaser)
+    filt=(group_teaser['lose']==0 ) & (group_teaser['win']>2)
     group_teaser['success_week']=group_teaser['win'].where(filt)
-    st.write(group_teaser)
+    # st.write(group_teaser)
     odds_df=pd.DataFrame.from_dict({1:2,2:2,3:2.5,4:3.25,5:4.5,6:6,7:8,8:11,9:15},orient='index').reset_index().rename(columns={'index':'success_week',0:'odds'})
-    st.write('odds', odds_df)
+    market_odds=pd.DataFrame.from_dict({1:-110,2:-110,3:150.5,4:250,5:400,6:600,7:700,8:800,9:900},orient='index').reset_index().rename(columns={'index':'success_week',0:'market_odds'})
+    # https://www.sportsbettingstats.com/sportsbooks/best-teaser-odds
+    # st.write('odds', odds_df)
+    odds_df['american_odds']=np.where(odds_df['odds']>1.999,(odds_df['odds']-1)*100,-100/(odds_df['odds']-1))
+    # st.write('market odds', market_odds)
+    st.write('there is no 2 point teaser available on Bet365, also the market odds are the worst that i could find, so it doesnt look great for bet365')
+    odds_df=pd.merge(odds_df,market_odds,how='outer')
+    st.write('6 Point Teaser odds', odds_df)
     test_merge_odds=pd.merge(group_teaser,odds_df,how='left')
-    test_merge_odds['stake']=-10
+    # test_merge_odds['stake']=-10
+    test_merge_odds['stake']=np.where((test_merge_odds['win']+test_merge_odds['lose']+test_merge_odds['no_result'])<3,np.NaN,-10)
     test_merge_odds['payout']=test_merge_odds['odds'] * 10
     test_merge_odds['net_winnings']=test_merge_odds['stake']+test_merge_odds['payout'].fillna(0)
-    st.write('after merge', test_merge_odds)
+    st.write('6 Point Teaser Return', test_merge_odds)
     st.write('total staked',test_merge_odds['stake'].sum())
     st.write('total returned',test_merge_odds['payout'].sum())
 
