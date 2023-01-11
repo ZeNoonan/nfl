@@ -316,6 +316,7 @@ df_offensive_dummy=offensive_calc_test(df_offensive_dummy)
 # st.write('after new function', df_offensive_dummy)
 
 def col_correction(df_offensive,col='avg_pts_scored_team_season'):
+    # df_offensive=df_offensive.sort_values(by=['Date','Week','unique_id'])
     df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
         .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
     df_offensive['test_col']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
@@ -332,6 +333,7 @@ def col_correction_test(df_offensive,col='avg_pts_scored_team_season'):
     return df_offensive
 
 def col_correction_turnover(df_offensive,col='turnover'):
+    df_offensive=df_offensive.sort_values(by=['Date','Week','unique_id'])
     df_offensive['SHIFT turnover']=df_offensive.groupby(['team','season_year'])['turnover'].expanding(min_periods=4).sum().shift()\
         .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
     # df_offensive['test_col_turn']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT turnover'].isna(),np.NaN,1))
@@ -339,14 +341,34 @@ def col_correction_turnover(df_offensive,col='turnover'):
     df_offensive=df_offensive.drop(['test_col','SHIFT turnover'],axis=1)
     return df_offensive
 
+def col_correction_turnover_dummy(df_offensive,col='turnover'):
+    df_offensive=df_offensive.sort_values(by=['Date','Week','unique_id'])
+    df_offensive['SHIFT turnover']=df_offensive.groupby(['team','season_year'])['turnover'].expanding(min_periods=4).sum().shift()\
+        .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
+    # df_offensive['test_col_turn']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT turnover'].isna(),np.NaN,1))
+    df_offensive['cum_turnover']=df_offensive['SHIFT turnover']*df_offensive['test_col']
+    # df_offensive=df_offensive.drop(['test_col','SHIFT turnover'],axis=1)
+    return df_offensive
+
+def col_correction_dummy(df_offensive,col='avg_pts_scored_team_season'):
+    df_offensive=df_offensive.reset_index(drop=True)
+    df_offensive=df_offensive.sort_values(by=['Date','Week','unique_id'])
+    df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean().shift()\
+        .reset_index().rename(columns={'level_2':'index'}).drop(['team','season_year'],axis=1).set_index('index')
+    df_offensive['test_col']=np.where(df_offensive[col].isna(),np.NaN,np.where(df_offensive['SHIFT avg_pts_scored_team_season'].isna(),np.NaN,1))
+    df_offensive[col]=df_offensive['SHIFT avg_pts_scored_team_season']*df_offensive['test_col']
+    df_offensive=df_offensive.drop(['SHIFT avg_pts_scored_team_season'],axis=1)
+    return df_offensive.sort_values(by=['Date','Week','unique_id'])
+
 df_offensive=col_correction(df_offensive,col='avg_pts_scored_team_season')
 df_offensive=col_correction_turnover(df_offensive,col='turnover')
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
 
-df_offensive_dummy=col_correction(df_offensive_dummy,col='avg_pts_scored_team_season')
-df_offensive_dummy=col_correction_turnover(df_offensive_dummy,col='turnover')
+df_offensive_dummy=col_correction_dummy(df_offensive_dummy,col='avg_pts_scored_team_season')
+st.write('what is going on here', df_offensive_dummy)
+df_offensive_dummy=col_correction_turnover_dummy(df_offensive_dummy,col='turnover')
 df_offensive_dummy=df_offensive_dummy.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
-# st.write('is offence ok>>',df_offensive_dummy[df_offensive_dummy['team']=='Buffalo Bills'].sort_values('unique_id'))
+st.write('is turnover ok>>',df_offensive_dummy[df_offensive_dummy['team']=='Ireland'].sort_values('unique_id'))
 
 
 def defensive_calc(df):
@@ -610,6 +632,7 @@ with st.expander('Turnover Model'):
         
         df_turnover_rating['projected_team_a_pts']= df_turnover_rating['home_offensive_rating'] * \
             (df_turnover_rating['away_defensive_rating'] / df_turnover_rating['away_date_avg_pts_rolling'])
+        
         df_turnover_rating['projected_team_b_pts']= df_turnover_rating['away_offensive_rating'] * \
             (df_turnover_rating['home_defensive_rating'] / df_turnover_rating['away_date_avg_pts_rolling'])
 
@@ -933,7 +956,8 @@ with st.expander("Strength of Schedule Workings"):
     # st.write('cleaned container games played', cleaned_container_diff)
 
     # df_power=pd.merge(df_power,sos_container,left_index=True,right_index=True,how='outer')
-    st.write('This is the Six Nations SOS, looks good did a recalc', df_power_dummy[df_power_dummy['season_year']==2022].sort_values(by='unique_id'))
+    # st.write('This is the Six Nations SOS, looks good did a recalc', df_power_dummy[df_power_dummy['season_year']==2022].sort_values(by='unique_id'))
+    st.write('This is the Six Nations SOS, looks good did a recalc', df_power_dummy.sort_values(by='unique_id'))
     
     st.write('df power Week 15', df_power[(df_power['Week']==15) & (df_power['season_year']==2022) ].set_index('team'))
     # st.write('Latest Week is:', df_power['season_year']==2022) [ df_power['Week'].max()]
