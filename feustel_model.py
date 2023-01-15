@@ -290,7 +290,7 @@ def offensive_calc(df):
     df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount() # by not adding +1 it basically means i am shifting
     #  the line, so if we are in week 5, it will only count the games up to and including week 4
     # df_offensive['season_games_played']=df_offensive.groupby(['team','season_year'])['score'].cumcount()+1 # CAREFUL WATCH THIS
-    df_offensive=df_offensive.sort_values(by=['unique_id','Date','Week'])
+    df_offensive=df_offensive.sort_values(by=['Date','Week','unique_id'])
     return df_offensive
 
 def offensive_calc_1(df_offensive):
@@ -310,8 +310,8 @@ df_offensive=offensive_calc(df)
 df_offensive=offensive_calc_test(df_offensive)
 
 df_offensive_dummy=offensive_calc(dummy_df)
-# st.write('df offensive dummy and where is score column??', df_offensive_dummy)
-# st.write('take a look at groupby here',df_offensive_dummy.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean())
+st.write('df offensive dummy and is it sorted correctly', df_offensive_dummy)
+st.write('take a look at groupby here 2021',df_offensive_dummy.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean())
 df_offensive_dummy=offensive_calc_test(df_offensive_dummy)
 # st.write('after new function', df_offensive_dummy)
 
@@ -367,8 +367,10 @@ df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_g
 df_offensive_dummy=col_correction_dummy(df_offensive_dummy,col='avg_pts_scored_team_season')
 st.write('what is going on here', df_offensive_dummy)
 df_offensive_dummy=col_correction_turnover_dummy(df_offensive_dummy,col='turnover')
-df_offensive_dummy=df_offensive_dummy.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
-st.write('is turnover ok>>',df_offensive_dummy[df_offensive_dummy['team']=='Ireland'].sort_values('unique_id'))
+df_offensive_dummy=df_offensive_dummy.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['Date','unique_id','team'])\
+    .reset_index(drop=True)
+
+# st.write('is turnover ok>>',df_offensive_dummy[df_offensive_dummy['team']=='Ireland'].sort_values('unique_id'))
 
 
 def defensive_calc(df):
@@ -416,11 +418,21 @@ df_defensive_dummy=defensive_calc_2(df_defensive_dummy)
 df_defensive_dummy=col_correction(df_defensive_dummy,col='avg_pts_conceded_team_season')
 # st.write('df dummy after col correction', df_defensive_dummy[df_defensive_dummy['team']=='Buffalo Bills'].sort_values('unique_id'))
 # st.write('df dummy offence after col correction', df_offensive_dummy[df_offensive_dummy['team']=='Buffalo Bills'].sort_values('unique_id'))
-df_defensive_dummy=df_defensive_dummy.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['team','Date'])
+df_defensive_dummy=df_defensive_dummy.rename(columns={'score':'pts_conceded','mean_score':'4_game_pts_conceded'}).sort_values(by=['Date','unique_id','team'])\
+    .reset_index(drop=True)
 
 
 df_new=pd.merge(df_offensive,df_defensive,how='outer')
-df_new_dummy=pd.merge(df_offensive_dummy,df_defensive_dummy,how='outer')
+st.write('Problem with merge: offensive dummy', df_offensive_dummy.sort_values(by=['season_year','Week', 'unique_id']),'count',df_offensive_dummy.shape)
+st.write('Problem with merge: defensive dummy', df_defensive_dummy.sort_values(by=['season_year','Week', 'unique_id']),'count', df_defensive_dummy.shape)
+
+df_new_dummy=pd.merge(df_offensive_dummy,df_defensive_dummy,how='outer',on=['team','unique_id','season_year','avg_home_score','avg_away_score',
+'Date','Week','Home Line Close','turnover','home_away']\
+    ,validate='one_to_one',indicator=True).drop('test_col_y',axis=1).rename(columns={'test_col_x':'test_col'})
+# df_new_dummy=pd.concat([df_offensive_dummy,df_defensive_dummy],axis=1,verify_integrity=True) # merging on index
+st.write('after merge', df_new_dummy.sort_values(by=['Date','unique_id','team']))
+st.write('THIS LOOKS BETTER CHECK AND REPLICATE FOR NFL DATA, GET THE FUNCTION TO WORK FOR NFL DATA')
+# st.write('after merge', df_new_dummy)
 # st.download_button(label="Download data as CSV",data=df_new_dummy.sort_values(by='unique_id').to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
 # st.write('So this looks good to here now continue on from here', df_new_dummy.sort_values(by='unique_id'))
 
@@ -468,6 +480,7 @@ def calcs_4(df_new):
     return df_new
 
 df_new=calcs_2(df_new)
+st.write('1, duplicates in here?? - YES', df_new_dummy.sort_values(by=['season_year','Week','unique_id']))
 df_new_dummy=calcs_2(df_new_dummy)
 df_new=calcs_3(df_new)
 df_new_dummy=calcs_3_dummy(df_new_dummy)
@@ -769,7 +782,7 @@ with st.expander("Strength of Schedule Workings"):
     test_2022=strength_schedule_df_2.copy()
     # dummy_2022=df_new_dummy[df_new_dummy['season_year']==2022]
     dummy_2022=df_new_dummy.copy()
-    # st.write('dummy 2022', dummy_2022)
+    st.write('dummy 2022 there are some NAs in here need to fix look at duplicates', dummy_2022)
     # def col_correction(df_offensive,team,col='avg_pts_scored_team_season'):
     #     df_offensive=df_offensive[df_offensive['team']!=team]
     #     df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['pts_scored'].expanding(min_periods=4).mean().shift()\
