@@ -293,7 +293,8 @@
 291,WildCard,Sun,2023-01-15,1:00PM,Buffalo Bills,,Miami Dolphins,boxscore,34,31,423,3,231,2
 292,WildCard,Sun,2023-01-15,4:30PM,New York Giants,@,Minnesota Vikings,boxscore,31,24,431,0,332,0
 293,WildCard,Sun,2023-01-15,8:15PM,Cincinnati Bengals,,Baltimore Ravens,boxscore,24,17,234,1,364,2
-294,WildCard,Mon,2023-01-16,8:15PM,Dallas Cowboys,@,Tampa Bay Buccaneers,preview,,,,,,
+294,WildCard,Mon,2023-01-16,8:15PM,Dallas Cowboys,@,Tampa Bay Buccaneers,boxscore,31,14,425,0,386,1
 295,Division,Sat,2023-01-21,4:30PM,Jacksonville Jaguars,@,Kansas City Chiefs,preview,,,,,,
 296,Division,Sat,2023-01-21,8:15PM,New York Giants,@,Philadelphia Eagles,preview,,,,,,
 297,Division,Sun,2023-01-22,3:00PM,Cincinnati Bengals,@,Buffalo Bills,preview,,,,,,
+298,Division,Sun,2023-01-22,6:30PM,Dallas Cowboys,@,San Francisco 49ers,preview,,,,,,
