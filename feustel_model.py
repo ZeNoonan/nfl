@@ -782,7 +782,7 @@ with st.expander("Strength of Schedule Workings"):
     test_2022=strength_schedule_df_2.copy()
     # dummy_2022=df_new_dummy[df_new_dummy['season_year']==2022]
     dummy_2022=df_new_dummy.copy()
-    st.write('dummy 2022 there are some NAs in here need to fix look at duplicates', dummy_2022)
+    # st.write('dummy 2022 there are some NAs in here need to fix look at duplicates', dummy_2022)
     # def col_correction(df_offensive,team,col='avg_pts_scored_team_season'):
     #     df_offensive=df_offensive[df_offensive['team']!=team]
     #     df_offensive['SHIFT avg_pts_scored_team_season']=df_offensive.groupby(['team','season_year'])['pts_scored'].expanding(min_periods=4).mean().shift()\
@@ -806,6 +806,7 @@ with st.expander("Strength of Schedule Workings"):
 
     test_2022=home_pts_adj(test_2022)
     dummy_2022=home_pts_adj(dummy_2022)
+    # st.write('check the avg pts scored team season as test col runs off it', dummy_2022)
 
     # st.download_button(label="Download",data=dummy_2022.to_csv().encode('utf-8'),file_name='df_dummy.csv',mime='text/csv',key='dummy_shift_1')
     # raw_data_offence=[]
@@ -828,7 +829,17 @@ with st.expander("Strength of Schedule Workings"):
         df_1=pd.merge(test_2022,cleaned_container,left_index=True,right_index=True,how='outer')
         return df_1
 
-    
+    # st.write('checking function')
+    # ireland_test=dummy_2022[(dummy_2022['team']!='Ireland') & (dummy_2022['opponent']!='Ireland') & (dummy_2022['season_year']==2022) ]\
+        # .sort_values(['Week','Date','unique_id'])
+    # st.write('is test col working for test pts')
+    # ireland_test['test_pts'] = ireland_test.groupby(['team','season_year'])['pts_scored'].cumsum()
+    # ireland_test['shift_test_pts'] = ireland_test.groupby(['team','season_year'])['test_pts'].shift(1)
+    # st.write( ireland_test [ireland_test['team']=='England'].set_index(['team','opponent','test_pts','shift_test_pts']))
+    # st.write( ireland_test.groupby(['team','season_year'])['pts_scored'].cumsum() )
+
+    # st.write(dummy_2022[(dummy_2022['team']!='Ireland') & (dummy_2022['opponent']!='Ireland')].sort_values(['Week','Date','unique_id']\
+    #     .groupby(['team','season_year'])['pts_scored'].cumsum()))
 
     def offence_sos_dummy(test_2022,team_list,pts_scored='pts_scored'):
         raw_data_offence=[]
@@ -856,7 +867,9 @@ with st.expander("Strength of Schedule Workings"):
     df_1_dummy=offence_sos_dummy(dummy_2022,team_list_dummy,pts_scored='pts_scored_adj')
     # for x in team_list_dummy:
     #     st.write('x',x)
-    # st.write('df_1 dummy 753 line',df_1_dummy)
+    # st.write('check ireland england', df_1_dummy[ (df_1_dummy['season_year']==2022) ].set_index('Ireland_offence') )
+    # st.write('ok so im happy with the calcs now for the dummy data for offence i have total offence points of 239 for Ireland matches spreadsheet')
+    # st.write('need to check the conceded pts for the teams that Ireland faced')
 
     def defence_sos(df_1,team_list):
         raw_data_defence=[]
@@ -907,7 +920,7 @@ with st.expander("Strength of Schedule Workings"):
     df_5=df_5[cols]      
 
     df_4=df_5.copy()
-    st.write('put in a column for have you played them, then have a cum sum of htat played multiplied by the other col')
+    # st.write('put in a column for have you played them, then have a cum sum of htat played multiplied by the other col')
     def sos_workings(df_4,team_list):
         for x in team_list:
             df_4[x+' played']=np.where(df_4['opponent']==x,1,0)
@@ -921,10 +934,17 @@ with st.expander("Strength of Schedule Workings"):
     df_4=sos_workings(df_5,team_list)
     df_4_dummy=sos_workings(df_5_dummy,team_list_dummy)
 
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','Ireland_offence','Ireland_defence','Ireland pts_diff',
+    'Ireland games_use']
+    cols = cols_to_move + [col for col in df_4_dummy if col not in cols_to_move]
+    df_4_dummy=df_4_dummy[cols]
+    # st.write('df4 dummy so for England for 2022 the Ireland pts diff column matches the spreadsheet CHECK LATER why 2021 defence not flowing through', df_4_dummy)
+
+
     def sos_workings_2(df_4,team_list):
         sos_container=[]
         grouped_container=[]
-        for week,group_df in df_4.groupby('Week'):
+        for week,group_df in df_4.groupby(['season_year','Week']):
             for x in team_list:
                 group_df.loc [ (group_df['team']==x), x+'_opp_games' ] = group_df[x+' sum'].sum()
                 group_df.loc [ (group_df['team']==x), x+'_diff_total' ] = group_df[x+' pts_diff'].sum()
@@ -944,6 +964,13 @@ with st.expander("Strength of Schedule Workings"):
         adj_team_list=team_list.copy()
         adj_team_list=[x + '_diff_per_game' for x in adj_team_list]
         df_power = pd.concat(grouped_container)
+
+        # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','Ireland_offence','Ireland_defence','Ireland pts_diff',
+        # 'Ireland games_use','Ireland_opp_games','Ireland_diff_total','Ireland_total_opp_games','Ireland_diff_per_game']
+        # cols = cols_to_move + [col for col in df_power if col not in cols_to_move]
+        # df_power=df_power[cols]
+        # st.write('df power in the FUNCTION')
+        # AgGrid(df_power)
         df_power['sos']=df_power[adj_team_list].bfill(axis=1).iloc[:,0]
         cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','sos']
         cols = cols_to_move + [col for col in df_power if col not in cols_to_move]
@@ -952,7 +979,7 @@ with st.expander("Strength of Schedule Workings"):
 
     df_power=sos_workings_2(df_4,team_list)
     df_power_dummy=sos_workings_2(df_4_dummy,team_list_dummy)
-    # st.write('check', d
+    # st.write('check', dd
     # f_power_dummy.columns)
 
 
@@ -964,13 +991,22 @@ with st.expander("Strength of Schedule Workings"):
 
     cols = cols_to_move + [col for col in df_power if col not in cols_to_move]
     df_power=df_power[cols]
+
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','sos','Ireland_offence','Ireland_defence','Ireland pts_diff',
+    'Ireland games_use','Ireland_diff_per_game',
+    'Ireland_diff_total','Ireland_total_opp_games']
+    cols = cols_to_move + [col for col in df_power_dummy if col not in cols_to_move]
+    df_power_dummy=df_power_dummy[cols]
+
+
     # sos_container=pd.DataFrame(sos_container).transpose()
     # sos_container.columns=sos_container.columns + '_latest'
     # st.write('cleaned container games played', cleaned_container_diff)
 
     # df_power=pd.merge(df_power,sos_container,left_index=True,right_index=True,how='outer')
-    # st.write('This is the Six Nations SOS, looks good did a recalc', df_power_dummy[df_power_dummy['season_year']==2022].sort_values(by='unique_id'))
-    st.write('This is the Six Nations SOS, looks good did a recalc', df_power_dummy.sort_values(by='unique_id'))
+    # st.write('check ireland england 2', df_power_dummy[ (df_power_dummy['season_year']==2022) ])
+    # st.write('Ireland recalc', df_power_dummy[(df_power_dummy['season_year']==2022) & (df_power_dummy['team']=='Ireland')].sort_values(by='unique_id'))
+    st.write('This is the Six Nations SOS, need to fix 2021', df_power_dummy.sort_values(by=['Date','Week','unique_id']))
     
     st.write('df power Week 15', df_power[(df_power['Week']==15) & (df_power['season_year']==2022) ].set_index('team'))
     # st.write('Latest Week is:', df_power['season_year']==2022) [ df_power['Week'].max()]
