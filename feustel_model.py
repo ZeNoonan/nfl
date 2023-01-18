@@ -310,8 +310,8 @@ df_offensive=offensive_calc(df)
 df_offensive=offensive_calc_test(df_offensive)
 
 df_offensive_dummy=offensive_calc(dummy_df)
-st.write('df offensive dummy and is it sorted correctly', df_offensive_dummy)
-st.write('take a look at groupby here 2021',df_offensive_dummy.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean())
+# st.write('df offensive dummy and is it sorted correctly', df_offensive_dummy)
+# st.write('take a look at groupby here 2021',df_offensive_dummy.groupby(['team','season_year'])['score'].expanding(min_periods=4).mean())
 df_offensive_dummy=offensive_calc_test(df_offensive_dummy)
 # st.write('after new function', df_offensive_dummy)
 
@@ -365,7 +365,7 @@ df_offensive=col_correction_turnover(df_offensive,col='turnover')
 df_offensive=df_offensive.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['team','Date'])
 
 df_offensive_dummy=col_correction_dummy(df_offensive_dummy,col='avg_pts_scored_team_season')
-st.write('what is going on here', df_offensive_dummy)
+# st.write('what is going on here', df_offensive_dummy)
 df_offensive_dummy=col_correction_turnover_dummy(df_offensive_dummy,col='turnover')
 df_offensive_dummy=df_offensive_dummy.rename(columns={'score':'pts_scored','mean_score':'4_game_pts_scored'}).sort_values(by=['Date','unique_id','team'])\
     .reset_index(drop=True)
@@ -430,8 +430,8 @@ df_new_dummy=pd.merge(df_offensive_dummy,df_defensive_dummy,how='outer',on=['tea
 'Date','Week','Home Line Close','turnover','home_away']\
     ,validate='one_to_one',indicator=True).drop('test_col_y',axis=1).rename(columns={'test_col_x':'test_col'})
 # df_new_dummy=pd.concat([df_offensive_dummy,df_defensive_dummy],axis=1,verify_integrity=True) # merging on index
-st.write('after merge', df_new_dummy.sort_values(by=['Date','unique_id','team']))
-st.write('THIS LOOKS BETTER CHECK AND REPLICATE FOR NFL DATA, GET THE FUNCTION TO WORK FOR NFL DATA')
+# st.write('after merge', df_new_dummy.sort_values(by=['Date','unique_id','team']))
+# st.write('THIS LOOKS BETTER CHECK AND REPLICATE FOR NFL DATA, GET THE FUNCTION TO WORK FOR NFL DATA')
 # st.write('after merge', df_new_dummy)
 # st.download_button(label="Download data as CSV",data=df_new_dummy.sort_values(by='unique_id').to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
 # st.write('So this looks good to here now continue on from here', df_new_dummy.sort_values(by='unique_id'))
@@ -867,30 +867,37 @@ with st.expander("Strength of Schedule Workings"):
     df_1_dummy=offence_sos_dummy(dummy_2022,team_list_dummy,pts_scored='pts_scored_adj')
     # for x in team_list_dummy:
     #     st.write('x',x)
-    # st.write('check ireland england', df_1_dummy[ (df_1_dummy['season_year']==2022) ].set_index('Ireland_offence') )
+    st.write('check ireland england', df_1_dummy[ (df_1_dummy['season_year']==2021) ].set_index('Ireland_offence') )
     # st.write('ok so im happy with the calcs now for the dummy data for offence i have total offence points of 239 for Ireland matches spreadsheet')
     # st.write('need to check the conceded pts for the teams that Ireland faced')
-
+    st.write('BEFORE I LEAVE looks like shift is where i am at, is it calculating correctly??')
     def defence_sos(df_1,team_list):
         raw_data_defence=[]
         for x in team_list:
             # st.write('x', x)
             df_2=df_1[(df_1['team']!=x) & (df_1['opponent']!=x)].sort_values(['Week','Date','unique_id'],ascending=[True,True,True])
             df_2[x]=df_2.groupby(['team','season_year'])['pts_conceded'].cumsum()
+            st.write('inside function checking for defence', df_2)
             df_2[x]=df_2.groupby(['team','season_year'])[x].shift(1)
+            st.write('inside function checking for defence after shift', df_2)
             df_2['test_col']=np.where(df_2['avg_pts_conceded_team_season'].isna(),np.NaN,np.where(df_2[x].isna(),np.NaN,1))
+            st.write('checking the test col before calc', df_2)
             df_2[x]=df_2[x]*df_2['test_col']
+            st.write('checking after test col calc', df_2)
             extract=df_2.loc[:,['unique_id',x]]
             raw_data_defence.append(df_2.loc[:,x])
             # df_2=df_2.drop(x,axis=1)
 
         cleaned_container_defence=pd.DataFrame(raw_data_defence).transpose()
         cleaned_container_defence.columns=cleaned_container_defence.columns + '_defence'
+        st.write('cleaned container defence before merge', cleaned_container_defence)
+        st.write('dataframe before merge', df_1)
         df_4=pd.merge(df_1,cleaned_container_defence,left_index=True,right_index=True,how='outer')
         return df_4
 
-    df_4=defence_sos(df_1,team_list)
+    # df_4=defence_sos(df_1,team_list) # just while i check inside the function
     df_4_dummy=defence_sos(df_1_dummy,team_list_dummy)
+    st.write('dummy dataframe after merge', df_4_dummy)
 
     def raw_data_sos(df_4,team_list):
         raw_data_diff=[]
@@ -969,8 +976,8 @@ with st.expander("Strength of Schedule Workings"):
         # 'Ireland games_use','Ireland_opp_games','Ireland_diff_total','Ireland_total_opp_games','Ireland_diff_per_game']
         # cols = cols_to_move + [col for col in df_power if col not in cols_to_move]
         # df_power=df_power[cols]
-        # st.write('df power in the FUNCTION')
-        # AgGrid(df_power)
+        st.write('df power in the FUNCTION something wrong with the Defence I think in 2021')
+        AgGrid(df_power)
         df_power['sos']=df_power[adj_team_list].bfill(axis=1).iloc[:,0]
         cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','sos']
         cols = cols_to_move + [col for col in df_power if col not in cols_to_move]
