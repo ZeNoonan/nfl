@@ -19,14 +19,16 @@ def read_csv_data(file):
 def read_data(file):
     return pd.read_excel(file)
 
-current_date='2022-12-20'
+current_date='2023-01-20'
+# current_date='2022-12-20'
 # run the fbref function and bring in date of last completed week, and then check the test NA 
 
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_24_09_22.xlsx')
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_14_10_22.xlsx')
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_05_11_22.xlsx')
 # df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_26_11_22.xlsx')
-df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_20_12_22.xlsx')
+# df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_20_12_22.xlsx')
+df = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds_21_01_23.xlsx')
 df=df.copy()
 
 with st.expander('pro football workings'):
@@ -120,6 +122,11 @@ with st.expander('pro football workings'):
     df.loc [ (df['Date']=='2010-02-07')&(df['Home Team']=='New Orleans Saints'), 'Away Team' ] = 'Indianapolis Colts'
     df.loc [ (df['Date']=='2008-02-03')&(df['Home Team']=='New England Patriots'), 'Home Team' ] = 'New York Giants'
     df.loc [ (df['Date']=='2008-02-03')&(df['Home Team']=='New York Giants'), 'Away Team' ] = 'New England Patriots'
+    # st.write('check date Jackonsville', df.loc [ (df['Date']=='2023-01-08')&(df['Home Team']=='Jacksonville Jaguars'), 'Date' ])
+    # st.write('check date Jackonsville', df.loc [ (df['Home Team']=='Jacksonville Jaguars'), 'Date' ])
+    df.loc [ (df['Date']=='2023-01-08')&(df['Home Team']=='Jacksonville Jaguars'), 'Date' ] = '2023-01-07' # looks like the Odds Data got the date wrong compared to FB Ref
+    df['Date']=pd.to_datetime(df['Date'],format='%Y-%m-%d')
+    # st.write('check date after it is changed', df)
 
 
     # df.loc [ (df['Date']=='2015-01-04')&(df['Home Team']=='New England Patriots'), 'Away Team' ] = 'Seattle Seahawks'
@@ -176,6 +183,7 @@ dummy_df=avg_score(dummy_df)
 cols_to_move=['Date','Home Team','Away Team','unique_id','Home Score','Away Score','avg_home_score','avg_away_score']
 cols = cols_to_move + [col for col in df if col not in cols_to_move]
 df=df[cols]
+st.write('check data', df)
 
 with st.expander('raw data'):
 
@@ -776,8 +784,10 @@ with st.expander('Average Error Calcs on Turnover Model'):
 with st.expander("Strength of Schedule Workings"):
     # test_2022=strength_schedule_df_2[strength_schedule_df_2['season_year']==2022]
     test_2022=strength_schedule_df_2.copy()
-    # dummy_2022=df_new_dummy[df_new_dummy['season_year']==2022]
-    dummy_2022=df_new_dummy.copy()
+    with st.echo():
+        st.write('Just calling out that I am filtering on 2022 only as it is taking a long time for the programe to run')
+        dummy_2022=df_new_dummy[(df_new_dummy['season_year']==2022)].copy()
+    # dummy_2022=df_new_dummy.copy()
     # st.write('dummy 2022 there are some NAs in here need to fix look at duplicates', dummy_2022)
     # def col_correction(df_offensive,team,col='avg_pts_scored_team_season'):
     #     df_offensive=df_offensive[df_offensive['team']!=team]
@@ -807,7 +817,7 @@ with st.expander("Strength of Schedule Workings"):
     # st.download_button(label="Download",data=dummy_2022.to_csv().encode('utf-8'),file_name='df_dummy.csv',mime='text/csv',key='dummy_shift_1')
     # raw_data_offence=[]
     # raw_data_defence=[]
-    
+    @st.cache
     def offence_sos(test_2022,team_list,pts_scored='pts_scored'):
         raw_data_offence=[]
         for x in team_list:
@@ -836,7 +846,7 @@ with st.expander("Strength of Schedule Workings"):
 
     # st.write(dummy_2022[(dummy_2022['team']!='Ireland') & (dummy_2022['opponent']!='Ireland')].sort_values(['Week','Date','unique_id']\
     #     .groupby(['team','season_year'])['pts_scored'].cumsum()))
-
+    @st.cache
     def offence_sos_dummy(test_2022,team_list,pts_scored='pts_scored'):
         raw_data_offence=[]
         for x in team_list:
@@ -862,6 +872,7 @@ with st.expander("Strength of Schedule Workings"):
     df_1=offence_sos_dummy(test_2022,team_list,pts_scored='pts_scored_adj')
     df_1_dummy=offence_sos_dummy(dummy_2022,team_list_dummy,pts_scored='pts_scored_adj')
     
+    @st.cache
     def defence_sos(df_1,team_list):
         raw_data_defence=[]
         for x in team_list:
@@ -890,6 +901,7 @@ with st.expander("Strength of Schedule Workings"):
     df_4_dummy=defence_sos(df_1_dummy,team_list_dummy)
     # st.write('dummy dataframe after merge', df_4_dummy)
 
+    @st.cache
     def raw_data_sos(df_4,team_list):
         raw_data_diff=[]
         for x in team_list:
@@ -919,6 +931,7 @@ with st.expander("Strength of Schedule Workings"):
 
     df_4=df_5.copy()
     # st.write('put in a column for have you played them, then have a cum sum of htat played multiplied by the other col')
+    @st.cache
     def sos_workings(df_4,team_list):
         for x in team_list:
             df_4[x+' played']=np.where(df_4['opponent']==x,1,0)
@@ -938,7 +951,7 @@ with st.expander("Strength of Schedule Workings"):
     df_4_dummy=df_4_dummy[cols]
     # st.write('df4 dummy so for England for 2022 the Ireland pts diff column matches the spreadsheet CHECK LATER why 2021 defence not flowing through', df_4_dummy)
 
-
+    @st.cache
     def sos_workings_2(df_4,team_list):
         sos_container=[]
         grouped_container=[]
@@ -1004,14 +1017,31 @@ with st.expander("Strength of Schedule Workings"):
     # df_power=pd.merge(df_power,sos_container,left_index=True,right_index=True,how='outer')
     # st.write('check ireland england 2', df_power_dummy[ (df_power_dummy['season_year']==2022) ])
     # st.write('Ireland recalc', df_power_dummy[(df_power_dummy['season_year']==2022) & (df_power_dummy['team']=='Ireland')].sort_values(by='unique_id'))
-    st.write('This is the Six Nations SOS, need to fix 2021', df_power_dummy.sort_values(by=['Date','Week','unique_id']))
+    st.write('This is the Six Nations SOS if Ireland 0.667 for both 2021 and 2022 then we are good', df_power_dummy.sort_values(by=['Date','Week','unique_id']))
+    st.write('have a spreadsheet in the NFL folder to back it up')
     
-    st.write('df power Week 15', df_power[(df_power['Week']==15) & (df_power['season_year']==2022) ].set_index('team'))
+    st.write('df power Week 18', df_power[(df_power['Week']==18) & (df_power['season_year']==2022) ].set_index('team'))
+    st.write('df power Week 19', df_power[(df_power['Week']==19) & (df_power['season_year']==2022) ].set_index('team'))
+    st.write('just wonder how do i sense check the veracity of the sos, maybe take the highest and lowest and compare that way')
     # st.write('Latest Week is:', df_power['season_year']==2022) [ df_power['Week'].max()]
     st.write('Latest Week is:',df_power[df_power['season_year']==2022]['Week'].max() )
-    # st.write('Baltimore Hardest Schedule', df_power[(df_power['team']=='Baltimore Ravens')].set_index('team'))
+    st.write('Easiest Schedule', df_power[(df_power['team']=='Las Vegas Raiders') & (df_power['season_year']==2022) ].set_index('team'))
     # st.write('Patriots Easiest Schedule', df_power[df_power['team']=='New England Patriots'].set_index('team'))
 
+    graph_pl_data=df_power[(df_power['season_year']==2022) ].loc[:,['team','Week','sos']].copy()
+    
+    def graph_pl(decile_df_abs_home_1,column):
+        line_cover= alt.Chart(decile_df_abs_home_1).mark_line().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
+        alt.Y(column),color=alt.Color('team'))
+        # text_cover=line_cover.mark_text(baseline='middle',dx=0,dy=-15).encode(text=alt.Text(column),color=alt.value('black'))
+        overlay = pd.DataFrame({column: [0]})
+        vline = alt.Chart(overlay).mark_rule(color='black', strokeWidth=1).encode(y=column)
+        return st.altair_chart(line_cover + vline,use_container_width=True)
+
+    graph_pl(graph_pl_data,column='sos')
+
+    # graph_pl_data=graph_data_sos.melt(id_vars='Week',var_name='team',value_name='sos')
+    # st.write('graph_pl_data', graph_pl_data)
 
     # https://stackoverflow.com/questions/71255870/calculate-sum-based-on-multiple-rows-from-list-column-for-each-row-in-pandas-dat
     # interesting link above
