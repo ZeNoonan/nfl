@@ -183,7 +183,7 @@ dummy_df=avg_score(dummy_df)
 cols_to_move=['Date','Home Team','Away Team','unique_id','Home Score','Away Score','avg_home_score','avg_away_score']
 cols = cols_to_move + [col for col in df if col not in cols_to_move]
 df=df[cols]
-st.write('check data', df)
+# st.write('check data', df)
 
 with st.expander('raw data'):
 
