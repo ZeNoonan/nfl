@@ -4,12 +4,14 @@ import numpy as np
 import streamlit as st
 import datetime
 import altair as alt
-# import datetime as dt
+from time import time
 from datetime import date, timedelta
 # from st_aggrid import AgGrid
 from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode, JsCode
 
 st.set_page_config(layout="wide")
+
+start_uncached = time()
 
 @st.cache
 def read_csv_data(file):
@@ -61,11 +63,12 @@ with st.expander('pro football workings'):
     # file_2019 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2019.csv')
     # file_2020 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2020.csv')
     # file_2021 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2021.csv')
-    file_2022 = pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2022.csv')
+    start_cached = time()
+    file_2022 = read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2022.csv').copy()
     # combined_file = pd.concat([file_2006,file_2007,file_2008,file_2009,file_2010,file_2011,file_2012,file_2013,
     # file_2014,file_2015,file_2016,file_2017,file_2018,file_2019,file_2020,file_2021])
     # combined_file.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2006_2021.csv')
-    combined_file=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2006_2021.csv')
+    combined_file=read_csv_data('C:/Users/Darragh/Documents/Python/NFL/nfl_feustel_scores_2006_2021.csv').copy()
     combined_file=pd.concat([combined_file,file_2022])
     # st.write('comb files', combined_file)
 
@@ -151,6 +154,11 @@ with st.expander('pro football workings'):
 # st.write('df raw data 145', df.head(4))
 # st.download_button(label="Download data as CSV",data=df.head().to_csv().encode('utf-8'),
 # file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
+
+
+line_160 = time()
+
+
 
 df['home_score_margin_of_victory']=df['Home Points']-df['Away Points']
 df['Home Line Close']=df['Home Line Close'].fillna(df['Home Line Open'])
@@ -606,7 +614,7 @@ with st.expander('Average Error Calcs on Simple Model'):
     avg_proj_odds_error=('proj_odds_error','mean'),med_proj_odds_error=('proj_odds_error','median'),min_diff_to_spread=('diff_proj_spread_actual','min'),
     max_diff_to_spread=('diff_proj_spread_actual','max') )   )
 
-
+line_617=time()
 with st.expander('Splitting the Spread up to analyse'):
     avg_error_data_spread=avg_error_data.copy()
     st.write('d',avg_error_data_spread)
@@ -711,7 +719,7 @@ with st.expander('Turnover Model'):
     # st.write('what is up with dummy' ,result_pivot_dummy)
     result_pivot_dummy=pivot_turnover_1(result_pivot_dummy)
     st.dataframe(result_pivot_dummy)
-
+line_722=time()
 with st.expander('Average Error Calcs on Turnover Model'):
     avg_error_data=df_turnover_rating.copy()
     avg_error_data=avg_error_data[avg_error_data['proj_spread'].notna()]
@@ -780,7 +788,7 @@ with st.expander('Average Error Calcs on Turnover Model'):
     # st.write('x',avg_error_data.groupby(['decile_spread_diff','diff_proj_spread_actual']).agg({'proj_odds_error':['mean','count']}).reset_index())
     
     # avg_error_data = avg_error_data.join(avg_error_data.groupby('decile_spread_diff')['proj_odds_error'].agg(Mean='mean', Std='std',Max='max',Min='min'), on='decile_spread_diff')
-    
+line_791=time()
 with st.expander("Strength of Schedule Workings"):
     # test_2022=strength_schedule_df_2[strength_schedule_df_2['season_year']==2022]
     test_2022=strength_schedule_df_2.copy()
@@ -817,6 +825,7 @@ with st.expander("Strength of Schedule Workings"):
     # st.download_button(label="Download",data=dummy_2022.to_csv().encode('utf-8'),file_name='df_dummy.csv',mime='text/csv',key='dummy_shift_1')
     # raw_data_offence=[]
     # raw_data_defence=[]
+    line_828=time()
     @st.cache
     def offence_sos(test_2022,team_list,pts_scored='pts_scored'):
         raw_data_offence=[]
@@ -871,7 +880,7 @@ with st.expander("Strength of Schedule Workings"):
     # df_1=offence_sos(test_2022,team_list,pts_scored='pts_scored_adj')
     df_1=offence_sos_dummy(test_2022,team_list,pts_scored='pts_scored_adj')
     df_1_dummy=offence_sos_dummy(dummy_2022,team_list_dummy,pts_scored='pts_scored_adj')
-    
+    line_883=time()
     @st.cache
     def defence_sos(df_1,team_list):
         raw_data_defence=[]
@@ -899,6 +908,7 @@ with st.expander("Strength of Schedule Workings"):
 
     df_4=defence_sos(df_1,team_list) # just while i check inside the function
     df_4_dummy=defence_sos(df_1_dummy,team_list_dummy)
+    line_911=time()
     # st.write('dummy dataframe after merge', df_4_dummy)
 
     @st.cache
@@ -922,7 +932,7 @@ with st.expander("Strength of Schedule Workings"):
 
     df_5=raw_data_sos(df_4,team_list)
     df_5_dummy=raw_data_sos(df_4_dummy,team_list_dummy)
-
+    line_935=time()
     cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded',
     'Los Angeles Rams_offence', 'Los Angeles Rams_defence','Los Angeles Rams_games_played',
     'season_games_played','away_pts_avg','avg_home_score','avg_away_score','home_away']
@@ -944,7 +954,7 @@ with st.expander("Strength of Schedule Workings"):
 
     df_4=sos_workings(df_5,team_list)
     df_4_dummy=sos_workings(df_5_dummy,team_list_dummy)
-
+    line_957=time()
     cols_to_move=['Date','team','unique_id','opponent','season_year','Week','Ireland_offence','Ireland_defence','Ireland pts_diff',
     'Ireland games_use']
     cols = cols_to_move + [col for col in df_4_dummy if col not in cols_to_move]
@@ -961,15 +971,9 @@ with st.expander("Strength of Schedule Workings"):
                 group_df.loc [ (group_df['team']==x), x+'_diff_total' ] = group_df[x+' pts_diff'].sum()
                 group_df.loc [ (group_df['team']==x), x+'_total_opp_games' ] = group_df[x+' games_use'].sum()
                 group_df.loc [ (group_df['team']==x), x+'_diff_per_game' ] = group_df[x+'_diff_total']/group_df[x+'_total_opp_games']
-                # cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded',
-                # 'Los Angeles Rams_opp_games',
-                # 'Los Angeles Rams_diff_per_game','Los Angeles Rams_total_opp_games',
-                # 'Los Angeles Rams sum','Los Angeles Rams_diff_total','Los Angeles Rams pts_diff','Los Angeles Rams games_use',
-                # 'Los Angeles Rams_offence','Los Angeles Rams_defence','Arizona Cardinals sum','Los Angeles Rams_games_played',
-                # 'season_games_played','avg_home_score','avg_away_score','home_away']
-
-                # cols = cols_to_move + [col for col in group_df if col not in cols_to_move]
-                # group_df=group_df[cols]
+                # MAYBE I could restrict the group df by .loc so that it's a smaller df to work with and SAVE TIME
+                # Yes it's append that's the problem
+                # check for alternatives to append as well
             grouped_container.append(group_df)
         
         adj_team_list=team_list.copy()
@@ -989,7 +993,9 @@ with st.expander("Strength of Schedule Workings"):
         return df_power
 
     df_power=sos_workings_2(df_4,team_list)
+    line_1002=time()
     df_power_dummy=sos_workings_2(df_4_dummy,team_list_dummy)
+    line_1003=time()
     # st.write('check', dd
     # f_power_dummy.columns)
 
@@ -1028,7 +1034,7 @@ with st.expander("Strength of Schedule Workings"):
     st.write('Easiest Schedule', df_power[(df_power['team']=='Las Vegas Raiders') & (df_power['season_year']==2022) ].set_index('team'))
     # st.write('Patriots Easiest Schedule', df_power[df_power['team']=='New England Patriots'].set_index('team'))
 
-    graph_pl_data=df_power[(df_power['season_year']==2022) ].loc[:,['team','Week','sos']].copy()
+    graph_pl_data=df_power[(df_power['season_year']==2022) & (df_power['Week']<19)].loc[:,['team','Week','sos']].copy()
     
     def graph_pl(decile_df_abs_home_1,column):
         line_cover= alt.Chart(decile_df_abs_home_1).mark_line().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
@@ -1038,8 +1044,37 @@ with st.expander("Strength of Schedule Workings"):
         vline = alt.Chart(overlay).mark_rule(color='black', strokeWidth=1).encode(y=column)
         return st.altair_chart(line_cover + vline,use_container_width=True)
 
-    graph_pl(graph_pl_data,column='sos')
+    def graph_pl_3(source):
+        highlight = alt.selection(type='single', on='mouseover', fields=['team'], nearest=True, bind='legend')
+        selection = alt.selection_multi(fields=['team'], bind='legend', on='mouseover')
+        base = alt.Chart(source).encode(x='Week:O',y='sos',color='team:N',tooltip=['team'])
+        points = base.mark_circle().encode(opacity=alt.value(0.01)).add_selection(highlight).properties(width=1200)
+        lines = base.mark_line().encode(
+            opacity=alt.condition(selection, alt.value(1), alt.value(0.2)),size=alt.condition(~highlight, alt.value(1), alt.value(3))).add_selection(selection)
+        return st.altair_chart (points + lines, use_container_width=True)
 
+
+    graph_pl(graph_pl_data,column='sos')
+    graph_pl_3(graph_pl_data)
+    line_1064=time()
+
+new_line = '\n'
+benchmark_cached = (
+    f"Cached. Total: {line_160 - start_cached:.2f}s"
+    f" Line_617 to line 160: {line_617 - line_160:.2f}{new_line}"
+    f" line_711 to line_617: {line_722 - line_617:.2f}{new_line}"
+    f" line_791 to line 722: {line_791 - line_722:.2f}{new_line}"
+    f" line_828 to line 722: {line_828 - line_791:.2f}{new_line}"
+    f" line_883 to line 722: {line_883 - line_828:.2f}{new_line}"
+    f" line_911 to line 722: {line_911 - line_883:.2f}{new_line}"
+    f" line_935 to line 722: {line_935 - line_911:.2f}{new_line}"
+    f" line_957 to line 722: {line_957 - line_935:.2f}{new_line}"
+    f" line_1002 to line 722: {line_1002 - line_957:.2f}{new_line}"
+    f" line_1003 to line 722: {line_1003 - line_1002:.2f}{new_line}"
+    f" line_1064 to line 722: {line_1064 - line_1003:.2f}{new_line}"
+)
+st.text(benchmark_cached)
+# st.write(describe_cached_dataset)
     # graph_pl_data=graph_data_sos.melt(id_vars='Week',var_name='team',value_name='sos')
     # st.write('graph_pl_data', graph_pl_data)
 
