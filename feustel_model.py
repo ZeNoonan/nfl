@@ -964,7 +964,8 @@ with st.expander("Strength of Schedule Workings"):
     @st.cache
     def sos_workings_2(df_4,team_list):
         sos_container=[]
-        grouped_container=[]
+        # grouped_container=[]
+        empty_df=pd.DataFrame(columns=df_4.columns)
         for week,group_df in df_4.groupby(['season_year','Week']):
             for x in team_list:
                 group_df.loc [ (group_df['team']==x), x+'_opp_games' ] = group_df[x+' sum'].sum()
@@ -974,7 +975,8 @@ with st.expander("Strength of Schedule Workings"):
                 # MAYBE I could restrict the group df by .loc so that it's a smaller df to work with and SAVE TIME
                 # Yes it's append that's the problem
                 # check for alternatives to append as well
-            grouped_container.append(group_df)
+            # grouped_container.append(group_df)
+            grouped_container=pd.concat([empty_df,group_df],ignore_index=True)
         
         adj_team_list=team_list.copy()
         adj_team_list=[x + '_diff_per_game' for x in adj_team_list]
