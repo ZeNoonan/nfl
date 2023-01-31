@@ -175,7 +175,8 @@ df=df.sort_values(by=['Date','Home Team']).reset_index().drop('index',axis=1)
 df=df.reset_index().rename(columns={'index':'unique_id'})
 # st.write('df raw data', df.head(4))
 # dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_1.csv')
-dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_2.csv')
+# dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_2.csv')
+dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_3.csv')
 dummy_df['Date'] = [datetime.datetime.strptime(x, '%d/%m/%Y') for x in dummy_df['Date']]
 dummy_df['Date']=pd.to_datetime(dummy_df['Date']).dt.normalize()
 
@@ -1034,8 +1035,13 @@ with st.expander("Strength of Schedule Workings"):
 
     df_power_miami=df_power.copy()
     # cols_to_move=['Date','team','opponent','unique_id','season_year','Week','sos','']
+    cols_to_move=['Date','team','opponent','unique_id','season_year','Week','sos','Miami Dolphins sum','Miami Dolphins_opp_games',
+    'Miami Dolphins pts_diff','Miami Dolphins_diff_total','Miami Dolphins_offence','Miami Dolphins_defence',
+    'Miami Dolphins games_use','Miami Dolphins_total_opp_games','Miami Dolphins_diff_per_game']
+
     cols = cols_to_move + [col for col in df_power_miami if col not in cols_to_move]
     df_power_miami=df_power_miami[cols]
+    st.write('problem is bye weeks so need to insert bye weeks in dummy to see how to solve')
     st.write('Miami Dolphins', df_power_miami[(df_power_miami['Week']>5) & (df_power_miami['Week']<8) ].set_index(['team','Week','Date','sos']))
 
     st.write('Miami Dolphins schedule', df_power_miami[(df_power_miami['team']=='Miami Dolphins')].set_index(['team','Week']))
