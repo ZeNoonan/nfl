@@ -10,6 +10,7 @@ import datetime as dt
 from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode, JsCode
 
 st.set_page_config(layout="wide")
+st.write('Adjust line 310 for Bills Bengals adjustmet after week 18')
 
 season_picker = st.selectbox("Select a season to run",('season_2022','season_2021'),index=0)
 placeholder_1=st.empty()
@@ -307,6 +308,9 @@ prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
 # st.write( prior_data[(prior_data['Home Team']=='Miami Dolphins') | (prior_data['Away Team']=='Miami Dolphins')].sort_values(by=['Week','Date','Time']) )
 
 data = concat_current_prior(current,prior_data)
+data.loc[(data['Week']==17)&(data['Home Points']==7), 'Home Points'] = 0
+data.loc[(data['Week']==17)&(data['Away Points']==3), 'Away Points'] = 1.5
+# st.write('Data to amend', data)
 
 def spread_workings(data):
     data['home_win']=data['Home Points'] - data['Away Points']
@@ -658,7 +662,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     presentation_betting_matches=betting_matches.copy()
 
     # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
-    grid_height = st.number_input("Grid height", min_value=400, value=6950, step=100)
+    grid_height = st.number_input("Grid height", min_value=400, value=7950, step=100)
     gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
     gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
     gb.configure_column("my_spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
@@ -1290,18 +1294,18 @@ with st.expander('Teaser Analyis'):
     cols = cols_to_move + [col for col in teaser_df if col not in cols_to_move]
     teaser_df=teaser_df[cols]
     # st.write('teaser df', teaser_df)
-    AgGrid(teaser_df)
+    # AgGrid(teaser_df)
 
     group_teaser=teaser_df.groupby(['Week','tease_result']).agg(count=('tease_spread','count')).reset_index()
-    st.write(group_teaser)
+    # st.write(group_teaser)
     # group_teaser_1=teaser_df.groupby(['Week']).agg(count=('tease_spread','count'),sum=('tease_result','sum'))
     group_teaser=(pd.pivot_table(group_teaser,index='Week', columns='tease_result').fillna(0))
     group_teaser.columns=group_teaser.columns.get_level_values(1)
     group_teaser.columns=['lose','no_result','win']
     # group_teaser=group_teaser.reset_index()
     # st.write(group_teaser.columns)
-    st.write(group_teaser)
-    filt=group_teaser['lose']==0
+    # st.write(group_teaser)
+    filt=(group_teaser['lose']==0 ) & (group_teaser['win']>2)
     group_teaser['success_week']=group_teaser['win'].where(filt)
     # st.write(group_teaser)
     odds_df=pd.DataFrame.from_dict({1:2,2:2,3:2.5,4:3.25,5:4.5,6:6,7:8,8:11,9:15},orient='index').reset_index().rename(columns={'index':'success_week',0:'odds'})
@@ -1315,7 +1319,7 @@ with st.expander('Teaser Analyis'):
     st.write('6 Point Teaser odds', odds_df)
     test_merge_odds=pd.merge(group_teaser,odds_df,how='left')
     # test_merge_odds['stake']=-10
-    test_merge_odds['stake']=np.where(test_merge_odds['win']<3,np.NaN,-10)
+    test_merge_odds['stake']=np.where((test_merge_odds['win']+test_merge_odds['lose']+test_merge_odds['no_result'])<3,np.NaN,-10)
     test_merge_odds['payout']=test_merge_odds['odds'] * 10
     test_merge_odds['net_winnings']=test_merge_odds['stake']+test_merge_odds['payout'].fillna(0)
     st.write('6 Point Teaser Return', test_merge_odds)
