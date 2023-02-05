@@ -865,28 +865,28 @@ with st.expander("Strength of Schedule Workings"):
         for x in team_list:
             df_1=test_2022[(test_2022['team']!=x) & (test_2022['opponent']!=x)].sort_values(['Week','Date','unique_id'],ascending=[True,True,True])
             df_1[x]=df_1.groupby(['team','season_year'])[pts_scored].cumsum()
+            # df_1[x+ '_offence_unadj']=df_1.groupby(['team','season_year'])[x].shift(1)
             df_1[x]=df_1.groupby(['team','season_year'])[x].shift(1)
             df_1['test_col']=np.where(df_1['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_1[x].isna(),np.NaN,1))
-            df_1[x]=df_1[x]*df_1['test_col']
-            # extract=df_1.loc[:,['unique_id',x]]
+            # df_1[x]=df_1[x+ '_offence_unadj']*df_1['test_col']
+            # df_1[x]=df_1[x]*df_1['test_col']
+            # raw_data_offence.append(df_1.loc[:,[x,x+ '_offence_unadj']])
             raw_data_offence.append(df_1.loc[:,x])
-            # st.write('team', x, 'data', df_1.sort_values(by=['Date','unique_id'],ascending=[True,True]))
-            # st.write('test 2022 first function team', x, 'data', df_1)
-            # df_1=df_1.drop(x,axis=1)
 
         cleaned_container=pd.DataFrame(raw_data_offence).transpose()
         cleaned_container.columns=cleaned_container.columns + '_offence'
-        # st.write('cleaned container', cleaned_container)
-        # st.write('df 1 to be merged', df_1)
         df_1=pd.merge(test_2022,cleaned_container,left_index=True,right_index=True,how='outer')
         return df_1    
 
     # df_1=offence_sos(test_2022,team_list,pts_scored='pts_scored_adj')
     df_1=offence_sos_dummy(test_2022,team_list,pts_scored='pts_scored_adj')
     df_1_dummy=offence_sos_dummy(dummy_2022,team_list_dummy,pts_scored='pts_scored_adj')
-    st.write('after offence ireland',df_1_dummy[(df_1_dummy['Week']==5) & (df_1_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id'])\
-    .set_index('team'))
-    # st.write('after offence ireland',df_1_dummy[(df_1_dummy['team']=='Ireland') & (df_1_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id']))
+    # df_1=offence_sos_dummy_2(df_1)
+    # df_1_dummy=offence_sos_dummy_2(df_1_dummy)
+
+    # st.write('after offence ireland',df_1_dummy[(df_1_dummy['Week']==5) & (df_1_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id'])\
+    # .set_index('team'))
+    st.write('after offence ireland',df_1_dummy[(df_1_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id']).set_index(['team','Week','Date']))
     line_883=time()
     @st.cache
     def defence_sos(df_1,team_list):
@@ -960,7 +960,7 @@ with st.expander("Strength of Schedule Workings"):
     df_4=sos_workings(df_5,team_list)
     df_4_dummy=sos_workings(df_5_dummy,team_list_dummy)
 
-    st.write('after final ',df_4_dummy[(df_4_dummy['Week']==5) & (df_4_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id'])\
+    st.write('after final ',df_4_dummy[ (df_4_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id'])\
     .set_index('team'))
 
     line_957=time()
@@ -1022,7 +1022,8 @@ with st.expander("Strength of Schedule Workings"):
 
 
     st.write('This is the Six Nations SOS if Ireland 0.667 for both 2021 and 2022 then we are good', 
-    df_power_dummy[(df_power_dummy['Week']==5) & (df_power_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id']))
+    df_power_dummy[ (df_power_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id']))
+    # df_power_dummy[ (df_power_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id'])
     st.write('have a spreadsheet in the NFL folder to back it up')
     
     st.write('df power Week 18', df_power[(df_power['Week']==18) & (df_power['season_year']==2022) ].set_index('team'))
