@@ -899,9 +899,8 @@ with st.expander("Strength of Schedule Workings"):
             df_2[x]=df_2.groupby(['team','season_year'])[x].shift(1)
             # st.write('inside function checking for defence after shift', df_2.set_index(['team','opponent']).sort_values(by='Date'))
             df_2['test_col']=np.where(df_2['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_2[x].isna(),np.NaN,1))
-            # st.write('checking the test col BEFORE calc', df_2.set_index(['team','opponent']).sort_values(by='Date'))
-            df_2[x]=df_2[x]*df_2['test_col']
-            # st.write('checking AFTER test col calc', df_2.set_index(['team','opponent']).sort_values(by='Date'))
+            # df_2[x]=df_2[x]*df_2['test_col']
+
             extract=df_2.loc[:,['unique_id',x]]
             raw_data_defence.append(df_2.loc[:,x])
             # df_2=df_2.drop(x,axis=1)
@@ -927,7 +926,7 @@ with st.expander("Strength of Schedule Workings"):
             df_5[x]=df_5.groupby(['team','season_year'])['pts_scored'].cumcount()+1 # careful with cumcount it starts with zero!!
             df_5[x]=df_5.groupby(['team','season_year'])[x].shift(1)
             df_5['test_col']=np.where(df_5['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_5[x].isna(),np.NaN,1))
-            df_5[x]=df_5[x]*df_5['test_col']
+            # df_5[x]=df_5[x]*df_5['test_col']
             extract=df_5.loc[:,['unique_id',x]]
             raw_data_diff.append(df_5.loc[:,x])
             # df_5=df_5.drop(x,axis=1)
@@ -953,8 +952,8 @@ with st.expander("Strength of Schedule Workings"):
             df_4[x+' sum']=df_4.groupby(['team','season_year'])[x+' played'].cumsum()
             # https://stackoverflow.com/questions/53335567/use-pandas-shift-within-a-group
             df_4[x+' sum']=df_4.groupby(['team','season_year'])[x+' sum'].shift(1) # careful to refer back to above column name, got caught with it
-            df_4[x+' pts_diff']=df_4[x+' sum'] * (df_4[x+'_offence']-df_4[x+'_defence'])
-            df_4[x+' games_use']=df_4[x+' sum'] * (df_4[x+'_games_played'])
+            df_4[x+' pts_diff']=(df_4[x+'_offence']-df_4[x+'_defence'])
+            df_4[x+' games_use']=(df_4[x+'_games_played'])
         return df_4
 
     df_4=sos_workings(df_5,team_list)
@@ -1023,6 +1022,7 @@ with st.expander("Strength of Schedule Workings"):
 
     st.write('This is the Six Nations SOS if Ireland 0.667 for both 2021 and 2022 then we are good', 
     df_power_dummy[ (df_power_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id']))
+    st.download_button(label="Download",data=df_power_dummy.to_csv().encode('utf-8'),file_name='df_dummy_power.csv',mime='text/csv',key='dummy_shift_power')
     # df_power_dummy[ (df_power_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id'])
     st.write('have a spreadsheet in the NFL folder to back it up')
     
