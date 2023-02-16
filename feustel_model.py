@@ -859,7 +859,7 @@ with st.expander("Strength of Schedule Workings"):
 
     # st.write(dummy_2022[(dummy_2022['team']!='Ireland') & (dummy_2022['opponent']!='Ireland')].sort_values(['Week','Date','unique_id']\
     #     .groupby(['team','season_year'])['pts_scored'].cumsum()))
-    @st.cache
+    # @st.cache
     def offence_sos_dummy(test_2022,team_list,pts_scored='pts_scored'):
         raw_data_offence=[]
         for x in team_list:
@@ -871,6 +871,10 @@ with st.expander("Strength of Schedule Workings"):
             # df_1[x]=df_1[x+ '_offence_unadj']*df_1['test_col']
             # df_1[x]=df_1[x]*df_1['test_col']
             # raw_data_offence.append(df_1.loc[:,[x,x+ '_offence_unadj']])
+            st.write('Offence Function inside')
+            st.write('Team: below',x,'df_1 of the team', df_1.set_index(['Date','Week','team','opponent']))
+            st.write('Finish Team')
+
             raw_data_offence.append(df_1.loc[:,x])
 
         cleaned_container=pd.DataFrame(raw_data_offence).transpose()
@@ -879,7 +883,7 @@ with st.expander("Strength of Schedule Workings"):
         return df_1    
 
     # df_1=offence_sos(test_2022,team_list,pts_scored='pts_scored_adj')
-    df_1=offence_sos_dummy(test_2022,team_list,pts_scored='pts_scored_adj')
+    # df_1=offence_sos_dummy(test_2022,team_list,pts_scored='pts_scored_adj') # NFL
     df_1_dummy=offence_sos_dummy(dummy_2022,team_list_dummy,pts_scored='pts_scored_adj')
     # df_1=offence_sos_dummy_2(df_1)
     # df_1_dummy=offence_sos_dummy_2(df_1_dummy)
