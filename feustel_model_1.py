@@ -859,24 +859,30 @@ with st.expander("Strength of Schedule Workings"):
     line_883=time()
     line_911=time()
 
-    @st.cache
-    def raw_data_sos(df_4,team_list):
+    # @st.cache
+    def games_played_function(df_4,team_list):
         raw_data_diff=[]
         for x in team_list:
-            # st.write('team x', x)
             df_5=df_4[(df_4['team']!=x) & (df_4['opponent']!=x)].sort_values(['Week','Date','unique_id'],ascending=[True,True,True])
             df_5[x]=df_5.groupby(['team','season_year'])['pts_scored'].cumcount()+1 # careful with cumcount it starts with zero!!
-            df_5[x]=df_5.groupby(['team','season_year'])[x].shift(1)
-            df_5['test_col']=np.where(df_5['avg_pts_scored_team_season'].isna(),np.NaN,np.where(df_5[x].isna(),np.NaN,1))
-            # df_5[x]=df_5[x]*df_5['test_col']
-            extract=df_5.loc[:,['unique_id',x]]
             raw_data_diff.append(df_5.loc[:,x])
-            # df_5=df_5.drop(x,axis=1)
 
         cleaned_container_diff=pd.DataFrame(raw_data_diff).transpose()
         cleaned_container_diff.columns=cleaned_container_diff.columns + '_games_played'
-        df_5=pd.merge(df_4,cleaned_container_diff,left_index=True,right_index=True,how='outer')
-        return df_5
+        return cleaned_container_diff
+
+    # st.write('this is the dummy df before function', df_1_dummy)
+    cleaned_container_games_played=games_played_function(df_1_dummy,team_list_dummy)
+    # st.write('container', cleaned_container_games_played)
+    df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_games_played)
+
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','Ireland_games_played','Ireland_defence','Wales_defence','France_defence',
+    'Italy_defence','England_defence','Scotland_defence']
+    cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
+    df_1_dummy=df_1_dummy[cols]
+    st.write('games played look ok?', df_1_dummy)
+
+
 
     df_5=raw_data_sos(df_4,team_list)
     df_5_dummy=raw_data_sos(df_4_dummy,team_list_dummy)
