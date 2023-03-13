@@ -807,7 +807,8 @@ with st.expander("Strength of Schedule Workings"):
 
     def home_pts_adj(dummy_2022):
         # want to adjust points scored for home advantage 
-        dummy_2022['home_adv_adj']=np.where(dummy_2022['home_away']==1,(-2.5/2),(2.5/2))
+        # dummy_2022['home_adv_adj']=np.where(dummy_2022['home_away']==1,(-2.5/2),(2.5/2)) # just while I make sure the calcs are ok
+        dummy_2022['home_adv_adj']=np.where(dummy_2022['home_away']==1,0,0)
         dummy_2022['pts_scored_adj']=dummy_2022['pts_scored']+dummy_2022['home_adv_adj']
         return dummy_2022
 
@@ -861,22 +862,23 @@ with st.expander("Strength of Schedule Workings"):
 
     # @st.cache
     def games_played_function(df_4,team_list):
-        raw_data_diff=[]
         for x in team_list:
-            df_5=df_4[(df_4['team']!=x) & (df_4['opponent']!=x)].sort_values(['Week','Date','unique_id'],ascending=[True,True,True])
-            df_5[x]=df_5.groupby(['team','season_year'])['pts_scored'].cumcount()+1 # careful with cumcount it starts with zero!!
-            raw_data_diff.append(df_5.loc[:,x])
+            df_4[x+'_opp_played']=np.where(df_4['opponent']==x,1,0)
+            df_4[x+'_sum_opp_played']=df_4.groupby(['team','season_year'])[x+'_opp_played'].cumsum()
+            df_4[x+'_pts_diff']=(df_4[x+'_offence']-df_4[x+'_defence'])
+            df_4[x+'_pts_diff_x_games_played']=df_4[x+'_pts_diff'] * df_4[x+'_sum_opp_played']
 
-        cleaned_container_diff=pd.DataFrame(raw_data_diff).transpose()
-        cleaned_container_diff.columns=cleaned_container_diff.columns + '_games_played'
-        return cleaned_container_diff
 
-    # st.write('this is the dummy df before function', df_1_dummy)
-    cleaned_container_games_played=games_played_function(df_1_dummy,team_list_dummy)
+        return df_4
+
+    # st.write('this is the dummy df before cleaned container', df_1_dummy)
+    df_1_dummy=games_played_function(df_1_dummy,team_list_dummy)
     # st.write('container', cleaned_container_games_played)
-    df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_games_played)
-
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','Ireland_games_played','Ireland_defence','Wales_defence','France_defence',
+    # st.write('this is the dummy df before function but after games played function', df_1_dummy)
+    # df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_games_played)
+    # st.write('this is the dummy df after function', df_1_dummy)
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','Ireland_sum_opp_played',
+    'Ireland_pts_diff_x_games_played','Ireland_pts_diff','Ireland_defence','Ireland_offence','Wales_defence','France_defence',
     'Italy_defence','England_defence','Scotland_defence']
     cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
     df_1_dummy=df_1_dummy[cols]
