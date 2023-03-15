@@ -800,7 +800,7 @@ with st.expander("Strength of Schedule Workings"):
         dummy_2022=df_new_dummy.copy()
 
     team_list = test_2022['team'].unique()
-    test_2022=test_2022.sort_values(['Week','Date','unique_id','home_away'],ascending=[True,True,True,False]).reset_index(drop=True)
+    nfl_2022=test_2022.sort_values(['Week','Date','unique_id','home_away'],ascending=[True,True,True,False]).reset_index(drop=True)
 
     team_list_dummy = dummy_2022['team'].unique()
     dummy_2022=dummy_2022.sort_values(['Week','Date','unique_id','home_away'],ascending=[True,True,True,False]).reset_index(drop=True)
@@ -812,7 +812,7 @@ with st.expander("Strength of Schedule Workings"):
         dummy_2022['pts_scored_adj']=dummy_2022['pts_scored']+dummy_2022['home_adv_adj']
         return dummy_2022
 
-    test_2022=home_pts_adj(test_2022)
+    nfl_2022=home_pts_adj(nfl_2022)
     dummy_2022=home_pts_adj(dummy_2022)
 
     line_828=time()
@@ -855,7 +855,6 @@ with st.expander("Strength of Schedule Workings"):
     'Italy_defence','England_defence','Scotland_defence']
     cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
     df_1_dummy=df_1_dummy[cols]
-    st.write('Defence look ok?', df_1_dummy)
 
     line_883=time()
     line_911=time()
@@ -867,17 +866,31 @@ with st.expander("Strength of Schedule Workings"):
             df_4[x+'_sum_opp_played']=df_4.groupby(['team','season_year'])[x+'_opp_played'].cumsum()
             df_4[x+'_pts_diff']=(df_4[x+'_offence']-df_4[x+'_defence'])
             df_4[x+'_pts_diff_x_games_played']=df_4[x+'_pts_diff'] * df_4[x+'_sum_opp_played']
-
-
         return df_4
 
-    # st.write('this is the dummy df before cleaned container', df_1_dummy)
     df_1_dummy=games_played_function(df_1_dummy,team_list_dummy)
-    # st.write('container', cleaned_container_games_played)
-    # st.write('this is the dummy df before function but after games played function', df_1_dummy)
-    # df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_games_played)
-    # st.write('this is the dummy df after function', df_1_dummy)
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','Ireland_sum_opp_played',
+
+
+    def sum_games_and_pts_diff(df_4,team_list):
+        empty_df=pd.DataFrame(columns=df_4.columns)
+        for week,group_df in df_4.groupby(['season_year','Week']):
+            for x in team_list:
+                group_df.loc [ (group_df['team']==x), x+'_total_opp_games_played' ] = group_df[x+'_sum_opp_played'].sum()
+                group_df.loc [ (group_df['team']==x), x+'_total_diff_pts' ] = group_df[x+'_pts_diff_x_games_played'].sum()
+                # group_df.loc [ (group_df['team']==x), x+'_total_opp_games' ] = group_df[x+' games_use'].sum()
+                group_df.loc [ (group_df['team']==x), x+'_diff_per_game' ] = group_df[x+'_total_diff_pts']/group_df[x+'_total_opp_games_played']
+            empty_df=pd.concat([empty_df,group_df],ignore_index=True)
+        
+        adj_team_list=team_list.copy()
+        adj_team_list=[x + '_diff_per_game' for x in adj_team_list]
+        df_power = empty_df.copy()
+        df_power['sos']=df_power[adj_team_list].bfill(axis=1).iloc[:,0]
+        return df_power
+
+
+
+    df_1_dummy=sum_games_and_pts_diff(df_1_dummy,team_list_dummy)
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','sos','Ireland_sum_opp_played',
     'Ireland_pts_diff_x_games_played','Ireland_pts_diff','Ireland_defence','Ireland_offence','Wales_defence','France_defence',
     'Italy_defence','England_defence','Scotland_defence']
     cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
@@ -886,122 +899,15 @@ with st.expander("Strength of Schedule Workings"):
 
 
 
-    df_5=raw_data_sos(df_4,team_list)
-    df_5_dummy=raw_data_sos(df_4_dummy,team_list_dummy)
-    line_935=time()
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','home_away']
-    cols = cols_to_move + [col for col in df_5 if col not in cols_to_move]
-    df_5=df_5[cols]      
-
-    df_4=df_5.copy()
-    # st.write('put in a column for have you played them, then have a cum sum of htat played multiplied by the other col')
-    @st.cache
-    def sos_workings(df_4,team_list):
-        for x in team_list:
-            df_4[x+' played']=np.where(df_4['opponent']==x,1,0)
-            df_4[x+' sum']=df_4.groupby(['team','season_year'])[x+' played'].cumsum()
-            # https://stackoverflow.com/questions/53335567/use-pandas-shift-within-a-group
-            df_4[x+' sum']=df_4.groupby(['team','season_year'])[x+' sum'].shift(1) # careful to refer back to above column name, got caught with it
-            df_4[x+' pts_diff']=(df_4[x+'_offence']-df_4[x+'_defence'])
-            df_4[x+' games_use']=(df_4[x+'_games_played'])
-        return df_4
-
-    df_4=sos_workings(df_5,team_list)
-    df_4_dummy=sos_workings(df_5_dummy,team_list_dummy)
-
-    st.write('after final ',df_4_dummy[ (df_4_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id'])\
-    .set_index('team'))
-
     line_957=time()
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','Ireland_offence','Ireland_defence','Ireland pts_diff',
-    'Ireland games_use']
-    cols = cols_to_move + [col for col in df_4_dummy if col not in cols_to_move]
-    df_4_dummy=df_4_dummy[cols]
-    # st.write('df4 dummy so for England for 2022 the Ireland pts diff column matches the spreadsheet CHECK LATER why 2021 defence not flowing through', df_4_dummy)
-    # st.write('df 4 2021 in here??', df_4_dummy)
-    
-    
-    @st.cache
-    def sos_workings_2(df_4,team_list):
-        grouped_container=[]
-        empty_df=pd.DataFrame(columns=df_4.columns)
-        for week,group_df in df_4.groupby(['season_year','Week']):
-            # st.write('group df', group_df)
-            for x in team_list:
-                group_df.loc [ (group_df['team']==x), x+'_opp_games' ] = group_df[x+' sum'].sum()
-                group_df.loc [ (group_df['team']==x), x+'_diff_total' ] = group_df[x+' pts_diff'].sum()
-                group_df.loc [ (group_df['team']==x), x+'_total_opp_games' ] = group_df[x+' games_use'].sum()
-                group_df.loc [ (group_df['team']==x), x+'_diff_per_game' ] = group_df[x+'_diff_total']/group_df[x+'_total_opp_games']
-            # grouped_container.append(group_df)
-            empty_df=pd.concat([empty_df,group_df],ignore_index=True)
-        
-        adj_team_list=team_list.copy()
-        adj_team_list=[x + '_diff_per_game' for x in adj_team_list]
-        # df_power = pd.concat(grouped_container)
-        df_power = empty_df.copy()
-        df_power['sos']=df_power[adj_team_list].bfill(axis=1).iloc[:,0]
-        cols_to_move=['Date','team','opponent','unique_id','season_year','Week','sos']
-        cols = cols_to_move + [col for col in df_power if col not in cols_to_move]
-        df_power=df_power[cols]
-        return df_power
-
-    cols_to_move=['Date','team','opponent','unique_id','season_year','Week','sos','Miami Dolphins sum','Miami Dolphins_opp_games',
-    'Miami Dolphins pts_diff','Miami Dolphins_diff_total','Miami Dolphins_offence','Miami Dolphins_defence',
-    'Miami Dolphins games_use','Miami Dolphins_total_opp_games','Miami Dolphins_diff_per_game']
-
-    constant_cols=['Date','team','unique_id','season_year','Week','opponent']
-    adj_team_list_nfl=[x + ' sum' for x in team_list] + [x + ' pts_diff' for x in team_list]+[x + ' games_use' for x in team_list]+constant_cols\
-        +[x + '_offence' for x in team_list]+[x + '_defence' for x in team_list]
-    # adj_team_list_dummy=[x + ' sum' for x in team_list_dummy] + [x + ' pts_diff' for x in team_list_dummy]+[x + ' games_use' for x in team_list_dummy]+constant_cols
-    df_4=df_4.loc[:,adj_team_list_nfl]
-    # df_4_dummy=df_4_dummy.loc[:,adj_team_list_dummy]
-    # st.write('df_4 cols working??', df_4)
-    # st.write('df_4 cols working dummy??', df_4_dummy)
-    df_power=sos_workings_2(df_4,team_list)
     line_1002=time()
-    df_power_dummy=sos_workings_2(df_4_dummy,team_list_dummy)
     line_1003=time()
 
 
-    cols_to_move=['Date','team','opponent','unique_id','season_year','Week','sos','Ireland sum','Ireland_opp_games',
-    'Ireland pts_diff','Ireland_diff_total','Ireland_offence','Ireland_defence',
-    'Ireland games_use','Ireland_total_opp_games','Ireland_diff_per_game']
-    cols = cols_to_move + [col for col in df_power_dummy if col not in cols_to_move]
-    df_power_dummy=df_power_dummy[cols]
-
-
-    st.write('This is the Six Nations SOS if Ireland 0.667 for both 2021 and 2022 then we are good', 
-    df_power_dummy[ (df_power_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id']))
-    st.download_button(label="Download",data=df_power_dummy.to_csv().encode('utf-8'),file_name='df_dummy_power.csv',mime='text/csv',key='dummy_shift_power')
-    # df_power_dummy[ (df_power_dummy['season_year']==2022) ].sort_values(by=['Date','Week','unique_id'])
-    st.write('have a spreadsheet in the NFL folder to back it up')
+    st.download_button(label="Download",data=df_1_dummy.to_csv().encode('utf-8'),file_name='df_dummy_power.csv',mime='text/csv',key='dummy_shift_power')
     
-    st.write('df power Week 18', df_power[(df_power['Week']==18) & (df_power['season_year']==2022) ].set_index('team'))
-    st.write('df power Week 19', df_power[(df_power['Week']==19) & (df_power['season_year']==2022) ].set_index('team').sort_values(by=['sos'],ascending=False))
-    st.write('just wonder how do i sense check the veracity of the sos, maybe take the highest and lowest and compare that way')
-    # st.write('Latest Week is:', df_power['season_year']==2022) [ df_power['Week'].max()]
-    st.write('Latest Week is:',df_power[df_power['season_year']==2022]['Week'].max() )
-    st.write('Easiest Schedule', df_power[(df_power['team']=='Las Vegas Raiders') & (df_power['season_year']==2022) ].set_index('team'))
 
-
-    df_power_miami=df_power.copy()
-    # cols_to_move=['Date','team','opponent','unique_id','season_year','Week','sos','']
-    cols_to_move=['Date','team','opponent','unique_id','season_year','Week','sos','Miami Dolphins sum','Miami Dolphins_opp_games',
-    'Miami Dolphins pts_diff','Miami Dolphins_diff_total','Miami Dolphins_offence','Miami Dolphins_defence',
-    'Miami Dolphins games_use','Miami Dolphins_total_opp_games','Miami Dolphins_diff_per_game']
-
-    cols = cols_to_move + [col for col in df_power_miami if col not in cols_to_move]
-    df_power_miami=df_power_miami[cols]
-    st.write('problem is bye weeks so need to insert bye weeks in dummy to see how to solve')
-    st.write('Miami Dolphins', df_power_miami[(df_power_miami['Week']>5) & (df_power_miami['Week']<8) ].set_index(['team','Week','Date','sos']))
-
-    st.write('Miami Dolphins schedule', df_power_miami[(df_power_miami['team']=='Miami Dolphins')].set_index(['team','Week']))
-    # want to graph after week 18 so i can determine who had the easiest and hardest schedule
-    # so i need to go to wildcard weekend week 19 as sos is done up to week before
-    # too difficult lets just settle for not including week 18...
-    # lets just sense check Miami Dolphins why are they moving around so much towards the end of season surely the average would have it smoother??
-
-    graph_pl_data=df_power[(df_power['season_year']==2022) & (df_power['Week']<19)].loc[:,['team','Week','sos']].copy()
+    graph_pl_data=df_1_dummy.loc[:,['team','Week','sos']].copy()
     
     def graph_pl(decile_df_abs_home_1,column):
         line_cover= alt.Chart(decile_df_abs_home_1).mark_line().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
@@ -1025,6 +931,32 @@ with st.expander("Strength of Schedule Workings"):
     graph_pl_3(graph_pl_data)
     line_1064=time()
 
+    nfl_2022['Week']=nfl_2022['Week'].astype(int)
+    nfl_2022=nfl_2022[nfl_2022['Week']<19].copy()
+    cleaned_container_offence=offence_defence_dummy(nfl_2022,team_list,col_name_insert='_offence',pts_scored='pts_scored_adj')
+    cleaned_container_defence=offence_defence_dummy(nfl_2022,team_list,col_name_insert='_defence',pts_scored='pts_conceded')
+    df_1_dummy=merge_container_with_dataframe(nfl_2022,cleaned_container_offence)
+    df_1_dummy=fillna_col_team(df_1_dummy,team_list=team_list,col_name='_offence')
+    df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_defence)
+    df_1_dummy=fillna_col_team(df_1_dummy,team_list=team_list,col_name='_defence')
+    df_1_dummy=games_played_function(df_1_dummy,team_list)
+    df_1_dummy=sum_games_and_pts_diff(df_1_dummy,team_list)
+    graph_pl_data=df_1_dummy.loc[:,['team','Week','sos']].copy()
+    graph_pl(graph_pl_data,column='sos')
+    graph_pl_3(graph_pl_data)
+
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','sos','Las Vegas Raiders_sum_opp_played',
+    'Las Vegas Raiders_pts_diff_x_games_played','Las Vegas Raiders_pts_diff','Las Vegas Raiders_defence','Las Vegas Raiders_offence']
+    cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
+    df_1_dummy=df_1_dummy[cols]
+
+
+    st.write('Las Vegas Raiders Week 3', df_1_dummy[   (df_1_dummy['team'].str.contains('Las Vegas'))  & (df_1_dummy['Week']<4)   ])
+
+    st.write('Chargers up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Chargers')) & (df_1_dummy['Week']<4)  ])
+    st.write('Chargers up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Cardinals')) & (df_1_dummy['Week']<4)  ])
+    st.write('Chargers up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Titans')) & (df_1_dummy['Week']<4)  ])
+
 new_line = '\n'
 benchmark_cached = (
     f"Cached. Total: {line_160 - start_cached:.2f}s"
@@ -1041,26 +973,3 @@ benchmark_cached = (
     f" line_1064 to line 722: {line_1064 - line_1003:.2f}{new_line}"
 )
 st.text(benchmark_cached)
-# st.write(describe_cached_dataset)
-    # graph_pl_data=graph_data_sos.melt(id_vars='Week',var_name='team',value_name='sos')
-    # st.write('graph_pl_data', graph_pl_data)
-
-    # https://stackoverflow.com/questions/71255870/calculate-sum-based-on-multiple-rows-from-list-column-for-each-row-in-pandas-dat
-    # interesting link above
-    # df = pd.DataFrame({'id': [0, 1, 3, 2, 4], 'col_to_sum': [1, 2, 3, 4, 5], 'list_col': [[], [1], [1, 2, 3], [2], [3, 1]]})
-    # st.write(df)
-    # df = df.set_index('id')
-    # df['sum'] = df['list_col'].apply(lambda x: df.loc[x, 'col_to_sum'].sum())
-    # df = df.reset_index()
-    # st.write(df)
-    # st.write('so the key to this is to match up the look up value into the df')
-    # st.write('also the key is apply where it goes through it one cell at a time')
-
-    # https://stackoverflow.com/questions/34989341/how-to-remove-nan-value-while-combining-two-column-in-panda-data-frame
-    # data = {'Name':['Arizona', 'NY Giants', 'Kansas', 'Buffalo','Denver', 'Raiders'], 'LA':[20, 21, np.NaN, np.NaN,np.NaN,np.NaN],
-    #  'Tampa':[np.NaN, np.NaN, 9, 8,np.NaN,np.NaN], 'Houston':[np.NaN, np.NaN, np.NaN, np.NaN,14,17]}
-    # df = pd.DataFrame(data)
-    # # st.write(df)
-    # df['update']=df[['Name','LA','Tampa','Houston']].bfill(axis=1).iloc[:,1]
-    # st.write(df[['LA','Tampa','Houston']].bfill(axis=1))
-    # st.write(df)
