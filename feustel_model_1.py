@@ -828,8 +828,20 @@ with st.expander("Strength of Schedule Workings"):
         cleaned_container.columns=cleaned_container.columns + col_name_insert
         return cleaned_container    
 
+    def games_played_by_opposition(test_2022,team_list,col_name_insert='_games_played',pts_scored='pts_scored'):
+        raw_data_offence=[]
+        for x in team_list:
+            df_1=test_2022[(test_2022['team']!=x) & (test_2022['opponent']!=x)].sort_values(['Week','Date','unique_id','home_away'],ascending=[True,True,True,False])
+            df_1[x]=df_1.groupby(['team','season_year'])[pts_scored].cumcount()+1
+            raw_data_offence.append(df_1.loc[:,x])
+
+        cleaned_container=pd.DataFrame(raw_data_offence).transpose()
+        cleaned_container.columns=cleaned_container.columns + col_name_insert
+        return cleaned_container    
+
     cleaned_container_offence=offence_defence_dummy(dummy_2022,team_list_dummy,col_name_insert='_offence',pts_scored='pts_scored_adj')
     cleaned_container_defence=offence_defence_dummy(dummy_2022,team_list_dummy,col_name_insert='_defence',pts_scored='pts_conceded')
+    cleaned_container_games_played=games_played_by_opposition(dummy_2022,team_list_dummy,col_name_insert='_games_played',pts_scored='pts_scored_adj')
     # st.write('Cleaned Container' ,cleaned_container.sort_index())
 
     def merge_container_with_dataframe(df,cleaned_container):
@@ -850,8 +862,9 @@ with st.expander("Strength of Schedule Workings"):
 
     df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_defence)
     df_1_dummy=fillna_col_team(df_1_dummy,team_list=team_list_dummy,col_name='_defence')
+    df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_games_played)
 
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','Ireland_defence','Wales_defence','France_defence',
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','Ireland_defence','Ireland_games_played','Wales_defence','France_defence',
     'Italy_defence','England_defence','Scotland_defence']
     cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
     df_1_dummy=df_1_dummy[cols]
@@ -877,7 +890,7 @@ with st.expander("Strength of Schedule Workings"):
             for x in team_list:
                 group_df.loc [ (group_df['team']==x), x+'_total_opp_games_played' ] = group_df[x+'_sum_opp_played'].sum()
                 group_df.loc [ (group_df['team']==x), x+'_total_diff_pts' ] = group_df[x+'_pts_diff_x_games_played'].sum()
-                # group_df.loc [ (group_df['team']==x), x+'_total_opp_games' ] = group_df[x+' games_use'].sum()
+                group_df.loc [ (group_df['team']==x), x+'_total_opp_games_played' ] = group_df[x+'_games_played'].sum()
                 group_df.loc [ (group_df['team']==x), x+'_diff_per_game' ] = group_df[x+'_total_diff_pts']/group_df[x+'_total_opp_games_played']
             empty_df=pd.concat([empty_df,group_df],ignore_index=True)
         
@@ -890,7 +903,7 @@ with st.expander("Strength of Schedule Workings"):
 
 
     df_1_dummy=sum_games_and_pts_diff(df_1_dummy,team_list_dummy)
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','sos','Ireland_sum_opp_played',
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','sos','Ireland_total_opp_games_played','Ireland_sum_opp_played',
     'Ireland_pts_diff_x_games_played','Ireland_pts_diff','Ireland_defence','Ireland_offence','Wales_defence','France_defence',
     'Italy_defence','England_defence','Scotland_defence']
     cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
@@ -935,27 +948,30 @@ with st.expander("Strength of Schedule Workings"):
     nfl_2022=nfl_2022[nfl_2022['Week']<19].copy()
     cleaned_container_offence=offence_defence_dummy(nfl_2022,team_list,col_name_insert='_offence',pts_scored='pts_scored_adj')
     cleaned_container_defence=offence_defence_dummy(nfl_2022,team_list,col_name_insert='_defence',pts_scored='pts_conceded')
+    cleaned_container_games_played=games_played_by_opposition(nfl_2022,team_list,col_name_insert='_games_played',pts_scored='pts_scored_adj')
     df_1_dummy=merge_container_with_dataframe(nfl_2022,cleaned_container_offence)
     df_1_dummy=fillna_col_team(df_1_dummy,team_list=team_list,col_name='_offence')
     df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_defence)
     df_1_dummy=fillna_col_team(df_1_dummy,team_list=team_list,col_name='_defence')
+    df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_games_played)
     df_1_dummy=games_played_function(df_1_dummy,team_list)
     df_1_dummy=sum_games_and_pts_diff(df_1_dummy,team_list)
     graph_pl_data=df_1_dummy.loc[:,['team','Week','sos']].copy()
     graph_pl(graph_pl_data,column='sos')
     graph_pl_3(graph_pl_data)
 
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','sos','Las Vegas Raiders_sum_opp_played',
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','home_away','pts_scored_adj','sos','Las Vegas Raiders_total_opp_games_played',
     'Las Vegas Raiders_pts_diff_x_games_played','Las Vegas Raiders_pts_diff','Las Vegas Raiders_defence','Las Vegas Raiders_offence']
     cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
     df_1_dummy=df_1_dummy[cols]
 
 
-    st.write('Las Vegas Raiders Week 3', df_1_dummy[   (df_1_dummy['team'].str.contains('Las Vegas'))  & (df_1_dummy['Week']<4)   ])
+    st.write('Las Vegas Raiders up to Week 3', df_1_dummy[  (df_1_dummy['Week']<4)   ])
+    st.write('Las Vegas Raiders up to Week 3', df_1_dummy[  (df_1_dummy['Week']==2)   ])
 
     st.write('Chargers up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Chargers')) & (df_1_dummy['Week']<4)  ])
-    st.write('Chargers up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Cardinals')) & (df_1_dummy['Week']<4)  ])
-    st.write('Chargers up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Titans')) & (df_1_dummy['Week']<4)  ])
+    st.write('Cardinals up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Cardinals')) & (df_1_dummy['Week']<4)  ])
+    st.write('Titans up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Titans')) & (df_1_dummy['Week']<4)  ])
 
 new_line = '\n'
 benchmark_cached = (
