@@ -903,7 +903,8 @@ with st.expander("Strength of Schedule Workings"):
 
 
     df_1_dummy=sum_games_and_pts_diff(df_1_dummy,team_list_dummy)
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','sos','Ireland_total_opp_games_played','Ireland_sum_opp_played',
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','sos','Ireland_total_opp_games_played',
+    'Ireland_sum_opp_played',
     'Ireland_pts_diff_x_games_played','Ireland_pts_diff','Ireland_defence','Ireland_offence','Wales_defence','France_defence',
     'Italy_defence','England_defence','Scotland_defence']
     cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
@@ -960,14 +961,15 @@ with st.expander("Strength of Schedule Workings"):
     graph_pl(graph_pl_data,column='sos')
     graph_pl_3(graph_pl_data)
 
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','home_away','pts_scored_adj','sos','Las Vegas Raiders_total_opp_games_played',
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','pts_conceded','home_away','pts_scored_adj','sos',
+    'Las Vegas Raiders_sum_opp_played','Las Vegas Raiders_total_opp_games_played',
     'Las Vegas Raiders_pts_diff_x_games_played','Las Vegas Raiders_pts_diff','Las Vegas Raiders_defence','Las Vegas Raiders_offence']
     cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
     df_1_dummy=df_1_dummy[cols]
 
 
     st.write('Las Vegas Raiders up to Week 3', df_1_dummy[  (df_1_dummy['Week']<4)   ])
-    st.write('Las Vegas Raiders up to Week 3', df_1_dummy[  (df_1_dummy['Week']==2)   ])
+    st.write('Las Vegas Raiders = Week 2', df_1_dummy[  (df_1_dummy['Week']==2)   ])
 
     st.write('Chargers up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Chargers')) & (df_1_dummy['Week']<4)  ])
     st.write('Cardinals up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Cardinals')) & (df_1_dummy['Week']<4)  ])
