@@ -863,6 +863,7 @@ with st.expander("Strength of Schedule Workings"):
     df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_defence)
     df_1_dummy=fillna_col_team(df_1_dummy,team_list=team_list_dummy,col_name='_defence')
     df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_games_played)
+    df_1_dummy=fillna_col_team(df_1_dummy,team_list=team_list_dummy,col_name='_games_played')
 
     cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','Ireland_defence','Ireland_games_played','Wales_defence','France_defence',
     'Italy_defence','England_defence','Scotland_defence']
@@ -903,7 +904,8 @@ with st.expander("Strength of Schedule Workings"):
 
 
     df_1_dummy=sum_games_and_pts_diff(df_1_dummy,team_list_dummy)
-    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','sos','Ireland_total_opp_games_played',
+    cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','sos',
+    'Ireland_games_played','Ireland_total_opp_games_played',
     'Ireland_sum_opp_played',
     'Ireland_pts_diff_x_games_played','Ireland_pts_diff','Ireland_defence','Ireland_offence','Wales_defence','France_defence',
     'Italy_defence','England_defence','Scotland_defence']
