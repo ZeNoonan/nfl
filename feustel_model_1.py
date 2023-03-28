@@ -877,6 +877,7 @@ with st.expander("Strength of Schedule Workings"):
     def games_played_function(df_4,team_list):
         for x in team_list:
             df_4[x+'_opp_played']=np.where(df_4['opponent']==x,1,0)
+            df_4[x+'_weekly_games_played_opposition']=df_4[x+'_games_played'] * df_4[x+'_opp_played'] 
             df_4[x+'_sum_opp_played']=df_4.groupby(['team','season_year'])[x+'_opp_played'].cumsum()
             df_4[x+'_pts_diff']=(df_4[x+'_offence']-df_4[x+'_defence'])
             df_4[x+'_pts_diff_x_games_played']=df_4[x+'_pts_diff'] * df_4[x+'_sum_opp_played']
@@ -889,9 +890,9 @@ with st.expander("Strength of Schedule Workings"):
         empty_df=pd.DataFrame(columns=df_4.columns)
         for week,group_df in df_4.groupby(['season_year','Week']):
             for x in team_list:
-                group_df.loc [ (group_df['team']==x), x+'_total_opp_games_played' ] = group_df[x+'_sum_opp_played'].sum()
+                group_df.loc [ (group_df['team']==x), x+'_total_opp_games_played' ] = group_df[x+'_weekly_games_played_opposition'].sum()
                 group_df.loc [ (group_df['team']==x), x+'_total_diff_pts' ] = group_df[x+'_pts_diff_x_games_played'].sum()
-                group_df.loc [ (group_df['team']==x), x+'_total_opp_games_played' ] = group_df[x+'_games_played'].sum()
+                # group_df.loc [ (group_df['team']==x), x+'_total_opp_games_played' ] = group_df[x+'_games_played'].sum()
                 group_df.loc [ (group_df['team']==x), x+'_diff_per_game' ] = group_df[x+'_total_diff_pts']/group_df[x+'_total_opp_games_played']
             empty_df=pd.concat([empty_df,group_df],ignore_index=True)
         
