@@ -877,8 +877,9 @@ with st.expander("Strength of Schedule Workings"):
     def games_played_function(df_4,team_list):
         for x in team_list:
             df_4[x+'_opp_played']=np.where(df_4['opponent']==x,1,0)
-            df_4[x+'_weekly_games_played_opposition']=df_4[x+'_games_played'] * df_4[x+'_opp_played'] 
             df_4[x+'_sum_opp_played']=df_4.groupby(['team','season_year'])[x+'_opp_played'].cumsum()
+            df_4[x+'_mask'] = np.sign(df_4[x+'_sum_opp_played'])
+            df_4[x+'_weekly_games_played_opposition']=df_4[x+'_games_played'] * df_4[x+'_mask'] 
             df_4[x+'_pts_diff']=(df_4[x+'_offence']-df_4[x+'_defence'])
             df_4[x+'_pts_diff_x_games_played']=df_4[x+'_pts_diff'] * df_4[x+'_sum_opp_played']
         return df_4
@@ -906,9 +907,9 @@ with st.expander("Strength of Schedule Workings"):
 
     df_1_dummy=sum_games_and_pts_diff(df_1_dummy,team_list_dummy)
     cols_to_move=['Date','team','unique_id','opponent','season_year','Week','pts_scored','home_away','pts_scored_adj','sos',
-    'Ireland_games_played','Ireland_total_opp_games_played',
-    'Ireland_sum_opp_played',
-    'Ireland_pts_diff_x_games_played','Ireland_pts_diff','Ireland_defence','Ireland_offence','Wales_defence','France_defence',
+    'Ireland_games_played',
+    'Ireland_opp_played','Ireland_sum_opp_played','Ireland_mask','Ireland_weekly_games_played_opposition','Ireland_total_opp_games_played',
+    'Ireland_pts_diff_x_games_played','Ireland_total_diff_pts','Ireland_pts_diff','Ireland_defence','Ireland_offence','Wales_defence','France_defence',
     'Italy_defence','England_defence','Scotland_defence']
     cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
     df_1_dummy=df_1_dummy[cols]
@@ -987,8 +988,8 @@ benchmark_cached = (
     f" line_828 to line 722: {line_828 - line_791:.2f}{new_line}"
     f" line_883 to line 722: {line_883 - line_828:.2f}{new_line}"
     f" line_911 to line 722: {line_911 - line_883:.2f}{new_line}"
-    f" line_935 to line 722: {line_935 - line_911:.2f}{new_line}"
-    f" line_957 to line 722: {line_957 - line_935:.2f}{new_line}"
+    # f" line_935 to line 722: {line_935 - line_911:.2f}{new_line}"
+    # f" line_957 to line 722: {line_957 - line_935:.2f}{new_line}"
     f" line_1002 to line 957: {line_1002 - line_957:.2f}{new_line}"
     f" line_1003 to line 1002: {line_1003 - line_1002:.2f}{new_line}"
     f" line_1064 to line 722: {line_1064 - line_1003:.2f}{new_line}"
