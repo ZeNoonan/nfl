@@ -176,7 +176,8 @@ df=df.reset_index().rename(columns={'index':'unique_id'})
 # st.write('df raw data', df.head(4))
 # dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_1.csv')
 # dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_2.csv')
-dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_3.csv')
+# dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_3.csv')
+dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_4.csv')
 dummy_df['Date'] = [datetime.datetime.strptime(x, '%d/%m/%Y') for x in dummy_df['Date']]
 dummy_df['Date']=pd.to_datetime(dummy_df['Date']).dt.normalize()
 
@@ -935,15 +936,31 @@ with st.expander("Strength of Schedule Workings"):
         vline = alt.Chart(overlay).mark_rule(color='black', strokeWidth=1).encode(y=column)
         return st.altair_chart(line_cover + vline,use_container_width=True)
 
+    # def graph_pl_1(decile_df_abs_home_1,column):
+    #     line_cover= alt.Chart(decile_df_abs_home_1).mark_line().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
+    #     alt.Y(column,scale=alt.Scale(domain=(0, 5))),color=alt.Color('team'))
+    #     # text_cover=line_cover.mark_text(baseline='middle',dx=0,dy=-15).encode(text=alt.Text(column),color=alt.value('black'))
+    #     overlay = pd.DataFrame({column: [0]})
+    #     vline = alt.Chart(overlay).mark_rule(color='black', strokeWidth=1).encode(y=column)
+    #     return st.altair_chart(line_cover + vline,use_container_width=True)
+
+    # def graph_pl_3_1(source):
+    #     highlight = alt.selection(type='single', on='mouseover', fields=['team'], nearest=True, bind='legend')
+    #     selection = alt.selection_multi(fields=['team'], bind='legend', on='mouseover')
+    #     base = alt.Chart(source).encode(alt.X('Week:O'),alt.Y('sos:Q',scale=alt.Scale(domain=(0, 5))),color='team:N',tooltip=['team'])
+    #     points = base.mark_circle().encode(opacity=alt.value(0.01)).add_selection(highlight).properties(width=1200,height=850)
+    #     lines = base.mark_line().encode(
+    #         opacity=alt.condition(selection, alt.value(1), alt.value(0.2)),size=alt.condition(~highlight, alt.value(1), alt.value(3))).add_selection(selection)
+    #     return st.altair_chart (points + lines, use_container_width=True)
+
     def graph_pl_3(source):
         highlight = alt.selection(type='single', on='mouseover', fields=['team'], nearest=True, bind='legend')
         selection = alt.selection_multi(fields=['team'], bind='legend', on='mouseover')
-        base = alt.Chart(source).encode(x='Week:O',y='sos',color='team:N',tooltip=['team'])
+        base = alt.Chart(source).encode(alt.X('Week:O'),alt.Y('sos:Q'),color='team:N',tooltip=['team'])
         points = base.mark_circle().encode(opacity=alt.value(0.01)).add_selection(highlight).properties(width=1200,height=850)
         lines = base.mark_line().encode(
             opacity=alt.condition(selection, alt.value(1), alt.value(0.2)),size=alt.condition(~highlight, alt.value(1), alt.value(3))).add_selection(selection)
         return st.altair_chart (points + lines, use_container_width=True)
-
 
     graph_pl(graph_pl_data,column='sos')
     graph_pl_3(graph_pl_data)
@@ -962,6 +979,7 @@ with st.expander("Strength of Schedule Workings"):
     df_1_dummy=games_played_function(df_1_dummy,team_list)
     df_1_dummy=sum_games_and_pts_diff(df_1_dummy,team_list)
     graph_pl_data=df_1_dummy.loc[:,['team','Week','sos']].copy()
+    graph_pl_data=graph_pl_data[graph_pl_data['Week']>4].copy()
     graph_pl(graph_pl_data,column='sos')
     graph_pl_3(graph_pl_data)
 
