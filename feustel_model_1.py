@@ -886,7 +886,24 @@ with st.expander("Strength of Schedule Workings"):
         return df_4
 
     df_1_dummy=games_played_function(df_1_dummy,team_list_dummy)
-
+    st.write('maybe go from here to add in the teams', df_1_dummy)
+    finished_week=10
+    grouped = df_1_dummy.groupby('team')
+    ranking_power=[]
+    for name, group in grouped:
+        st.write('start xxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        dfseq = pd.DataFrame.from_dict({'Week': range( 1,(finished_week+1) )}).merge(group, on='Week', how='outer').ffill()
+        st.write('dfseq', dfseq)
+        # st.write('group', group)
+        st.write('after merge', dfseq)
+        
+        # dfseq['team']=dfseq['team'].fillna(method='ffill')
+        ranking_power.append(dfseq)
+        st.write('append current to ranking power', pd.concat(ranking_power,ignore_index=True))
+        st.write('end xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        df_power = pd.concat(ranking_power, ignore_index=True)
+    
+    st.write('df power', df_power.sort_values(by=['Week','unique_id','home_away'], ascending=[True,True,False]))
 
     def sum_games_and_pts_diff(df_4,team_list):
         empty_df=pd.DataFrame(columns=df_4.columns)
