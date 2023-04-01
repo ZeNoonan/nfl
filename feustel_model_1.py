@@ -177,7 +177,7 @@ df=df.reset_index().rename(columns={'index':'unique_id'})
 # dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_1.csv')
 # dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_2.csv')
 # dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_3.csv')
-dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_4.csv')
+dummy_df=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/df_dummy_data_5.csv')
 dummy_df['Date'] = [datetime.datetime.strptime(x, '%d/%m/%Y') for x in dummy_df['Date']]
 dummy_df['Date']=pd.to_datetime(dummy_df['Date']).dt.normalize()
 
@@ -886,24 +886,26 @@ with st.expander("Strength of Schedule Workings"):
         return df_4
 
     df_1_dummy=games_played_function(df_1_dummy,team_list_dummy)
-    st.write('maybe go from here to add in the teams', df_1_dummy)
-    finished_week=10
-    grouped = df_1_dummy.groupby('team')
-    ranking_power=[]
-    for name, group in grouped:
-        st.write('start xxxxxxxxxxxxxxxxxxxxxxxxxxx')
-        dfseq = pd.DataFrame.from_dict({'Week': range( 1,(finished_week+1) )}).merge(group, on='Week', how='outer').ffill()
-        st.write('dfseq', dfseq)
-        # st.write('group', group)
-        st.write('after merge', dfseq)
-        
-        # dfseq['team']=dfseq['team'].fillna(method='ffill')
-        ranking_power.append(dfseq)
-        st.write('append current to ranking power', pd.concat(ranking_power,ignore_index=True))
-        st.write('end xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-        df_power = pd.concat(ranking_power, ignore_index=True)
+    # st.write('maybe go from here to add in the teams', df_1_dummy)
+    finished_week=11
+    def bye_week_function(df_1_dummy,finished_week=11):
+        grouped = df_1_dummy.groupby('team')
+        ranking_power=[]
+        for name, group in grouped:
+            # st.write('start xxxxxxxxxxxxxxxxxxxxxxxxxxx')
+            dfseq = pd.DataFrame.from_dict({'Week': range( 1,(finished_week+1) )}).merge(group, on='Week', how='outer').ffill()
+            # st.write('dfseq', dfseq)
+            # st.write('group', group)
+            # st.write('after merge', dfseq)
+            # dfseq['team']=dfseq['team'].fillna(method='ffill')
+            ranking_power.append(dfseq)
+            # st.write('append current to ranking power', pd.concat(ranking_power,ignore_index=True))
+            # st.write('end xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        df_1_dummy = pd.concat(ranking_power, ignore_index=True)
+        return df_1_dummy
     
-    st.write('df power', df_power.sort_values(by=['Week','unique_id','home_away'], ascending=[True,True,False]))
+    df_1_dummy=bye_week_function(df_1_dummy,finished_week=11)
+    # st.write('df power', df_1_dummy.sort_values(by=['Week','unique_id','home_away'], ascending=[True,True,False]))
 
     def sum_games_and_pts_diff(df_4,team_list):
         empty_df=pd.DataFrame(columns=df_4.columns)
@@ -994,6 +996,7 @@ with st.expander("Strength of Schedule Workings"):
     df_1_dummy=fillna_col_team(df_1_dummy,team_list=team_list,col_name='_defence')
     df_1_dummy=merge_container_with_dataframe(df_1_dummy,cleaned_container_games_played)
     df_1_dummy=games_played_function(df_1_dummy,team_list)
+    df_1_dummy=bye_week_function(df_1_dummy,finished_week=18)
     df_1_dummy=sum_games_and_pts_diff(df_1_dummy,team_list)
     graph_pl_data=df_1_dummy.loc[:,['team','Week','sos']].copy()
     graph_pl_data=graph_pl_data[graph_pl_data['Week']>4].copy()
