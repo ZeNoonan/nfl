@@ -1009,13 +1009,20 @@ with st.expander("Strength of Schedule Workings"):
     cols = cols_to_move + [col for col in df_1_dummy if col not in cols_to_move]
     df_1_dummy=df_1_dummy[cols]
 
+    season_end_nfl_ranking=graph_pl_data[  (graph_pl_data['Week']==18)]
+    season_end_nfl_ranking['rank']=season_end_nfl_ranking['sos'].rank(method='dense', ascending=False)
+    sos_comparison_rankings = pd.DataFrame.from_dict({'sos': [32,31,30,29,28,27,26,25,24,23,22,21,20,19,18],'team': ['Chicago Bears','New York Jets','Miami Dolphins','Washington Commanders'
+    'Detroit Lions','Atlanta Falcons','Cleveland Browns','New York Giants','Green Bay Packers','Pittsburgh Steelers','Los Angeles Rams','Indianopolis Colts',
+    'Baltimore Ravens','Tennessee Titans','New Orleans Saints']})
+    st.write(sos_comparison_rankings)
 
-    st.write('Las Vegas Raiders up to Week 3', df_1_dummy[  (df_1_dummy['Week']<4)   ])
-    st.write('Las Vegas Raiders = Week 2', df_1_dummy[  (df_1_dummy['Week']==2)   ])
+    st.write('Overall rankings', season_end_nfl_ranking   )
+    st.write('SOS rankings to compare against: https://twitter.com/deepvaluebettor/status/1639723985368760322?s=20')
+    # st.write('Las Vegas Raiders = Week 2', df_1_dummy[  (df_1_dummy['Week']==2)   ])
 
-    st.write('Chargers up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Chargers')) & (df_1_dummy['Week']<4)  ])
-    st.write('Cardinals up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Cardinals')) & (df_1_dummy['Week']<4)  ])
-    st.write('Titans up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Titans')) & (df_1_dummy['Week']<4)  ])
+    # st.write('Chargers up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Chargers')) & (df_1_dummy['Week']<4)  ])
+    # st.write('Cardinals up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Cardinals')) & (df_1_dummy['Week']<4)  ])
+    # st.write('Titans up to week 3', df_1_dummy[    (df_1_dummy['team'].str.contains('Titans')) & (df_1_dummy['Week']<4)  ])
 
 new_line = '\n'
 benchmark_cached = (
