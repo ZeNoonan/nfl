@@ -31,7 +31,7 @@ number_of_teams=32
 #     "prior_year_file": 'https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2019_2020.csv'}}
 
 season_list={'season_2022': {
-    "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv",
+    "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023_totals.csv",
     "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023.csv",
     "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2022_2023.csv",
     "prior_year_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2021_2022.csv"},
@@ -126,7 +126,7 @@ nfl_data=data_2022.copy()
 # st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
 
 # with st.beta_expander('Historical odds function'):
-odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close','Opening Spread','Total Score Open','Total Score Close']].copy()
+odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close','Home Line Open','Total Score Open','Total Score Close']].copy()
 # st.write('odds data before datetime', odds_data)
 odds_data['Date']=pd.to_datetime(odds_data['Date']).dt.normalize()
 odds_data['year']=odds_data['Date'].dt.year
@@ -134,11 +134,11 @@ odds_data['month']=odds_data['Date'].dt.month
 odds_data['day']=odds_data['Date'].dt.day
 odds_data['Total Score Open']=pd.to_numeric(odds_data['Total Score Open'])
 odds_data['Total Score Close']=pd.to_numeric(odds_data['Total Score Close'])
-odds_data['Home_Total_Pts_Opening'] = ((odds_data['Opening Spread']*-1)+odds_data['Total Score Open'])/2
-odds_data['Home_Total_Pts_Close'] = ((odds_data['Opening Spread']*-1)+odds_data['Total Score Open'])/2
-odds_data['Away_Total_Pts_Opening'] = ((odds_data['Opening Spread']*1)+odds_data['Total Score Open'])/2
-odds_data['Away_Total_Pts_Close'] = ((odds_data['Opening Spread']*1)+odds_data['Total Score Open'])/2
-st.write('just eyeball the data', odds_data)
+odds_data['Home_Total_Pts_Opening'] = ((odds_data['Home Line Open']*-1)+odds_data['Total Score Open'])/2
+odds_data['Home_Total_Pts_Close'] = ((odds_data['Home Line Close']*-1)+odds_data['Total Score Close'])/2
+odds_data['Away_Total_Pts_Opening'] = ((odds_data['Home Line Open']*1)+odds_data['Total Score Open'])/2
+odds_data['Away_Total_Pts_Close'] = ((odds_data['Home Line Close']*1)+odds_data['Total Score Close'])/2
+# st.write('just eyeball the data', odds_data)
 
 # odds_data['Date'] = pd.to_datetime([dt.datetime.strftime(d, "%Y-%m-%d %H:%M") for d in odds_data["Date"]])
 # st.write('pre odds', odds_data.dtypes)
@@ -325,8 +325,8 @@ def spread_workings(data):
     data['home_cover']=(np.where(((data['Home Points'] + data['Spread']) > data['Away Points']), 1,
     np.where(((data['Home Points']+ data['Spread']) < data['Away Points']),-1,0)))
 
-    data['home_cover_pts'] = np.where(data['Home Points'] > data['Home_Total_Pts_Close'],-1,0)
-    data['away_cover_pts'] = np.where(data['Away Points'] > data['Away_Total_Pts_Close'],-1,0)
+    data['home_cover_pts'] = np.where(data['Home Points'] > data['Home_Total_Pts_Close'],1,np.where(data['Home Points'] < data['Home_Total_Pts_Close'],-1,0))
+    data['away_cover_pts'] = np.where(data['Away Points'] > data['Away_Total_Pts_Close'],1,np.where(data['Away Points'] < data['Away_Total_Pts_Close'],-1,0))
     data['home_cover_pts']=data['home_cover_pts'].astype(int)
     data['away_cover_pts']=data['away_cover_pts'].astype(int)
 
@@ -396,11 +396,24 @@ def season_cover_2(season_cover_df,column_name):
     return season_cover_df
 
 # with st.beta_expander('Season to date Cover'):
-st.write('start from here line 399 next session')
+# st.write('start from here line 399 next session')
 spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',0)
 spread_2=season_cover_2(spread_1,'cover')
 spread_3=season_cover_3(spread_2,'cover_sign','cover')
-    # st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
+
+cols_to_move=['Week','Date','Home Team','Away Team','Home Points','Away Points','Spread','Home_Total_Pts_Close','Away_Total_Pts_Close','Total Score Close',
+              'home_cover_pts','away_cover_pts']
+cols = cols_to_move + [col for col in spread if col not in cols_to_move]
+test_check=spread[cols].sort_values(by=['Week','Date'])
+
+# st.write('just check sense check the data', test_check)
+spread_4 = season_cover_workings(spread,'home_cover_pts','away_cover_pts','cover_pts',0)
+
+spread_5=season_cover_2(spread_4,'cover_pts')
+spread_3=season_cover_3(spread_5,'cover_sign_pts','cover_pts')
+
+st.write('check below spread 3')
+# st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
 matrix_df=spread_workings(data)
 matrix_df=matrix_df.reset_index().rename(columns={'index':'unique_match_id'})
@@ -411,7 +424,10 @@ matrix_df['at_away'] = -1
 matrix_df['home_pts_adv'] = -3
 matrix_df['away_pts_adv'] = 3
 matrix_df['away_spread']=-matrix_df['Spread']
+matrix_df['away_spread']=matrix_df['Away_Total_Pts_Close']
 matrix_df=matrix_df.rename(columns={'Spread':'home_spread'})
+matrix_df['home_spread']=matrix_df['Home_Total_Pts_Close']
+# st.write('matrix', matrix_df)
 matrix_df_1=matrix_df.loc[:,['unique_match_id','Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv','Date','Time','Home Points','Away Points']].copy()
 
 # with st.beta_expander('Games Played to be used in Matrix Multiplication'):
@@ -441,7 +457,7 @@ def games_matrix_workings(first_4):
     full_stack.columns = full_stack.columns.droplevel(0)
     return full_stack
 full_stack=games_matrix_workings(first_4)
-
+st.write('full stack number of games look ok it does look ok i think this is for first 4 games', full_stack)
 
 
 # with st.beta_expander('CORRECT Testing reworking the DataFrame'):
@@ -450,14 +466,18 @@ test_df['at_away'] = -1
 test_df['home_pts_adv'] = 3
 test_df['away_pts_adv'] = -3
 test_df['away_spread']=-test_df['Spread']
+test_df['away_spread']=test_df['Away_Total_Pts_Close']
 test_df=test_df.rename(columns={'Spread':'home_spread'})
+test_df['home_spread']=test_df['Home_Total_Pts_Close']
+
 test_df_1=test_df.loc[:,['unique_match_id','Week','Home ID','Away ID','at_home','at_away','home_spread','away_spread','home_pts_adv','away_pts_adv']].copy()
 test_df_home=test_df_1.loc[:,['Week','Home ID','at_home','home_spread','home_pts_adv']].rename(columns={'Home ID':'ID','at_home':'home','home_spread':'spread','home_pts_adv':'home_pts_adv'}).copy()
 test_df_away=test_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts_adv']].rename(columns={'Away ID':'ID','at_away':'home','away_spread':'spread','away_pts_adv':'home_pts_adv'}).copy()
 test_df_2=pd.concat([test_df_home,test_df_away],ignore_index=True)
 test_df_2=test_df_2.sort_values(by=['ID','Week'],ascending=True)
-test_df_2['spread_with_home_adv']=test_df_2['spread']+test_df_2['home_pts_adv']
-# st.write('spread row 371',test_df_2)
+# test_df_2['spread_with_home_adv']=test_df_2['spread']+test_df_2['home_pts_adv']
+test_df_2['spread_with_home_adv']=test_df_2['spread']
+st.write('spread row 477',test_df_2)
 
 def test_4(matrix_df_1):
     weights = np.array([0.125, 0.25,0.5,1])
@@ -484,7 +504,7 @@ for name, group in grouped:
     ranking_power.append(update)
 df_power = pd.concat(ranking_power, ignore_index=True)
 # st.write('power ranking',df_power[df_power['ID']==12])
-# st.write('power ranking',df_power.sort_values(by=['ID','Week'],ascending=[True,True]))
+st.write('power ranking',df_power.sort_values(by=['ID','Week'],ascending=[True,True]))
 
 
 
@@ -497,7 +517,7 @@ list_inverse_matrix=[]
 list_power_ranking=[]
 # st.write('power df', df_power)
 power_df=df_power.loc[:,['Week','ID','adj_spread']].copy()
-
+st.write('line 520 check power df as this gets fed into matrix = pts team', power_df)
 games_df=matrix_df_1.copy()
 # st.write('games df', games_df)
 
@@ -528,7 +548,7 @@ for first,last in zip(first,last):
     result['week']=last+1
     power_ranking.append(result)
 power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
-# st.write('power ranking combined', power_ranking_combined)
+st.write('power ranking combined', power_ranking_combined)
 
 # first=list(range(-3,19))
 # last=list(range(0,22))
@@ -546,6 +566,7 @@ updated_df=pd.merge(matches_df,home_power_rank_merge,on=['Home ID','Week']).rena
 updated_df=pd.merge(updated_df,away_power_rank_merge,on=['Away ID','Week']).rename(columns={'final_power':'away_power'})
 updated_df['calculated_spread']=updated_df['away_power']-updated_df['home_power']
 updated_df['spread_working']=updated_df['home_power']-updated_df['away_power']+updated_df['Spread']
+st.write('line 566 calculate the total points and determine power pick over or under dont think its working go back to matrix', updated_df)
 updated_df['power_pick'] = np.where(updated_df['spread_working'] > 0, 1,
 np.where(updated_df['spread_working'] < 0,-1,0))
     # st.write(updated_df.sort_values(by='Week'))
@@ -563,9 +584,10 @@ with st.expander('Season to Date Cover Graph'):
     # df3=df2.merge(df,on=['date','week','team'], how='left')
     # st.write('merged on left',df3)  # merges on columns A
 
-    stdc_home=spread_3.rename(columns={'ID':'Home ID'})
+    stdc_home=spread_3.rename(columns={'ID':'Home ID','cover_sign_pts':'cover_sign','cover_pts':'cover'})
+    st.write('see what cover sign does here', stdc_home)
     stdc_home['cover_sign']=-stdc_home['cover_sign']
-    stdc_away=spread_3.rename(columns={'ID':'Away ID'})
+    stdc_away=spread_3.rename(columns={'ID':'Away ID','cover_sign_pts':'cover_sign','cover_pts':'cover'})
     updated_df=updated_df.drop(['away_cover'],axis=1)
     updated_df=updated_df.rename(columns={'home_cover':'home_cover_result'})
     updated_df=updated_df.merge(stdc_home,on=['Date','Week','Home ID'],how='left').rename(columns={'cover':'home_cover','cover_sign':'home_cover_sign'})
@@ -578,9 +600,9 @@ with st.expander('Season to Date Cover Graph'):
     # st.write('Get STDC by Week do something similar for Power Rank')
     # last_occurence = spread_3.groupby(['ID'],as_index=False).last()
     # st.write(last_occurence)
-    stdc_df=pd.merge(spread_3,team_names_id,on='ID').rename(columns={'Away Team':'Team'})
+    stdc_df=pd.merge(spread_3,team_names_id,on='ID').rename(columns={'Away Team':'Team'}).rename(columns={'cover_sign_pts':'cover_sign','cover_pts':'cover'})
     team_names_id_update=team_names_id.drop_duplicates(subset=['ID'], keep='first')
-    df_stdc_1=pd.merge(spread_3,team_names_id_update,on='ID').rename(columns={'Away Team':'Team'})
+    df_stdc_1=pd.merge(spread_3,team_names_id_update,on='ID').rename(columns={'Away Team':'Team'}).rename(columns={'cover_sign_pts':'cover_sign','cover_pts':'cover'})
     df_stdc_1=df_stdc_1.loc[:,['Week','ID','Team','cover']].copy()
     stdc_df=stdc_df.loc[:,['Week','Team','cover']].copy()
     
@@ -627,10 +649,10 @@ with st.expander('Momentum Factor'):
     
     updated_df_with_momentum=updated_df.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
         'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign',
-        'home_cover_sign','away_cover_sign','power_pick','home_cover_result','Opening Spread']]
+        'home_cover_sign','away_cover_sign','power_pick','home_cover_result','Home Line Open']]
     # st.write('update', updated_df_with_momentum)
-    updated_df_with_momentum['momentum_pick']=np.where(updated_df_with_momentum['Spread']==updated_df_with_momentum['Opening Spread'],0,np.where(
-        updated_df_with_momentum['Spread']<updated_df_with_momentum['Opening Spread'],1,-1))
+    updated_df_with_momentum['momentum_pick']=np.where(updated_df_with_momentum['Spread']==updated_df_with_momentum['Home Line Open'],0,np.where(
+        updated_df_with_momentum['Spread']<updated_df_with_momentum['Home Line Open'],1,-1))
 
 
 
@@ -641,7 +663,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     
     betting_matches=updated_df_with_momentum.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
     'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign',
-    'home_cover_sign','away_cover_sign','power_pick','home_cover_result','momentum_pick','Opening Spread']]
+    'home_cover_sign','away_cover_sign','power_pick','home_cover_result','momentum_pick','Home Line Open']]
     betting_matches['total_factor']=betting_matches['home_turnover_sign']+betting_matches['away_turnover_sign']+betting_matches['home_cover_sign']+\
     betting_matches['away_cover_sign']+betting_matches['power_pick']+betting_matches['momentum_pick']
     
