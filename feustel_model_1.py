@@ -578,7 +578,7 @@ with st.expander('first simple model'):
     # st.download_button(label="Download data as CSV",data=df_combined[df_combined['season_year']==2021].to_csv().encode('utf-8'),file_name='df_spread.csv',mime='text/csv',key='after_merge_spread')
 
     st.write('The home-away date avg pts rolling is the average points scored in every match so we can see what the avg pts scored and conceded is both will be same')
-    # st.write('Database', df_combined)
+    st.write('Avg pts per game', df_combined['away_date_avg_pts_rolling'])
     result_count=df_combined.groupby(['season_year'])['result'].value_counts()
     clean_df_for_pivot=df_combined.loc[:,['season_year','result','bet_sign']]
     result_pivot=pd.pivot_table(clean_df_for_pivot, index='result', columns='season_year', aggfunc='count')
