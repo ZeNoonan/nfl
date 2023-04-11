@@ -56,7 +56,7 @@ odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historica
 def csv_save(x):
     x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023_totals.csv')
     return x
-csv_save(odds_data_excel)
+# csv_save(odds_data_excel)
 
 odds_data = read_csv_data(season_list[season_picker]['odds_file']).copy()
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_2021_2022.xlsx').copy()
@@ -406,7 +406,7 @@ cols_to_move=['Week','Date','Home Team','Away Team','Home Points','Away Points',
 cols = cols_to_move + [col for col in spread if col not in cols_to_move]
 test_check=spread[cols].sort_values(by=['Week','Date'])
 
-# st.write('just check sense check the data', test_check)
+st.write('just check sense check the data', test_check [ (test_check['Home Team']=='Kansas City Chiefs') | (test_check['Away Team']=='Kansas City Chiefs') ]           )
 spread_4 = season_cover_workings(spread,'home_cover_pts','away_cover_pts','cover_pts',0)
 
 spread_5=season_cover_2(spread_4,'cover_pts')
@@ -455,10 +455,10 @@ def games_matrix_workings(first_4):
     # st.write('Check sum looks good all zero', full_stack.sum())
     full_stack=full_stack.fillna(0)
     full_stack.columns = full_stack.columns.droplevel(0)
-    return full_stack
-full_stack=games_matrix_workings(first_4)
+    return full_stack,full
+full_stack,df3=games_matrix_workings(first_4)
 st.write('full stack number of games look ok it does look ok i think this is for first 4 games', full_stack)
-
+st.write('number of games in here?', df3)
 
 # with st.beta_expander('CORRECT Testing reworking the DataFrame'):
 test_df['at_home'] = 1
@@ -477,7 +477,7 @@ test_df_2=pd.concat([test_df_home,test_df_away],ignore_index=True)
 test_df_2=test_df_2.sort_values(by=['ID','Week'],ascending=True)
 # test_df_2['spread_with_home_adv']=test_df_2['spread']+test_df_2['home_pts_adv']
 test_df_2['spread_with_home_adv']=test_df_2['spread']
-st.write('spread row 477',test_df_2)
+# st.write('spread row 477',test_df_2)
 
 def test_4(matrix_df_1):
     weights = np.array([0.125, 0.25,0.5,1])
@@ -528,7 +528,7 @@ last=list(range(0,last_week))
 for first,last in zip(first,last):
     first_section=games_df[games_df['Week'].between(first,last)]
     # st.write('first section', first_section)
-    full_game_matrix=games_matrix_workings(first_section)
+    full_game_matrix,full=games_matrix_workings(first_section)
     # st.write('full game matrix', full_game_matrix)
     adjusted_matrix=full_game_matrix.loc[0:(number_of_teams-2),0:(number_of_teams-2)]
     # st.write('adjusted matrix', adjusted_matrix)
