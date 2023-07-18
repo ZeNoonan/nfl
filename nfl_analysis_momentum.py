@@ -10,14 +10,14 @@ import datetime as dt
 from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode, JsCode
 
 st.set_page_config(layout="wide")
-st.write('Adjust line 310 for Bills Bengals adjustmet after week 18')
+# st.write('Adjust line 310 for Bills Bengals adjustmet after week 18')
 
-season_picker = st.selectbox("Select a season to run",('season_2022','season_2021'),index=0)
+season_picker = st.selectbox("Select a season to run",('season_2023','season_2022','season_2021'),index=0)
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
-finished_week=22
-last_week=22 # what is this for?? its for graphing i think
+finished_week=4
+last_week=16 # what is this for?? its for graphing i think
 number_of_teams=32
 
 # season_list={'season_2022': {
@@ -31,7 +31,12 @@ number_of_teams=32
 #     "team_id": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams_2021_2022.csv",
 #     "prior_year_file": 'https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2019_2020.csv'}}
 
-season_list={'season_2022': {
+season_list={'season_2023': {
+    "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2023_2024.csv",
+    "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2023_2024.csv",
+    "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2023_2024.csv",
+    "prior_year_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023.csv"},
+'season_2022': {
     "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv",
     "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023.csv",
     "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2022_2023.csv",
@@ -55,7 +60,7 @@ def read_csv_data(file):
 
 odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
 def csv_save(x):
-    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv')
+    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2023_2024.csv')
     return x
 csv_save(odds_data_excel)
 
@@ -67,24 +72,30 @@ odds_data = read_csv_data(season_list[season_picker]['odds_file']).copy()
 # https://www.aussportsbetting.com/data/historical-nfl-results-and-odds-data/
 # team_names_id = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams.csv').copy()
 # st.write(team_names_id)
-# team_names_id=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.csv')
+# team_names_id=pd.read_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_teams.xlsx')
+# team_names_id.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2023_2024.csv')
 team_names_id=pd.read_csv(season_list[season_picker]["team_id"])
 
 
-url='https://www.pro-football-reference.com/years/2022/games.htm'
+url='https://www.pro-football-reference.com/years/2023/games.htm'
 
 
 def fbref_scraper_csv(url):
         test = pd.read_html(url)[0]
         # test.to_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2022_scores.xlsx')
-        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2022_2023.csv')
+        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2023_2024.csv')
         # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
 # fbref_scraper_csv(url)
 
 # prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
-# prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
+
+
+# to_print=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2023_2024.csv')
+# st.download_button(label="Download",data=to_print.to_csv().encode('utf-8'),file_name='df_dummy_power.csv',mime='text/csv',key='dummy_shift_power')
+
+
 prior_nfl_data=pd.read_csv(season_list[season_picker]["prior_year_file"])
 
 # data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
@@ -103,25 +114,27 @@ def clean_csv(x):
 
 # nfl_data=data_2021.copy()
 
-def pre_season(data_2021,start_year=2022, end_year=2023):
+def pre_season(data_2021,start_year=2023, end_year=2024):
     # not sure if this even works, think its for pre-season
     data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
     data_2021['month']=data_2021['Date'].str.split(' ').str[0]
     data_2021['date_in_month']=data_2021['Date'].str.split(' ').str[1]
-    data_2021['year']=2022
+    data_2021['year']=start_year
     data_2021['TOW']=0
     data_2021['TOL']=0
     data_2021['PtsW']=0
     data_2021['PtsL']=0
     data_2021=data_2021[~data_2021['Week'].isin(['Pre0','Pre1','Pre2','Pre3','Week'])]
+    data_2021['Week']=pd.to_numeric(data_2021['Week'])
     # data_2021['Week']=pd.to_numeric(data_2021['Week'])
-    data_2021['year']=np.where(data_2021['Week']>16,end_year,start_year)
+    # st.write('inside function', data_2021)
+    data_2021['year']=np.where(data_2021['Week']>17,end_year,start_year)
     data_2021['Date']=pd.to_datetime(data_2021['year'].astype(str) + data_2021['month']+ data_2021['date_in_month'].astype(str),format='%Y%B%d')
     data_2021.loc['Week','Week']='Week'
     return data_2021
 
-# st.write('wildcard', data_2022)
-# data_2022=pre_season(data_2022)
+# st.write('before pre season function to clean up data', data_2022)
+data_2022=pre_season(data_2022)
 nfl_data=data_2022.copy()
 # st.write('nfl_data', nfl_data)
 # st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
@@ -218,6 +231,8 @@ def clean_pro_football_pickle_2021(nfl_data):
     # st.write(season_pro.dtypes)
     return season_pro
 
+# st.write('need to check why merge is not bringing in the Spread')
+
 def clean_prior_year(x):
     x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:-1,16:-2,15:-3})
     # x['Week']=x['Week'].replace({18:0,19:0,20:0,21:0,17:0,16:-1,15:-2,14:-3})
@@ -302,14 +317,15 @@ def clean_pro_football_pickle_work_on_this_cover_preseason_as_well(nfl_data):
     # st.write(season_pro.dtypes)
     return season_pro
 
+
 current=clean_pro_football_pickle_2021(nfl_data)
 # st.write('current line 201',current.sort_values(by='Week'))
 prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
 # st.write( prior_data[(prior_data['Home Team']=='Miami Dolphins') | (prior_data['Away Team']=='Miami Dolphins')].sort_values(by=['Week','Date','Time']) )
 
 data = concat_current_prior(current,prior_data)
-data.loc[(data['Week']==17)&(data['Home Points']==7), 'Home Points'] = 0
-data.loc[(data['Week']==17)&(data['Away Points']==3), 'Away Points'] = 1.5
+# data.loc[(data['Week']==17)&(data['Home Points']==7), 'Home Points'] = 0 # Postponed Game
+# data.loc[(data['Week']==17)&(data['Away Points']==3), 'Away Points'] = 1.5 # Postponed Game
 # st.write('Data to amend', data)
 
 def spread_workings(data):
@@ -662,7 +678,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     presentation_betting_matches=betting_matches.copy()
 
     # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
-    grid_height = st.number_input("Grid height", min_value=400, value=7950, step=100)
+    grid_height = st.number_input("Grid height", min_value=400, value=1950, step=100)
     gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
     gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
     gb.configure_column("my_spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
