@@ -11,15 +11,21 @@ from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataRe
 
 st.set_page_config(layout="wide")
 
-season_picker = st.selectbox("Select a season to run",('season_2022','season_2021'),index=0)
+season_picker = st.selectbox("Select a season to run",('season_2023','season_2022','season_2021'),index=0)
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
-finished_week=22
-last_week=22 # what is this for?? its for graphing i think
+finished_week=4
+last_week=18 # what is this for?? its for graphing i think
 number_of_teams=32
 
-season_list={'season_2022': {
+season_list={'season_2023': {
+    "odds_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds_2023_2024.csv",
+    "scores_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2023_2024.csv",
+    "team_id": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams_2023_2024.csv",
+    "year":'2023_2024',
+    "prior_year_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2022_2023.csv"},
+'season_2022': {
     "odds_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds_2022_2023.csv",
     "scores_file": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_scores_2022_2023.csv",
     "team_id": "https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_teams_2022_2023.csv",
@@ -56,7 +62,7 @@ def read_csv_data(file):
 
 # odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
 def csv_save(x):
-    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv')
+    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2023_2024.csv')
     return x
 # csv_save(odds_data_excel)
 
@@ -104,25 +110,26 @@ def clean_csv(x):
 
 # nfl_data=data_2021.copy()
 
-def pre_season(data_2021,start_year=2022, end_year=2023):
+def pre_season(data_2021,start_year=2023, end_year=2024):
     # not sure if this even works, think its for pre-season
     data_2021=data_2021.rename(columns={'VisTm':'Winner/tie','HomeTm':'Loser/tie','Unnamed: 2':'Date'})
     data_2021['month']=data_2021['Date'].str.split(' ').str[0]
     data_2021['date_in_month']=data_2021['Date'].str.split(' ').str[1]
-    data_2021['year']=2022
+    data_2021['year']=start_year
     data_2021['TOW']=0
     data_2021['TOL']=0
     data_2021['PtsW']=0
     data_2021['PtsL']=0
     data_2021=data_2021[~data_2021['Week'].isin(['Pre0','Pre1','Pre2','Pre3','Week'])]
+    data_2021['Week']=pd.to_numeric(data_2021['Week'])
     # data_2021['Week']=pd.to_numeric(data_2021['Week'])
-    data_2021['year']=np.where(data_2021['Week']>16,end_year,start_year)
+    data_2021['year']=np.where(data_2021['Week']>17,end_year,start_year)
     data_2021['Date']=pd.to_datetime(data_2021['year'].astype(str) + data_2021['month']+ data_2021['date_in_month'].astype(str),format='%Y%B%d')
     data_2021.loc['Week','Week']='Week'
     return data_2021
 
 # st.write('wildcard', data_2022)
-# data_2022=pre_season(data_2022)
+data_2022=pre_season(data_2022)
 nfl_data=data_2022.copy()
 # st.write('nfl_data', nfl_data)
 # st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
