@@ -506,6 +506,8 @@ games_df=matrix_df_1.copy()
 # st.write('Checking the games df', games_df[((games_df['Home ID']==24)|(games_df['Away ID']==24))])
 
 first=list(range(-3,last_week-3))
+# sourcery skip: remove-zero-from-range
+# sourcery skip: remove-zero-from-range
 last=list(range(0,last_week))
 for first,last in zip(first,last):
     first_section=games_df[games_df['Week'].between(first,last)]
