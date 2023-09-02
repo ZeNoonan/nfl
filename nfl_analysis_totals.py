@@ -131,7 +131,8 @@ nfl_data=data_2022.copy()
 # st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
 
 # with st.beta_expander('Historical odds function'):
-odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close']].copy()
+odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close','Total Score Close']]\
+    .rename(columns={'Total Score Close':'Closing_Total'}).copy()
 # st.write('odds data before datetime', odds_data)
 odds_data['Date']=pd.to_datetime(odds_data['Date']).dt.normalize()
 odds_data['year']=odds_data['Date'].dt.year
@@ -322,6 +323,20 @@ def spread_workings(data):
     data['away_cover'] = -data['home_cover']
     data=data.rename(columns={'Net Turnover':'home_turnover'})
     data['away_turnover'] = -data['home_turnover']
+    data['Home_Total_Points']=(-data['Spread']/2) + (data['Closing_Total']/2)
+    data['Away_Total_Points']=(data['Spread']/2) + (data['Closing_Total']/2)
+    data['check_total_calc'] = data['Home_Total_Points']+data['Away_Total_Points']-data['Closing_Total']
+    data['home_cover_total']=(np.where(((data['Home Points'] + data['Away Points']) > data['Closing_Total']), 1,
+    np.where(((data['Home Points']+ data['Away Points']) < data['Closing_Total']),-1,0)))
+    data['home_cover_total']=data['home_cover_total'].astype(int)
+    data['away_cover_total'] = data['home_cover_total'] # THIS IS RIGHT I THINK AS HOME AND AWAY ARE SAME
+    data['home_cover_total_team']=(np.where(((data['Home Points'] ) > data['Home_Total_Points']), 1,
+    np.where(((data['Home Points']) < data['Home_Total_Points']),-1,0)))
+    data['home_cover_total_team']=data['home_cover_total_team'].astype(int)
+    # data['away_cover_total_team'] = -data['home_cover_total_team'] DO I NEED THIS??? SO CONFUSED NOW
+    data['away_cover_total_team']=(np.where(((data['Away Points'] ) > data['Away_Total_Points']), 1,
+    np.where(((data['Away Points']) < data['Away_Total_Points']),-1,0)))
+    data['away_cover_total_team']=data['away_cover_total_team'].astype(int)    
     return data
 
 def season_cover_3(data,column_sign,name):
@@ -384,6 +399,7 @@ def season_cover_2(season_cover_df,column_name):
 
 # with st.beta_expander('Season to date Cover'):
 spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',0)
+spread_1_total_team = season_cover_workings(spread,'home_cover_total_team','away_cover_total_team','cover_total_team',0)
 spread_2=season_cover_2(spread_1,'cover')
 spread_3=season_cover_3(spread_2,'cover_sign','cover')
     # st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
