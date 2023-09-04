@@ -52,11 +52,11 @@ season_list={'season_2023': {
 
 
 
-@st.cache
+@st.cache_data
 def read_data(file):
     return pd.read_excel(file)
 
-@st.cache
+@st.cache_data
 def read_csv_data(file):
     return pd.read_csv(file)
 
@@ -380,7 +380,7 @@ def season_cover_2(season_cover_df,column_name):
     # https://stackoverflow.com/questions/54993050/pandas-groupby-shift-and-cumulative-sum
     # season_cover_df[column_name] = season_cover_df.groupby (['ID'])[column_name].transform(lambda x: x.cumsum().shift())
     # THE ABOVE DIDN'T WORK IN 2020 PRO FOOTBALL BUT DID WORK IN 2019 DO NOT DELETE FOR INFO PURPOSES
-    season_cover_df[column_name] = season_cover_df.groupby (['ID'])[column_name].apply(lambda x: x.cumsum().shift())
+    season_cover_df.loc[column_name] = season_cover_df.groupby (['ID'])[column_name].apply(lambda x: x.cumsum().shift())
     season_cover_df=season_cover_df.reset_index().sort_values(by=['Week','Date','ID'],ascending=True).drop('index',axis=1)
     # Be careful with this if you want full season, season to date cover, for week 17, it is season to date up to week 16
     # if you want full season, you have to go up to week 18 to get the full 17 weeks, just if you want to do analysis on season covers
@@ -494,6 +494,7 @@ games_df=matrix_df_1.copy()
 # st.write('Checking the games df', games_df[((games_df['Home ID']==24)|(games_df['Away ID']==24))])
 
 first=list(range(-3,last_week-3))
+# sourcery skip: remove-zero-from-range
 last=list(range(0,last_week))
 for first,last in zip(first,last):
     first_section=games_df[games_df['Week'].between(first,last)]
