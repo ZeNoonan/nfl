@@ -15,8 +15,8 @@ season_picker = st.selectbox("Select a season to run",('season_2023','season_202
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
-finished_week=18
-last_week=19 # what is this for?? its for graphing i think NO its for power rank
+finished_week=19
+last_week=20 # what is this for?? its for graphing i think NO its for power rank
 number_of_teams=32
 
 season_list={'season_2023': {
@@ -512,6 +512,7 @@ games_df=matrix_df_1.copy()
 # st.write('Checking the games df', games_df[((games_df['Home ID']==24)|(games_df['Away ID']==24))])
 
 first=list(range(-3,last_week-3))
+# sourcery skip: remove-zero-from-range
 last=list(range(0,last_week))
 for first,last in zip(first,last):
     first_section=games_df[games_df['Week'].between(first,last)]
@@ -579,7 +580,7 @@ with st.expander('Season to Date Cover Graph'):
     updated_df=updated_df.rename(columns={'home_cover':'home_cover_result'})
     updated_df=updated_df.merge(stdc_home,on=['Date','Week','Home ID'],how='left').rename(columns={'cover':'home_cover','cover_sign':'home_cover_sign'})
     updated_df=pd.merge(updated_df,stdc_away,on=['Date','Week','Away ID'],how='left').rename(columns={'cover':'away_cover','cover_sign':'away_cover_sign'})
-    st.write('check that STDC coming in correctly', updated_df)
+    # st.write('check that STDC coming in correctly', updated_df)
     # st.write('Check Total')
     # st.write('home',updated_df['home_cover_sign'].sum())
     # st.write('away',updated_df['away_cover_sign'].sum())
@@ -669,6 +670,11 @@ with placeholder_2.expander('Betting Slip Matches'):
                                            'calculated_spread':"{:.1f}",'Spread':"{:.1f}"}))
     
     st.write(betting_matches[betting_matches['Week']==(finished_week+1)].set_index('Week').style.format({'home_power':"{:.1f}",'away_power':"{:.1f}",'result':"{:.0f}",
+                                                                                       'Home Points':"{:.0f}",'Date':"{:%d.%m.%Y}",
+                                           'Away Points':"{:.0f}",'Week':"{:.0f}",'home_cover':"{:.0f}",'away_cover':"{:.0f}",
+                                           'calculated_spread':"{:.1f}",'Spread':"{:.1f}"}))
+
+    st.write(betting_matches[betting_matches['Week']==(15)].set_index('Week').style.format({'home_power':"{:.1f}",'away_power':"{:.1f}",'result':"{:.0f}",
                                                                                        'Home Points':"{:.0f}",'Date':"{:%d.%m.%Y}",
                                            'Away Points':"{:.0f}",'Week':"{:.0f}",'home_cover':"{:.0f}",'away_cover':"{:.0f}",
                                            'calculated_spread':"{:.1f}",'Spread':"{:.1f}"}))
@@ -965,7 +971,14 @@ with placeholder_1.expander('Weekly Results'):
 with st.expander('Analysis of Factors'):
     analysis_factors = betting_matches.copy()
     analysis_factors=analysis_factors[analysis_factors['Week']<finished_week+1]
+    st.write('where we have a zero for the power ranking success is where the spread was a push cos it exactly covered')
+    # test_factor=analysis_factors.copy()
+    # test_factor['power_ranking_success?'] = test_factor['power_pick'] * test_factor['home_cover_result']
+    # st.write('analysis factors', test_factor[test_factor['power_ranking_success?']==0])
+
+        # sourcery skip: remove-unnecessary-else, swap-if-else-branchesors['Week']<finished_week+1]
     def analysis_factor_function(analysis_factors):
+        # sourcery skip: remove-unnecessary-else, swap-if-else-branches
         analysis_factors['home_turnover_success?'] = analysis_factors['home_turnover_sign'] * analysis_factors['home_cover_result']
         analysis_factors['away_turnover_success?'] = analysis_factors['away_turnover_sign'] * analysis_factors['home_cover_result']
         analysis_factors['home_cover_season_success?'] = analysis_factors['home_cover_sign'] * analysis_factors['home_cover_result']  
@@ -1098,13 +1111,42 @@ with st.expander('Checking Performance where Total Factor = 2 or 3:  Additional 
     df_factor['away_cover_diagnostic'] = (df_factor['away_cover_sign'].where(factor_2_3_away_cover_filter)) * df_factor['home_cover_result']
     df_factor['power_diagnostic'] = (df_factor['power_pick'].where(factor_2_3_power_filter)) * df_factor['home_cover_result']
     # st.write(df_factor)
-    st.write('copy the work done above in the other section where it was fixed')
-    st.write('df factor', df_factor)
-    df_factor_table = df_factor['home_turnover_diagnostic'].value_counts().rename(columns={'home_turnover_diagnostic':'factor','count':'home_turnover_diagnostic'}).set_index('factor')
-    away_turnover=df_factor['away_turnover_diagnostic'].value_counts().rename(columns={'away_turnover_diagnostic':'factor','count':'away_turnover_diagnostic'}).set_index('factor')
-    home_cover=df_factor['home_cover_diagnostic'].value_counts().rename(columns={'home_cover_diagnostic':'factor','count':'home_cover_diagnostic'}).set_index('factor')
-    away_cover=df_factor['away_cover_diagnostic'].value_counts().rename(columns={'away_cover_diagnostic':'factor','count':'away_cover_diagnostic'}).set_index('factor')
-    power=df_factor['power_diagnostic'].value_counts()
+    # st.write('copy the work done above in the other section where it was fixed')
+    # st.write('df factor', df_factor)
+    # st.write('df factor', df_factor)
+    df_factor_table = df_factor['home_turnover_diagnostic'].value_counts().reset_index().rename(columns={'home_turnover_diagnostic':'factor','count':'home_turnover_diagnostic'}).set_index('factor')
+    away_turnover=df_factor['away_turnover_diagnostic'].value_counts().reset_index().rename(columns={'away_turnover_diagnostic':'factor','count':'away_turnover_diagnostic'}).set_index('factor')
+    home_cover=df_factor['home_cover_diagnostic'].value_counts().reset_index().rename(columns={'home_cover_diagnostic':'factor','count':'home_cover_diagnostic'}).set_index('factor')
+    away_cover=df_factor['away_cover_diagnostic'].value_counts().reset_index().rename(columns={'away_cover_diagnostic':'factor','count':'away_cover_diagnostic'}).set_index('factor')
+    power=df_factor['power_diagnostic'].value_counts().reset_index().rename(columns={'power_diagnostic':'factor','count':'power_diagnostic'}).set_index('factor')
+
+    # df_table = analysis_factors['home_turnover_success?'].value_counts().reset_index().rename(columns={'home_turnover_success?':'factor','count':'home_turnover_success?'}).set_index('factor')
+    # away_turnover=analysis_factors['away_turnover_success?'].value_counts().reset_index().rename(columns={'away_turnover_success?':'factor','count':'away_turnover_success?'}).set_index('factor')
+    # home_cover=analysis_factors['home_cover_season_success?'].value_counts().reset_index().rename(columns={'home_cover_season_success?':'factor','count':'home_cover_season_success?'}).set_index('factor')
+    # away_cover=analysis_factors['away_cover_season_success?'].value_counts().reset_index().rename(columns={'away_cover_season_success?':'factor','count':'away_cover_season_success?'}).set_index('factor')
+    # power=analysis_factors['power_ranking_success?'].value_counts().reset_index().rename(columns={'power_ranking_success?':'factor','count':'power_ranking_success?'}).set_index('factor')
+
+        # df_table_1.loc[:,'total_turnover'] = df_table_1['home_turnover_success?'] + (df_table_1['away_turnover_success?'])
+        # # st.write(test)
+        # df_table_1['total_season_cover'] = df_table_1['home_cover_season_success?'] + df_table_1['away_cover_season_success?']
+        # # st.write('df table 2', df_table_1)
+
+        # df_table_1=df_table_1.reset_index()
+        # # st.write('reset data', df_table_1)
+        # df_table_1['index']=df_table_1['factor'].astype(str)
+        # df_table_1=df_table_1.drop('factor',axis=1)
+        # # st.write('df table 2', df_table_1)
+        # df_table_1=df_table_1.set_index('index')
+
+
+        # df_table_1.loc['Total']=df_table_1.sum()
+        # # st.write('latest', df_table_1)
+        # # st.write('latest', df_table_1.shape)
+        # if df_table_1.shape > (2,7):
+        #     # st.write('Returning df with analysis')
+        #     df_table_1.loc['No. of Bets Made'] = df_table_1.loc[['1','-1']].sum() # No losing bets so far!!!
+        #     df_table_1.loc['% Winning'] = ((df_table_1.loc['1'] / df_table_1.loc['No. of Bets Made']))
+
     df_factor_table_1=pd.concat([df_factor_table,away_turnover,home_cover,away_cover,power],axis=1)
     df_factor_table_1['total_turnover'] = df_factor_table_1['home_turnover_diagnostic'] + (df_factor_table_1['away_turnover_diagnostic'])
     # st.write(test)
@@ -1112,8 +1154,10 @@ with st.expander('Checking Performance where Total Factor = 2 or 3:  Additional 
     # st.write('df table 2', df_factor_table_1)
 
     df_factor_table_1=df_factor_table_1.reset_index()
+    # st.write(df_factor_table_1['factor'].round(1))
     # st.write('reset data', df_table_1)
-    df_factor_table_1['index']=df_factor_table_1['factor'].astype(str)
+    df_factor_table_1['index']=df_factor_table_1['factor'].astype(int).astype(str)
+    # st.write(df_factor_table_1['index'].round(1))
     df_factor_table_1=df_factor_table_1.drop('factor',axis=1)
     # st.write('df table 2', df_table_1)
     df_factor_table_1=df_factor_table_1.set_index('index')
@@ -1155,18 +1199,21 @@ with st.expander('Underdog Analyis'):
     underdog_df['home_favourite_all_result']=underdog_df['home_cover_result'].where(underdog_df['Spread']<0.1)
     underdog_df['away_favourite_all_result']=(underdog_df['home_cover_result'].where(underdog_df['Spread']>0.1))*-1
     underdog_df['away_underdog_all_result']=(underdog_df['home_cover_result'].where(underdog_df['Spread']<0.1))*-1
-    underdog_table = underdog_df['home_underdog_bet_result'].value_counts()
-    away_underdog_bet = underdog_df['away_underdog_bet_result'].value_counts()
-    home_fav_bet = underdog_df['home_favourite_bet_result'].value_counts()
-    away_fav_bet = underdog_df['away_favourite_bet_result'].value_counts()
+    # st.write('uunder df', underdog_df)
+    underdog_table = underdog_df['home_underdog_bet_result'].value_counts().reset_index().rename(columns={'home_underdog_bet_result':'factor','count':'home_underdog_bet_result'}).set_index('factor')
+    away_underdog_bet = underdog_df['away_underdog_bet_result'].value_counts().reset_index().rename(columns={'away_underdog_bet_result':'factor','count':'away_underdog_bet_result'}).set_index('factor')
+    home_fav_bet = underdog_df['home_favourite_bet_result'].value_counts().reset_index().rename(columns={'home_favourite_bet_result':'factor','count':'home_favourite_bet_result'}).set_index('factor')
+    away_fav_bet = underdog_df['away_favourite_bet_result'].value_counts().reset_index().rename(columns={'away_favourite_bet_result':'factor','count':'away_favourite_bet_result'}).set_index('factor')
+    # st.write(underdog_table)
     underdog_results = pd.concat([underdog_table,away_underdog_bet,home_fav_bet,away_fav_bet],axis=1)
     underdog_results=underdog_results.sort_index(ascending=False)
+    # st.write('problem?', underdog_results)
     underdog_results['underdog']=underdog_results['home_underdog_bet_result']+underdog_results['away_underdog_bet_result']
     underdog_results['favourite']=underdog_results['home_favourite_bet_result']+underdog_results['away_favourite_bet_result']
 
     underdog_results=underdog_results.reset_index()
     # st.write('reset data', underdog_results)
-    underdog_results['index']=underdog_results['index'].astype(int)
+    underdog_results['index']=underdog_results['factor'].astype(int)
     underdog_results['index']=underdog_results['index'].astype(str)
     underdog_results=underdog_results.set_index('index')
 
@@ -1187,10 +1234,10 @@ with st.expander('Underdog Analyis'):
 
     st.write(underdog_results_presentation)
 
-    home_underdog_all = underdog_df['home_underdog_all_result'].value_counts()
-    away_underdog_all = underdog_df['away_underdog_all_result'].value_counts()
-    home_fav_all = underdog_df['home_favourite_all_result'].value_counts()
-    away_fav_all = underdog_df['away_favourite_all_result'].value_counts()
+    home_underdog_all = underdog_df['home_underdog_all_result'].value_counts().reset_index().rename(columns={'home_underdog_all_result':'factor','count':'home_underdog_all_result'}).set_index('factor')
+    away_underdog_all = underdog_df['away_underdog_all_result'].value_counts().reset_index().rename(columns={'away_underdog_all_result':'factor','count':'away_underdog_all_result'}).set_index('factor')
+    home_fav_all = underdog_df['home_favourite_all_result'].value_counts().reset_index().rename(columns={'home_favourite_all_result':'factor','count':'home_favourite_all_result'}).set_index('factor')
+    away_fav_all = underdog_df['away_favourite_all_result'].value_counts().reset_index().rename(columns={'away_favourite_all_result':'factor','count':'away_favourite_all_result'}).set_index('factor')
     all_results = pd.concat([home_underdog_all,away_underdog_all,home_fav_all,away_fav_all],axis=1)
     all_results=all_results.sort_index(ascending=False)
     all_results['underdog']=all_results['home_underdog_all_result']+all_results['away_underdog_all_result']
@@ -1198,7 +1245,7 @@ with st.expander('Underdog Analyis'):
 
     all_results=all_results.reset_index()
     # st.write('reset data', all_results)
-    all_results['index']=all_results['index'].astype(int)
+    all_results['index']=all_results['factor'].astype(int)
     all_results['index']=all_results['index'].astype(str)
     all_results=all_results.set_index('index')
 
@@ -1224,7 +1271,7 @@ with st.expander('Underdog Analyis'):
 
 
 # with st.beta_expander('Pro Football Ref Scraper'):
-    pass
+    # pass
     # def fbref_scraper():
     #     test = pd.read_html('https://www.pro-football-reference.com/years/2021/games.htm')[0]
     #     test.to_pickle('C:/Users/Darragh/Documents/Python/NFL/pro_football_ref/nfl_2021.pkl')
@@ -1289,8 +1336,9 @@ with st.expander('Deep Dive on Power Factor'):
 
 
     decile_df_abs_spread=power_factor_analysis.groupby(pd.qcut(power_factor_analysis['Spread'].abs(), q=10,duplicates='drop'))['power_ranking_success?'].sum().reset_index()
-    # st.write('breaks out Spread')
-    # st.write(decile_df_abs_spread)
+    st.write(decile_df_abs_spread)
+    decile_df_abs_spread=decile_df_abs_spread.drop('Spread',axis=1).reset_index().rename(columns={'index':'Spread'})
+    st.write(decile_df_abs_spread)
     line_cover= alt.Chart(decile_df_abs_spread).mark_bar().encode(alt.X('Spread',axis=alt.Axis(title='Spread',labelAngle=0)),
     alt.Y('power_ranking_success?:Q'))
     text_cover=line_cover.mark_text(baseline='middle').encode(text=alt.Text('power_ranking_success?'),color=alt.value('black'))
@@ -1302,6 +1350,8 @@ with st.expander('Deep Dive on Power Factor'):
     st.write('Below is breaking into even buckets the difference between the Model and the Spread to see if there is any insight')
     decile_df=power_factor_analysis.groupby(pd.qcut(power_factor_analysis['power_margin'], 8))['power_ranking_success?'].sum()
     decile_df_abs=power_factor_analysis.groupby(pd.qcut(power_factor_analysis['power_margin'].abs(), 8))['power_ranking_success?'].sum().reset_index()
+    st.write(decile_df_abs)
+    decile_df_abs=decile_df_abs.drop('power_margin',axis=1).reset_index().rename(columns={'index':'power_margin'})
     # st.write(decile_df)
     # st.write(decile_df_abs)
     line_cover= alt.Chart(decile_df_abs).mark_bar().encode(alt.X('power_margin',axis=alt.Axis(title='power_margin',labelAngle=0)),
