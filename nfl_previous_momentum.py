@@ -15,8 +15,8 @@ season_picker = st.selectbox("Select a season to run",('season_2023','season_202
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
-finished_week=2
-last_week=18 # what is this for?? its for graphing i think
+finished_week=18
+last_week=finished_week+1 # what is this for?? its for graphing i think
 number_of_teams=32
 
 season_list={'season_2023': {
@@ -62,7 +62,7 @@ def read_csv_data(file):
 
 # odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
 def csv_save(x):
-    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2022_2023.csv')
+    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2023_2024.csv')
     return x
 # csv_save(odds_data_excel)
 
@@ -134,7 +134,8 @@ nfl_data=data_2022.copy()
 # st.markdown(get_table_download_link(data_2021), unsafe_allow_html=True)
 
 # with st.beta_expander('Historical odds function'):
-odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close']].copy()
+# st.write('odds', odds_data)
+odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close','Opening Spread']].copy()
 # st.write('odds data before datetime', odds_data)
 odds_data['Date']=pd.to_datetime(odds_data['Date'],format='mixed').dt.normalize()
 odds_data['year']=odds_data['Date'].dt.year
@@ -509,6 +510,7 @@ games_df=matrix_df_1.copy()
 # st.write('Checking the games df', games_df[((games_df['Home ID']==24)|(games_df['Away ID']==24))])
 
 first=list(range(-3,last_week-3))
+# sourcery skip: remove-zero-from-range
 last=list(range(0,last_week))
 for first,last in zip(first,last):
     first_section=games_df[games_df['Week'].between(first,last)]
@@ -641,7 +643,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     # st.write('updated df', updated_df)
     betting_matches=updated_df_with_momentum.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
     'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick',
-    'momentum_pick','home_cover_result']]
+    'momentum_pick','home_cover_result','Opening Spread']]
     
     betting_matches['total_factor']=betting_matches['home_turnover_sign']+betting_matches['away_turnover_sign']+betting_matches['home_cover_sign']+\
         betting_matches['away_cover_sign']+betting_matches['power_pick']+betting_matches['momentum_pick']
@@ -664,14 +666,15 @@ with placeholder_2.expander('Betting Slip Matches'):
     betting_matches['tease_result']=betting_matches['tease_home_cover'] * betting_matches['bet_sign']
 
     # st.write('testing sum of betting all result',betting_matches['result_all'].sum())
-    cols_to_move=['Week','Date','Home Team','Away Team','total_factor','bet_on','result','Spread','Home Points','Away Points','home_power','away_power']
+    cols_to_move=['Week','Date','Home Team','Away Team','total_factor','bet_on','result','Spread','Opening Spread','Home Points','Away Points','home_power','away_power','momentum_pick']
     cols = cols_to_move + [col for col in betting_matches if col not in cols_to_move]
     betting_matches=betting_matches[cols]
     betting_matches=betting_matches.sort_values('Date')
     presentation_betting_matches=betting_matches.copy()
-    st.write(betting_matches)
+    st.write(betting_matches[betting_matches['Week']==(finished_week+1)])
+    st.write(betting_matches[betting_matches['Week']==(finished_week)])
     # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
-    grid_height = st.number_input("Grid height", min_value=400, value=7550, step=100)
+    grid_height = st.number_input("Grid height", min_value=400, value=1550, step=100)
     gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
     gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
     gb.configure_column("home_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
