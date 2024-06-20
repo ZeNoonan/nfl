@@ -15,8 +15,8 @@ season_picker = st.selectbox("Select a season to run",('season_2023','season_202
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
-finished_week=19
-last_week=20 # what is this for?? its for graphing i think NO its for power rank
+finished_week=21
+last_week=22 # what is this for?? its for graphing i think NO its for power rank
 number_of_teams=32
 
 season_list={'season_2023': {
@@ -401,6 +401,13 @@ def season_cover_2_updated(spead_1):
     # if you want full season, you have to go up to week 18 to get the full 17 weeks, just if you want to do analysis on season covers
     return season_cover_df
 
+def season_cover_2_updated_graph(spead_1):  
+    x=spread_1.groupby (['ID'])['cover'].apply(lambda x: x.cumsum()).reset_index().rename(columns={'level_1':'unique_id'})
+    y=spread_1.drop('cover',axis=1).reset_index().rename(columns={'index':'unique_id'})
+    season_cover_df=pd.merge(x,y,how='outer',on=['unique_id','ID'])
+    season_cover_df=season_cover_df.reset_index().sort_values(by=['Week','Date','ID'],ascending=True).drop(['index','unique_id'],axis=1)
+    return season_cover_df
+
 # with st.beta_expander('Season to date Cover'):
 spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',0)
 # st.write('before shift outside function', spread_1.reset_index())
@@ -408,6 +415,9 @@ spread_1 = season_cover_workings(spread,'home_cover','away_cover','cover',0)
 spread_2=season_cover_2_updated(spread_1)
 # st.write('after shift', spread_2)
 spread_3=season_cover_3(spread_2,'cover_sign','cover')
+
+spread_2_graph=season_cover_2_updated_graph(spread_1)
+spread_3_graph=season_cover_3(spread_2_graph,'cover_sign','cover')
     # st.write(spread_3.sort_values(by=['ID','Week'],ascending=['True','True']))
 
 matrix_df=spread_workings(data)
@@ -592,6 +602,7 @@ with st.expander('Season to Date Cover Graph'):
     team_names_id_update=team_names_id.drop_duplicates(subset=['ID'], keep='first')
     df_stdc_1=pd.merge(spread_3,team_names_id_update,on='ID').rename(columns={'Away Team':'Team'})
     df_stdc_1=df_stdc_1.loc[:,['Week','ID','Team','cover']].copy()
+    # st.write(spread_3)
     stdc_df=stdc_df.loc[:,['Week','Team','cover']].copy()
     
     stdc_df['average']=stdc_df.groupby('Team')['cover'].transform(np.mean)
@@ -600,7 +611,18 @@ with st.expander('Season to Date Cover Graph'):
     stdc_pivot=pd.pivot_table(stdc_df,index='Team', columns='Week')
     stdc_pivot.columns = stdc_pivot.columns.droplevel(0)
 
+    df_stdc_1_graph=pd.merge(spread_3_graph,team_names_id_update,on='ID').rename(columns={'Away Team':'Team'})
+    df_stdc_1_graph=df_stdc_1_graph.loc[:,['Week','ID','Team','cover']].copy()
+    df_stdc_1_graph['average']=df_stdc_1_graph.groupby('Team')['cover'].transform(np.mean)
+
     chart_cover= alt.Chart(df_stdc_1).mark_rect().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
+    alt.Y('Team',sort=alt.SortField(field='average', order='descending')),color=alt.Color('cover:Q',scale=alt.Scale(scheme='redyellowgreen')))
+    # https://altair-viz.github.io/gallery/layered_heatmap_text.html
+    # https://vega.github.io/vega/docs/schemes/
+    text_cover=chart_cover.mark_text().encode(text=alt.Text('cover:N'),color=alt.value('black'))
+    st.altair_chart(chart_cover + text_cover,use_container_width=True)
+
+    chart_cover= alt.Chart(df_stdc_1_graph).mark_rect().encode(alt.X('Week:O',axis=alt.Axis(title='Week',labelAngle=0)),
     alt.Y('Team',sort=alt.SortField(field='average', order='descending')),color=alt.Color('cover:Q',scale=alt.Scale(scheme='redyellowgreen')))
     # https://altair-viz.github.io/gallery/layered_heatmap_text.html
     # https://vega.github.io/vega/docs/schemes/
@@ -765,6 +787,7 @@ with st.expander('Power Ranking by Week'):
     # st.write('graphing?',pivot_df)
     power_pivot=pd.pivot_table(pivot_df,index='Team', columns='week')
     pivot_df_test = pivot_df.copy()
+    # st.write(pivot_df_test)
     pivot_df_test=pivot_df_test[pivot_df_test['week']<finished_week+1]
     pivot_df_test['average']=pivot_df.groupby('Team')['final_power'].transform(np.mean)
     # st.write('graphing?',pivot_df_test)
