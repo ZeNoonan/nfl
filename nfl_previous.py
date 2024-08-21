@@ -447,19 +447,23 @@ def games_matrix_workings(first_4):
         raw_data_2.append(group)
 
     df3 = pd.concat(raw_data_2, ignore_index=True)
+    # st.write('df3', df3)
     adj_df3=df3.loc[:,['Home ID', 'Away ID', 'game_adj']].copy()
     test_adj_df3 = adj_df3.rename(columns={'Home ID':'Away ID', 'Away ID':'Home ID'})
     concat_df_test=pd.concat([adj_df3,test_adj_df3]).sort_values(by=['Home ID', 'game_adj'],ascending=[True,False])
     test_concat_df_test=concat_df_test.groupby('Home ID')['game_adj'].sum().abs().reset_index()
     test_concat_df_test['Away ID']=test_concat_df_test['Home ID']
+    # st.write('concat df test',concat_df_test,'test concat df test', test_concat_df_test)
     full=pd.concat([concat_df_test,test_concat_df_test]).sort_values(by=['Home ID', 'game_adj'],ascending=[True,False])
+    # st.write('after concat', full)
     full_stack=pd.pivot_table(full,index='Away ID', columns='Home ID',aggfunc='sum')
     # st.write('Check sum looks good all zero', full_stack.sum())
+    # st.write('Check sum looks good all zero', full_stack)
     full_stack=full_stack.fillna(0)
     full_stack.columns = full_stack.columns.droplevel(0)
     return full_stack
 full_stack=games_matrix_workings(first_4)
-
+st.write('output before games_matrix workings')
 
 
 # with st.beta_expander('CORRECT Testing reworking the DataFrame'):
@@ -475,7 +479,7 @@ test_df_away=test_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts
 test_df_2=pd.concat([test_df_home,test_df_away],ignore_index=True)
 test_df_2=test_df_2.sort_values(by=['ID','Week'],ascending=True)
 test_df_2['spread_with_home_adv']=test_df_2['spread']+test_df_2['home_pts_adv']
-# st.write('spread row 371',test_df_2)
+st.write('spread row 371',test_df_2)
 
 def test_4(matrix_df_1):
     weights = np.array([0.125, 0.25,0.5,1])
@@ -513,14 +517,15 @@ inverse_matrix=[]
 power_ranking=[]
 list_inverse_matrix=[]
 list_power_ranking=[]
-# st.write('power df', df_power)
+st.write('power df', df_power)
 power_df=df_power.loc[:,['Week','ID','adj_spread']].copy()
 
 games_df=matrix_df_1.copy()
 # st.write('games df', games_df)
 
 # st.write('Checking the games df', games_df[((games_df['Home ID']==24)|(games_df['Away ID']==24))])
-
+# st.write('games df' ,games_df)
+# st.write('power_df',power_df)
 first=list(range(-3,last_week-3))
 # sourcery skip: remove-zero-from-range
 last=list(range(0,last_week))
@@ -533,6 +538,7 @@ for first,last in zip(first,last):
     # st.write('adjusted matrix', adjusted_matrix)
     df_inv = pd.DataFrame(np.linalg.pinv(adjusted_matrix.values), adjusted_matrix.columns, adjusted_matrix.index)
     # st.write('df inv', df_inv)
+    # st.write('power df',power_df[power_df['Week']==last])
     power_df_week=power_df[power_df['Week']==last].drop_duplicates(subset=['ID'],keep='last').set_index('ID')\
     .drop('Week',axis=1).rename(columns={'adj_spread':0}).loc[:(number_of_teams-2),:]
     # st.write('power_df_week', power_df_week,'first', first, 'last', last)
@@ -547,7 +553,7 @@ for first,last in zip(first,last):
     result['week']=last+1
     power_ranking.append(result)
 power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
-# st.write('power ranking combined', power_ranking_combined)
+st.write('power ranking combined', power_ranking_combined)
 
 # first=list(range(-3,19))
 # last=list(range(0,22))
