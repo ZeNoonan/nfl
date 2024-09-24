@@ -11,15 +11,21 @@ from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataRe
 
 st.set_page_config(layout="wide")
 
-season_picker = st.selectbox("Select a season to run",('season_2023','season_2022','season_2021'),index=0)
+season_picker = st.selectbox("Select a season to run",('season_2024','season_2023','season_2022','season_2021'),index=0)
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
-finished_week=21
+finished_week=3
 last_week=22 # what is this for?? its for graphing i think NO its for power rank
 number_of_teams=32
 
-season_list={'season_2023': {
+season_list={'season_2024': {
+    "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2024_2025.csv",
+    "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2024_2025.csv",
+    "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2023_2024.csv",
+    "year":'2024',
+    "prior_year_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2023_2024.csv"},
+'season_2023': {
     "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2023_2024.csv",
     "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2023_2024.csv",
     "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2023_2024.csv",
@@ -61,9 +67,9 @@ def read_csv_data(file):
     return pd.read_csv(file,parse_dates=['Date'])
 
 # odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
-odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_data.xlsx')
+odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_24.09.24.xlsx')
 def csv_save(x):
-    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2023_2024.csv')
+    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2024_2025.csv')
     return x
 csv_save(odds_data_excel)
 
@@ -80,13 +86,13 @@ team_names_id=pd.read_csv(season_list[season_picker]["team_id"])
 
 year=season_list[season_picker]['year']
 # url=f'https://www.pro-football-reference.com/years/{year}/games.htm'
-url='https://www.pro-football-reference.com/years/2023/games.htm'
+url='https://www.pro-football-reference.com/years/2024/games.htm'
 # st.write('url', pd.read_html(url)[0])
 
 def fbref_scraper_csv(url):
         test = pd.read_html(url)[0]
         # test.to_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2022_scores.xlsx')
-        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2023_2024.csv')
+        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2024_2025.csv')
         # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
@@ -95,7 +101,7 @@ def fbref_scraper_csv(url):
 # prior_nfl_data = pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2020.csv')
 # prior_nfl_data=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2020.csv')
 prior_nfl_data=pd.read_csv(season_list[season_picker]["prior_year_file"])
-
+# st.write('prior nfl data', prior_nfl_data)
 # data_2021=pd.read_csv('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_2021.csv')
 # data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
 data_2022=pd.read_csv(season_list[season_picker]["scores_file"])
@@ -181,8 +187,11 @@ def clean_pro_football_pickle(nfl_data):
     team_names_id_1=team_names_id.rename(columns={'Away Team':'Home Team'})
     fb_ref_2020=pd.merge(fb_ref_2020,team_names_id_1,on='Home Team').rename(columns={'ID':'Home ID'})
     fb_ref_2020=pd.merge(fb_ref_2020,team_names_id,on='Away Team').rename(columns={'ID':'Away ID'})
+    # Tripped up on the below for start of season, the 'odds data' file is not called out explicitly, really stupid
     season_pro = pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points', 'Home ID','Away ID'], how='left')
     return season_pro
+
+
 
 def clean_pro_football_pickle_2021(nfl_data):
     # sourcery skip: inline-immediately-returned-variable
@@ -312,8 +321,45 @@ def clean_pro_football_pickle_work_on_this_cover_preseason_as_well(nfl_data):
     return season_pro
 
 current=clean_pro_football_pickle_2021(nfl_data)
+
+def clean_pro_football_pickle_part_1(nfl_data):
+    # sourcery skip: inline-immediately-returned-variable
+    nfl_data=nfl_data.rename(columns={'Unnamed: 5':'at_venue'})
+    nfl_data['Home Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Loser/tie'],nfl_data['Winner/tie'])
+    nfl_data['at_venue']=nfl_data['at_venue'].replace({np.nan:'stay'})
+    nfl_data['Away Team']=np.where(nfl_data['at_venue']=='@',nfl_data['Winner/tie'],nfl_data['Loser/tie'])
+    # nfl_data['Home Points']=np.where(nfl_data['at_venue']=='@',nfl_data['Pts.1'],nfl_data['Pts'])
+    nfl_data['Home Points']=np.where(nfl_data['at_venue']=='@',nfl_data['PtsL'],nfl_data['PtsW'])
+    nfl_data['Away Points']=np.where(nfl_data['at_venue']=='@',nfl_data['PtsW'],nfl_data['PtsL'])
+    nfl_data['home_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOL'],nfl_data['TOW']))
+    nfl_data['away_turnover']=(np.where(nfl_data['at_venue']=='@',nfl_data['TOW'],nfl_data['TOL']))
+    # nfl_data=nfl_data[nfl_data['Week'].str.contains('Week')==False].copy()
+    nfl_data=nfl_data[nfl_data['Week'].str.contains('Week',na=False)==False].copy()
+    nfl_data=nfl_data.dropna(subset=["Week"])
+    nfl_data['home_turnover']=pd.to_numeric(nfl_data['home_turnover'])
+    nfl_data['away_turnover']=pd.to_numeric(nfl_data['away_turnover'])
+    nfl_data['Home Points']=pd.to_numeric(nfl_data['Home Points'])
+    nfl_data['Away Points']=pd.to_numeric(nfl_data['Away Points'])
+    nfl_data['Date']=pd.to_datetime(nfl_data['Date'])
+    nfl_data['Week'] = nfl_data['Week'].replace({'WildCard':18,'Division':19,'ConfChamp':20,'SuperBowl':21})
+    nfl_data['Week']=pd.to_numeric(nfl_data['Week'])
+    fb_ref_2020=nfl_data.loc[:,['Week','Day','Date','Time','Home Team', 'Away Team', 'Home Points','Away Points','home_turnover','away_turnover']]
+    fb_ref_2020['Turnover'] = fb_ref_2020['home_turnover'] - fb_ref_2020['away_turnover']
+    team_names_id_1=team_names_id.rename(columns={'Away Team':'Home Team'})
+    fb_ref_2020=pd.merge(fb_ref_2020,team_names_id_1,on='Home Team').rename(columns={'ID':'Home ID'})
+    fb_ref_2020=pd.merge(fb_ref_2020,team_names_id,on='Away Team').rename(columns={'ID':'Away ID'})
+    return fb_ref_2020
+
+def clean_pro_football_pickle_part_2(fb_ref_2020):
+    return pd.merge(fb_ref_2020,odds_data,on=['Date','Home Team','Away Team', 'Home Points','Away Points', 'Home ID','Away ID'], how='left',indicator=True)
+
 # st.write('current line 315 looks ok',current.sort_values(by='Week'))
 prior_data = clean_prior_year(clean_pro_football_pickle(prior_nfl_data))
+# st.write('prior nfl data', prior_nfl_data)
+# st.write('prior part 1',clean_pro_football_pickle_part_1(prior_nfl_data))
+# st.write('check merge',clean_pro_football_pickle_part_2(clean_pro_football_pickle_part_1(prior_nfl_data)))
+# st.write('odds data to be merged in', odds_data)
+# st.write('prior 2',prior_data)
 # st.write( prior_data[(prior_data['Home Team']=='Miami Dolphins') | (prior_data['Away Team']=='Miami Dolphins')].sort_values(by=['Week','Date','Time']) )
 
 data = concat_current_prior(current,prior_data)
@@ -463,7 +509,7 @@ def games_matrix_workings(first_4):
     full_stack.columns = full_stack.columns.droplevel(0)
     return full_stack
 full_stack=games_matrix_workings(first_4)
-st.write('output before games_matrix workings')
+# st.write('output before games_matrix workings')
 
 
 # with st.beta_expander('CORRECT Testing reworking the DataFrame'):
@@ -479,7 +525,7 @@ test_df_away=test_df_1.loc[:,['Week','Away ID','at_away','away_spread','away_pts
 test_df_2=pd.concat([test_df_home,test_df_away],ignore_index=True)
 test_df_2=test_df_2.sort_values(by=['ID','Week'],ascending=True)
 test_df_2['spread_with_home_adv']=test_df_2['spread']+test_df_2['home_pts_adv']
-st.write('spread row 371',test_df_2)
+# st.write('spread row 371',test_df_2)
 
 def test_4(matrix_df_1):
     weights = np.array([0.125, 0.25,0.5,1])
@@ -517,7 +563,7 @@ inverse_matrix=[]
 power_ranking=[]
 list_inverse_matrix=[]
 list_power_ranking=[]
-st.write('power df', df_power)
+# st.write('power df', df_power)
 power_df=df_power.loc[:,['Week','ID','adj_spread']].copy()
 
 games_df=matrix_df_1.copy()
@@ -553,7 +599,7 @@ for first,last in zip(first,last):
     result['week']=last+1
     power_ranking.append(result)
 power_ranking_combined = pd.concat(power_ranking).reset_index().rename(columns={'index':'ID'})
-st.write('power ranking combined', power_ranking_combined)
+# st.write('power ranking combined', power_ranking_combined)
 
 # first=list(range(-3,19))
 # last=list(range(0,22))
@@ -702,10 +748,10 @@ with placeholder_2.expander('Betting Slip Matches'):
                                            'Away Points':"{:.0f}",'Week':"{:.0f}",'home_cover':"{:.0f}",'away_cover':"{:.0f}",
                                            'calculated_spread':"{:.1f}",'Spread':"{:.1f}"}))
 
-    st.write(betting_matches[betting_matches['Week']==(15)].set_index('Week').style.format({'home_power':"{:.1f}",'away_power':"{:.1f}",'result':"{:.0f}",
-                                                                                       'Home Points':"{:.0f}",'Date':"{:%d.%m.%Y}",
-                                           'Away Points':"{:.0f}",'Week':"{:.0f}",'home_cover':"{:.0f}",'away_cover':"{:.0f}",
-                                           'calculated_spread':"{:.1f}",'Spread':"{:.1f}"}))
+    # st.write(betting_matches[betting_matches['Week']==(15)].set_index('Week').style.format({'home_power':"{:.1f}",'away_power':"{:.1f}",'result':"{:.0f}",
+    #                                                                                    'Home Points':"{:.0f}",'Date':"{:%d.%m.%Y}",
+    #                                        'Away Points':"{:.0f}",'Week':"{:.0f}",'home_cover':"{:.0f}",'away_cover':"{:.0f}",
+    #                                        'calculated_spread':"{:.1f}",'Spread':"{:.1f}"}))
 
         # https://stackoverflow.com/questions/68056855/pandas-style-conditional-formatting-highlight-on-text
     def color_recommend(value):
@@ -734,48 +780,48 @@ with placeholder_2.expander('Betting Slip Matches'):
     #                                        'calculated_spread':"{:.1f}",'Spread':"{:.1f}"}).applymap(color_recommend) )
 
     # https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
-    grid_height = st.number_input("Grid height", min_value=400, value=450, step=100)
-    gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
-    gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
-    gb.configure_column("home_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
-    gb.configure_column("away_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
-    gb.configure_column("Date", type=["dateColumnFilter","customDateTimeFormat"], custom_format_string='dd-MM-yyyy', pivot=True)
-    gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, aggFunc="sum", editable=True)
+    # grid_height = st.number_input("Grid height", min_value=400, value=450, step=100)
+    # gb = GridOptionsBuilder.from_dataframe(presentation_betting_matches)
+    # gb.configure_column("Spread", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
+    # gb.configure_column("home_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
+    # gb.configure_column("away_power", type=["numericColumn","numberColumnFilter","customNumericFormat"], precision=1, aggFunc='sum')
+    # gb.configure_column("Date", type=["dateColumnFilter","customDateTimeFormat"], custom_format_string='dd-MM-yyyy', pivot=True)
+    # gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, aggFunc="sum", editable=True)
 
-    test_cellsytle_jscode = JsCode("""
-    function(params) {
-        if (params.value < 0) {
-        return {
-            'color': 'red',
-        }
-        } else {
-            return {
-                'color': 'black',
-            }
-        }
-    };
-    """)
+    # test_cellsytle_jscode = JsCode("""
+    # function(params) {
+    #     if (params.value < 0) {
+    #     return {
+    #         'color': 'red',
+    #     }
+    #     } else {
+    #         return {
+    #             'color': 'black',
+    #         }
+    #     }
+    # };
+    # """)
     # # https://github.com/PablocFonseca/streamlit-aggrid/blob/main/st_aggrid/grid_options_builder.py
-    gb.configure_column(field="Spread", cellStyle=test_cellsytle_jscode)
-    gb.configure_column("home_power", cellStyle=test_cellsytle_jscode)
-    gb.configure_column("away_power", cellStyle=test_cellsytle_jscode)
+    # gb.configure_column(field="Spread", cellStyle=test_cellsytle_jscode)
+    # gb.configure_column("home_power", cellStyle=test_cellsytle_jscode)
+    # gb.configure_column("away_power", cellStyle=test_cellsytle_jscode)
 
 
     # gb.configure_pagination()
     # gb.configure_side_bar()
-    gb.configure_grid_options(domLayout='normal')
-    gridOptions = gb.build()
-    grid_response = AgGrid(
-        presentation_betting_matches, 
-        gridOptions=gridOptions,
-        height=grid_height, 
-        width='100%',
-        # data_return_mode=return_mode_value, 
-        # update_mode=update_mode_value,
-        # fit_columns_on_grid_load=fit_columns_on_grid_load,
-        allow_unsafe_jscode=True, #Set it to True to allow jsfunction to be injected
-        enable_enterprise_modules=True,
-    )
+    # gb.configure_grid_options(domLayout='normal')
+    # gridOptions = gb.build()
+    # grid_response = AgGrid(
+    #     presentation_betting_matches, 
+    #     gridOptions=gridOptions,
+    #     height=grid_height, 
+    #     width='100%',
+    #     # data_return_mode=return_mode_value, 
+    #     # update_mode=update_mode_value,
+    #     # fit_columns_on_grid_load=fit_columns_on_grid_load,
+    #     allow_unsafe_jscode=True, #Set it to True to allow jsfunction to be injected
+    #     enable_enterprise_modules=True,
+    # )
 
     # container.grid_response
     # AgGrid(betting_matches.sort_values('Date').style.format({'home_power':"{:.1f}",'away_power':"{:.1f}"}))

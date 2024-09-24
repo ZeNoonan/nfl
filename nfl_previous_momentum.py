@@ -11,15 +11,21 @@ from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataRe
 
 st.set_page_config(layout="wide")
 
-season_picker = st.selectbox("Select a season to run",('season_2023','season_2022','season_2021'),index=0)
+season_picker = st.selectbox("Select a season to run",('season_2024','season_2023','season_2022','season_2021'),index=0)
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
-finished_week=18
+finished_week=3
 last_week=finished_week+1 # what is this for?? its for graphing i think
 number_of_teams=32
 
-season_list={'season_2023': {
+season_list={'season_2024': {
+    "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2024_2025.csv",
+    "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2024_2025.csv",
+    "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2023_2024.csv",
+    "year":'2024',
+    "prior_year_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2023_2024.csv"},
+'season_2023': {
     "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2023_2024.csv",
     "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2023_2024.csv",
     "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2023_2024.csv",
@@ -60,9 +66,9 @@ def read_data(file):
 def read_csv_data(file):
     return pd.read_csv(file)
 
-# odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
+odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_data_clean.xlsx')
 def csv_save(x):
-    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2023_2024.csv')
+    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2024_2025.csv')
     return x
 # csv_save(odds_data_excel)
 
@@ -135,7 +141,8 @@ nfl_data=data_2022.copy()
 
 # with st.beta_expander('Historical odds function'):
 # st.write('odds', odds_data)
-odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close','Opening Spread']].copy()
+# odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close','Opening Spread']].copy()
+odds_data=odds_data.loc[:,['Date','Home Team','Away Team','Home Score','Away Score','Home Line Close','Home Line Open']].copy()
 # st.write('odds data before datetime', odds_data)
 odds_data['Date']=pd.to_datetime(odds_data['Date'],format='mixed').dt.normalize()
 odds_data['year']=odds_data['Date'].dt.year
@@ -634,16 +641,16 @@ with st.expander('Momentum Factor'):
     
     updated_df_with_momentum=updated_df.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
         'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign',
-        'home_cover_sign','away_cover_sign','power_pick','home_cover_result','Opening Spread']]
+        'home_cover_sign','away_cover_sign','power_pick','home_cover_result','Home Line Open']]
     # st.write('update', updated_df_with_momentum)
-    updated_df_with_momentum['momentum_pick']=np.where(updated_df_with_momentum['Spread']==updated_df_with_momentum['Opening Spread'],0,np.where(
-        updated_df_with_momentum['Spread']<updated_df_with_momentum['Opening Spread'],1,-1))
+    updated_df_with_momentum['momentum_pick']=np.where(updated_df_with_momentum['Spread']==updated_df_with_momentum['Home Line Open'],0,np.where(
+        updated_df_with_momentum['Spread']<updated_df_with_momentum['Home Line Open'],1,-1))
 
 with placeholder_2.expander('Betting Slip Matches'):
     # st.write('updated df', updated_df)
     betting_matches=updated_df_with_momentum.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
     'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick',
-    'momentum_pick','home_cover_result','Opening Spread']]
+    'momentum_pick','home_cover_result','Home Line Open']]
     
     betting_matches['total_factor']=betting_matches['home_turnover_sign']+betting_matches['away_turnover_sign']+betting_matches['home_cover_sign']+\
         betting_matches['away_cover_sign']+betting_matches['power_pick']+betting_matches['momentum_pick']
@@ -666,7 +673,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     betting_matches['tease_result']=betting_matches['tease_home_cover'] * betting_matches['bet_sign']
 
     # st.write('testing sum of betting all result',betting_matches['result_all'].sum())
-    cols_to_move=['Week','Date','Home Team','Away Team','total_factor','bet_on','result','Spread','Opening Spread','Home Points','Away Points','home_power','away_power','momentum_pick']
+    cols_to_move=['Week','Date','Home Team','Away Team','total_factor','bet_on','result','Spread','Home Line Open','Home Points','Away Points','home_power','away_power','momentum_pick']
     cols = cols_to_move + [col for col in betting_matches if col not in cols_to_move]
     betting_matches=betting_matches[cols]
     betting_matches=betting_matches.sort_values('Date')
