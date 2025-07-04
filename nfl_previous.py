@@ -15,7 +15,7 @@ season_picker = st.selectbox("Select a season to run",('season_2024','season_202
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
-finished_week=8
+finished_week=21
 last_week=22 # what is this for?? its for graphing i think NO its for power rank
 number_of_teams=32
 
@@ -67,7 +67,7 @@ def read_csv_data(file):
     return pd.read_csv(file,parse_dates=['Date'])
 
 # odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
-odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_30_10_24.xlsx')
+odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_29_01_25.xlsx')
 def csv_save(x):
     x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2024_2025.csv')
     return x
