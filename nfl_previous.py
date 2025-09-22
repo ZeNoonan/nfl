@@ -3,23 +3,30 @@ import numpy as np
 import streamlit as st
 from io import BytesIO
 # import os
-import base64 
+# import base64 
 import altair as alt
 import datetime as dt
 # from st_aggrid import AgGrid
-from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode, JsCode
+# from st_aggrid import AgGrid, GridOptionsBuilder, AgGrid, GridUpdateMode, DataReturnMode, JsCode
 
 st.set_page_config(layout="wide")
 
-season_picker = st.selectbox("Select a season to run",('season_2024','season_2023','season_2022','season_2021'),index=0)
+season_picker = st.selectbox("Select a season to run",('season_2025','season_2024','season_2023','season_2022','season_2021'),index=0)
 placeholder_1=st.empty()
 placeholder_2=st.empty()
 
-finished_week=21
-last_week=22 # what is this for?? its for graphing i think NO its for power rank
+finished_week=3
+last_week=18 # leave this, if you change it to week 2 it messes everything up 
 number_of_teams=32
 
-season_list={'season_2024': {
+season_list={'season_2025': {
+    "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2025_2026.csv",
+    "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2025_2026.csv",
+    "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2023_2024.csv",
+    "year":'2025',
+    "prior_year_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2024_2025.csv"},
+    
+    'season_2024': {
     "odds_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2024_2025.csv",
     "scores_file": "C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2024_2025.csv",
     "team_id": "C:/Users/Darragh/Documents/Python/NFL/nfl_teams_2023_2024.csv",
@@ -67,13 +74,17 @@ def read_csv_data(file):
     return pd.read_csv(file,parse_dates=['Date'])
 
 # odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx')
-odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_29_01_25.xlsx')
+odds_data_excel = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_18_09_25.xlsx')
 def csv_save(x):
-    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2024_2025.csv')
+    x.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_odds_2025_2026.csv')
     return x
 csv_save(odds_data_excel)
 
 odds_data = read_csv_data(season_list[season_picker]['odds_file']).copy()
+# st.write('odds before merge line 84', odds_data[odds_data['Date']>=pd.to_datetime('2025-08-01')].sort_values(by='Date',ascending=True))
+# st.write('odds before merge line 84',odds_data)
+# sort by date descending
+# st.write('odds before merge line 84',odds_data.sort_values(by='Date',ascending=True))
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_betting_odds_2021_2022.xlsx').copy()
 # odds_data = read_data('C:/Users/Darragh/Documents/Python/NFL/nfl_historical_odds.xlsx').copy()
 # odds_data = read_csv_data('https://raw.githubusercontent.com/ZeNoonan/nfl/main/nfl_odds.csv').copy()
@@ -86,13 +97,13 @@ team_names_id=pd.read_csv(season_list[season_picker]["team_id"])
 
 year=season_list[season_picker]['year']
 # url=f'https://www.pro-football-reference.com/years/{year}/games.htm'
-url='https://www.pro-football-reference.com/years/2024/games.htm'
+url='https://www.pro-football-reference.com/years/2025/games.htm'
 # st.write('url', pd.read_html(url)[0])
 
 def fbref_scraper_csv(url):
         test = pd.read_html(url)[0]
         # test.to_excel('C:/Users/Darragh/Documents/Python/NFL/nfl_2022_scores.xlsx')
-        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2024_2025.csv')
+        test.to_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_scores_2025_2026.csv')
         # test.to_csv('https://github.com/ZeNoonan/nfl/blob/main/nfl_2021.csv')
         return test
 
@@ -106,7 +117,7 @@ prior_nfl_data=pd.read_csv(season_list[season_picker]["prior_year_file"])
 # data_2021=pd.read_csv('C:/Users/Darragh/Documents/Python/NFL/nfl_2021.csv')
 data_2022=pd.read_csv(season_list[season_picker]["scores_file"])
 
-# st.write('check data', data_2021)
+# st.write('check data', data_2022)
 
 def clean_csv(x):
     # x['Date']=pd.to_datetime(x['Date'])
@@ -152,12 +163,18 @@ odds_data['day']=odds_data['Date'].dt.day
 # odds_data['Date'] = pd.to_datetime([dt.datetime.strftime(d, "%Y-%m-%d %H:%M") for d in odds_data["Date"]])
 # st.write('pre odds', odds_data.dtypes)
 team_names_id=team_names_id.rename(columns={'Team':'Home Team'})
-odds_data=pd.merge(odds_data,team_names_id,on='Home Team').rename(columns={'ID':'Home ID'}).sort_values(by='Date',ascending=False)
+# st.write('odds before merge', odds_data[odds_data['Date']>=pd.to_datetime('2025-08-01')].sort_values(by='Date',ascending=True))
+odds_data=pd.merge(odds_data,team_names_id,on='Home Team').rename(columns={'ID':'Home ID'}).sort_values(by='Date',ascending=False).reset_index(drop=True)
+# st.write('check sorted odds data', odds_data)
 team_names_id=team_names_id.rename(columns={'Home Team':'Away Team'})
+# st.write('odds before merge', odds_data[odds_data['Date']>=pd.to_datetime('2025-08-01')].sort_values(by='Date',ascending=True))
 odds_data=pd.merge(odds_data,team_names_id,on='Away Team').rename(columns={'ID':'Away ID','Home Score':'Home Points',
 'Away Score':'Away Points','Home Line Close':'Spread'}).sort_values(by='Date',ascending=False)
 odds_data['Spread']=pd.to_numeric(odds_data['Spread'])
-# st.write('odds', odds_data)
+
+# filter odds_data dataframe on date for everything after august 2025   
+# st.write('odds', odds_data[odds_data['Date']>=pd.to_datetime('2025-08-01')].sort_values(by='Date',ascending=True))
+# odds_data[odds_data['year']==2025])
 
 
 # with st.beta_expander('Pro Football Function'):
@@ -541,7 +558,7 @@ grouped = test_df_2.groupby('ID')
 # https://stackoverflow.com/questions/62471485/is-it-possible-to-insert-missing-sequence-numbers-in-python
 ranking_power=[]
 for name, group in grouped:
-    dfseq = pd.DataFrame.from_dict({'Week': range( -3,22 )}).merge(group, on='Week', how='outer').fillna(np.NaN)
+    dfseq = pd.DataFrame.from_dict({'Week': range( -3,22 )}).merge(group, on='Week', how='outer').fillna(np.nan)
     dfseq['ID']=dfseq['ID'].fillna(method='ffill')
     dfseq['home_pts_adv']=dfseq['home_pts_adv'].fillna(0)
     dfseq['spread']=dfseq['spread'].fillna(0)
@@ -614,7 +631,10 @@ matches_df = spread.copy()
 # st.write('matches df OK line 551', matches_df)
 home_power_rank_merge=power_ranking_combined.loc[:,['ID','week','final_power']].copy().rename(columns={'week':'Week','ID':'Home ID'})
 away_power_rank_merge=power_ranking_combined.loc[:,['ID','week','final_power']].copy().rename(columns={'week':'Week','ID':'Away ID'})
+# st.write('#1 before merge matches df before merge looks ok', matches_df)
+# st.write('#2 before mergecheck home power rank merge', home_power_rank_merge)
 updated_df=pd.merge(matches_df,home_power_rank_merge,on=['Home ID','Week']).rename(columns={'final_power':'home_power'})
+# st.write('PROBLEM HERE:  checking updated df after home merge', updated_df)
 updated_df=pd.merge(updated_df,away_power_rank_merge,on=['Away ID','Week']).rename(columns={'final_power':'away_power'})
 updated_df['calculated_spread']=updated_df['away_power']-updated_df['home_power']
 updated_df['spread_working']=updated_df['home_power']-updated_df['away_power']+updated_df['Spread']
@@ -640,6 +660,7 @@ with st.expander('Season to Date Cover Graph'):
     stdc_away=spread_3.rename(columns={'ID':'Away ID'})
     updated_df=updated_df.drop(['away_cover'],axis=1)
     updated_df=updated_df.rename(columns={'home_cover':'home_cover_result'})
+    # st.write('updated df before merge', updated_df)
     updated_df=updated_df.merge(stdc_home,on=['Date','Week','Home ID'],how='left').rename(columns={'cover':'home_cover','cover_sign':'home_cover_sign'})
     updated_df=pd.merge(updated_df,stdc_away,on=['Date','Week','Away ID'],how='left').rename(columns={'cover':'away_cover','cover_sign':'away_cover_sign'})
     # st.write('check that STDC coming in correctly', updated_df)
@@ -690,6 +711,7 @@ with st.expander('Turnover Factor by Match Graph'):
     
     turnover_away=turnover_matches.rename(columns={'ID':'Away ID'})
     turnover_away['turnover_sign']=-turnover_away['turnover_sign']
+    # st.write('updated df', updated_df)
     updated_df=pd.merge(updated_df,turnover_home,on=['Date','Week','Home ID'],how='left').rename(columns={'prev_turnover':'home_prev_turnover','turnover_sign':'home_turnover_sign'})
     updated_df=pd.merge(updated_df,turnover_away,on=['Date','Week','Away ID'],how='left').rename(columns={'prev_turnover':'away_prev_turnover','turnover_sign':'away_turnover_sign'})
     # st.write()
@@ -712,6 +734,7 @@ with placeholder_2.expander('Betting Slip Matches'):
     betting_matches=updated_df.loc[:,['Week','Date','Home ID','Home Team','Away ID', 'Away Team','Spread','Home Points','Away Points',
     'home_power','away_power','home_cover','away_cover','home_turnover_sign','away_turnover_sign','home_cover_sign','away_cover_sign','power_pick',
     'home_cover_result']]
+    # st.write(updated_df)
     betting_matches['total_factor']=betting_matches['home_turnover_sign']+betting_matches['away_turnover_sign']+betting_matches['home_cover_sign']+\
     betting_matches['away_cover_sign']+betting_matches['power_pick']
     betting_matches['bet_on'] = np.where(betting_matches['total_factor']>2,betting_matches['Home Team'],np.where(betting_matches['total_factor']<-2,betting_matches['Away Team'],''))
@@ -959,7 +982,7 @@ with st.expander('Analysis of Betting Results across 1 to 5 factors'):
     reset_data.loc['No. of Bets Made']=(reset_data.loc[reset_data.index.isin({'1'})].sum(axis=0))+(reset_data.loc[reset_data.index.isin({'-1'})].sum(axis=0)) 
     reset_data.loc['PL_Bets']=reset_data.loc['Winning_Bets'] - reset_data.loc['Losing_Bets']
     reset_data=reset_data.apply(pd.to_numeric, downcast='integer')
-    reset_data.loc['% Winning'] = ((reset_data.loc[reset_data.index.isin({'1'})].sum(axis=0) / reset_data.loc['No. of Bets Made'])).replace({'<NA>':np.NaN})
+    reset_data.loc['% Winning'] = ((reset_data.loc[reset_data.index.isin({'1'})].sum(axis=0) / reset_data.loc['No. of Bets Made'])).replace({'<NA>':np.nan})
     st.write('This shows the betting result')
     # st.write(reset_data)
 
@@ -988,7 +1011,7 @@ with placeholder_1.expander('Weekly Results'):
     # df9.loc['Total']=df9.sum()
     # df9.loc['No. of Bets Made'] = df9.loc[['1','-1']].sum() 
     # df9=df9.apply(pd.to_numeric, downcast='integer')
-    # df9.loc['% Winning'] = ((df9.loc['1'] / df9.loc['No. of Bets Made'])).replace({'<NA>':np.NaN})
+    # df9.loc['% Winning'] = ((df9.loc['1'] / df9.loc['No. of Bets Made'])).replace({'<NA>':np.nan})
 
     # # https://stackoverflow.com/questions/64428836/use-pandas-style-to-format-index-rows-of-dataframe
     # df9 = df9.style.format("{:.0f}", na_rep='-')
@@ -1019,7 +1042,7 @@ with placeholder_1.expander('Weekly Results'):
     graph_pl_data['Week']=graph_pl_data['Week'].astype(int)
     graph_pl_data['total_result']=graph_pl_data['week_result'].cumsum()
     graph_pl_data=graph_pl_data.melt(id_vars='Week',var_name='category',value_name='result')
-    df9.loc['% Winning'] = (df9.loc['Winning_Bets'] / (df9.loc['Winning_Bets']+df9.loc['Losing_Bets'])  ).replace({'<NA>':np.NaN})
+    df9.loc['% Winning'] = (df9.loc['Winning_Bets'] / (df9.loc['Winning_Bets']+df9.loc['Losing_Bets'])  ).replace({'<NA>':np.nan})
     table_test=df9.copy()
     # https://stackoverflow.com/questions/64428836/use-pandas-style-to-format-index-rows-of-dataframe
     df9 = df9.style.format("{:.1f}", na_rep='-')
@@ -1468,7 +1491,7 @@ with st.expander('Teaser Analyis'):
     st.write('6 Point Teaser odds', odds_df)
     test_merge_odds=pd.merge(group_teaser,odds_df,how='left')
     # test_merge_odds['stake']=-10
-    test_merge_odds['stake']=np.where((test_merge_odds['win']+test_merge_odds['lose']+test_merge_odds['no_result'])<3,np.NaN,-10)
+    test_merge_odds['stake']=np.where((test_merge_odds['win']+test_merge_odds['lose']+test_merge_odds['no_result'])<3,np.nan,-10)
     test_merge_odds['payout']=test_merge_odds['odds'] * 10
     test_merge_odds['net_winnings']=test_merge_odds['stake']+test_merge_odds['payout'].fillna(0)
     st.write('6 Point Teaser Return', test_merge_odds)
